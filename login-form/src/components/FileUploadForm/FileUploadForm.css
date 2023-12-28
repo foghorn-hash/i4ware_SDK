@@ -1,0 +1,59 @@
+.FileFormUplaod-file-button {
+    border: 1px red solid;
+    border-radius: 20px;
+    background-color: transparent;
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+}
+
+.FileFormUplaod-file-button:hover {
+    border: 1px red solid;
+    border-radius: 20px;
+    background-color: red;
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Reset default input styles */
+.FileFormUplaod-file-selector {
+    display: none; /* Hide the default file input */
+}
+
+/* Style the custom file input container */
+.file-input-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Style the custom "Browse" button */
+.file-input-container label {
+    background-color: transparent;
+    color: #fff;
+    padding: 10px 15px;
+    margin-right: 10px;
+    margin-left: 10px;
+    border: 1px red solid;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+/* Style the label to mimic a button */
+.file-input-container label:hover {
+    background-color: red;
+}
+
+/* Position the label over the file input */
+.file-input-container label::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none; /* Allow clicks to pass through to the hidden input */
+}
+
+.FileFormUpload-title {
+ padding-left: 15px;
+}

@@ -1,0 +1,31 @@
+.form-control {
+    width: 400px;
+}
+
+.max-height-profile-pic {
+    max-height: 200px;
+    margin: 15px 0 15px 0;
+    width: auto;
+}
+
+.select-gender-label-mypofile {
+    margin-top: 5px;
+}
+
+.select-gender-myprofile {
+	border: 1px #ced4da solid;
+	border-radius: 4px;
+	padding: 8px;
+	background-color: white;
+	color: #000000;
+	width: 400px;
+    margin-top: 6px;
+    margin-bottom: 5px;
+    margin-left: 0px;
+}
+
+.capture-button {
+    border: 0;
+    color: whitesmoke;
+    padding: 5px;
+}

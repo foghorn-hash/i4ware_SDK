@@ -1,0 +1,42 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "ArianeJDB",
+      "name": "Ari",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/45037868?v=4",
+      "profile": "https://github.com/ArianeJDB",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "DeepaPrasanna",
+      "name": "Deepa Prasanna",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/54895192?v=4",
+      "profile": "https://github.com/DeepaPrasanna",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "foghorn-hash",
+      "name": "Matti Kiviharju",
+      "avatar_url": "https://avatars.githubusercontent.com/u/66802573?v=4",
+      "profile": "https://github.com/foghorn-hash",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "loginforms",
+  "projectOwner": "codeclassifiers",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

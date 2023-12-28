@@ -1,0 +1,21 @@
+.Header {
+	background-color: transparent;
+	color: white;
+}
+
+.Header-nav-link {
+	color: white !important;
+}
+
+.Header-login-button {
+	color: black !important;
+	background-color: white !important;
+}
+
+.language-selector {
+	position: relative;
+	top: 3px;
+	margin-right: 20px;
+	margin-left: 20px;
+	height: 38px;
+}

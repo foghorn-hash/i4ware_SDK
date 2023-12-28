@@ -1,0 +1,15 @@
+.cropImageButton {
+    position: absolute;
+    margin: auto;
+    z-index: 9999;
+    bottom: 20px;
+    width: 150px;
+}
+
+.toggleImageButton {
+    position: absolute;
+    margin: auto;
+    z-index: 9999;
+    bottom: 60px;
+    width: 150px;
+}

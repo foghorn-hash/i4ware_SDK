@@ -1,0 +1,28 @@
+.button-bar {
+	padding-top: 20px;
+}
+
+.spacer {
+	padding-bottom: 20px;
+}
+
+table {
+	color: white !important;
+	background-color: transparent !important;
+}
+
+.select-role {
+	border: 1px #ced4da solid;
+	border-radius: 4px;
+	padding: 8px;
+	background-color: white;
+	color: #747373;
+	width: 50%;
+
+}
+
+.max-height-profile-pic-manage-users {
+    max-height: 30px;
+    margin: 0 0 0 0;
+    width: auto;
+}

@@ -1,0 +1,66 @@
+/* CSS for the screenshot image with the 'screenshot-image' id */
+#screenshot-image {
+    max-width: 100%;
+    height: auto;
+}
+
+.scrollable-container {
+    max-height: 400px; /* Adjust the max-height as needed */
+    overflow-y: auto;
+  }
+
+.STLViewerComponent-Viewer-3D {
+    height: 520px;
+    width: 520px;
+}
+
+.STL-controls {
+    margin-bottom: 20px;
+}
+
+.STL-model-selector {
+    margin-right: 20px;
+    float: left;
+}
+.STL-model-selector label {
+    margin-right: 10px;
+    float: left;
+}
+
+.STL-color-selector {
+    margin-right: 20px;
+    float: left;
+}
+
+.STL-color-selector label {
+    margin-right: 10px;
+    float: left;
+}
+
+.STLViewerComponent-clear {
+    clear: both;
+}
+
+.STL-file-uploader {
+    margin-top: 20px;
+
+}
+
+.STL-file-uploader label {
+    margin-right: 10px;
+}
+
+@media (min-width: 576px) {
+    .STLViewerComponent-large-modal {
+    max-width: fit-content;
+    margin: 1.75rem auto;
+    }
+    }
+
+.STLViewerComponent-card-title {
+    color: black;
+}
+
+.STLViewerComponent-col {
+    margin-bottom: 20px;
+}
