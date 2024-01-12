@@ -89,4 +89,4 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 ## Development Environment
 
-We want to do Developent Environment with XAMPP including PHP 8.+ for Back-end Source Code with Laravel 9.+.
+We want to do Developent Environment with XAMPP including PHP 8.2 for Back-end Source Code with Laravel 10.+.
