@@ -39,6 +39,7 @@ table {
 	font-weight: bold;
 	border-bottom: 1px solid #ccc;
 	padding: 8px;
+	background-color: gray;
   }
   
   /* Styles for each table row */
@@ -51,7 +52,7 @@ table {
 
    /* Styles for each table row */
    .table-row-id {
-	display: flex;
+	display: block;
 	padding: 0;
 	width: 20px;
   }
