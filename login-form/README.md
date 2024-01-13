@@ -38,6 +38,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/ArianeJDB"><img src="https://avatars2.githubusercontent.com/u/45037868?v=4" width="100" height="100" alt=""/><br /><sub><b>Ari</b></sub></a><br /><a href="https://github.com/codeclassifiers/loginforms/commits?author=ArianeJDB" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/DeepaPrasanna"><img src="https://avatars1.githubusercontent.com/u/54895192?v=4" width="100" height="100" alt=""/><br /><sub><b>Deepa Prasanna</b></sub></a><br /><a href="https://github.com/codeclassifiers/loginforms/commits?author=DeepaPrasanna" title="Code">💻</a></td>
 	<td align="center"><a href="https://github.com/foghorn-hash"><img src="https://avatars.githubusercontent.com/u/66802573?v=4" width="100" height="100" alt=""/><br /><sub><b>Matti Kiviharju</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+  <td align="center"><a href="https://github.com/ParkanonTulikukko"><img src="https://avatars.githubusercontent.com/u/60129091?v=4" width="100" height="100" alt=""/><br /><sub><b>Heikki Kuivala</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   </tr>
 </table>
 
