@@ -81,6 +81,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
 	<td align="center"><a href="https://github.com/foghorn-hash"><img src="https://avatars.githubusercontent.com/u/66802573?v=4" width="100" height="100" alt=""/><br /><sub><b>Matti Kiviharju</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   <td align="center"><a href="https://github.com/ParkanonTulikukko"><img src="https://avatars.githubusercontent.com/u/60129091?v=4" width="100" height="100" alt=""/><br /><sub><b>Heikki Kuivala</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+  <td align="center"><a href="https://github.com/bot80085"><img src="https://avatars.githubusercontent.com/u/108549262?v=4" width="100" height="100" alt=""/><br /><sub><b>Johan Mikola</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   </tr>
 </table>
 
