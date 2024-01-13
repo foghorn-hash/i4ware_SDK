@@ -26,3 +26,47 @@ table {
     margin: 0 0 0 0;
     width: auto;
 }
+
+/* Styles for the container */
+.mt-3 {
+	margin-top: 3rem;
+  }
+  
+  /* Styles for the table header */
+  .table-header {
+	display: grid;
+	grid-template-columns: repeat(12, 1fr);
+	font-weight: bold;
+	border-bottom: 1px solid #ccc;
+	padding: 8px;
+  }
+  
+  /* Styles for each table row */
+  .table-row {
+	display: grid;
+	grid-template-columns: repeat(12, 1fr);
+	border-bottom: 1px solid #eee;
+	padding: 8px;
+  }
+
+   /* Styles for each table row */
+   .table-row-id {
+	display: flex;
+	padding: 0;
+	width: 20px;
+  }
+  
+  /* Style for the profile picture */
+  .max-height-profile-pic-manage-users {
+	max-height: 50px; /* Adjust the max height as needed */
+	border-radius: 50%; /* To make it round */
+	object-fit: cover; /* Ensure the image covers the container */
+  }
+  
+  /* Additional styles for buttons or other elements */
+  /* (You may need to adjust these based on your design) */
+  .button-container {
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+  }

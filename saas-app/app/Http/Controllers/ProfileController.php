@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use DB;
 use Illuminate\Support\Carbon;
 use Storage;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -26,28 +27,53 @@ class ProfileController extends Controller
         $this->user = new User;
     }
 
-    public function users()
+    public function users(Request $request)
     {
         $user = Auth::user();
 
-        // if ($user->role == "admin") {
-        //     $users = User::paginate(10);
-        // } else {
-        //     $users = User::where(['id' => $user->id])->paginate(10);
-        // }
         if ($user->role == "admin") {
-            $users = User::with('roles')->paginate(10);
+            $users = User::with('roles')->get();
         } else {
             $domain = DB::table('users')->select('domain')->where('id', '=', Auth::user()->id)->first();
-            //var_dump($domain);
-            $users = User::with('roles')->where('domain', '=', $domain->domain)->paginate(10);
+            $users = User::with('roles')->where('domain', '=', $domain->domain)->get();
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $users->toArray(),
+        Log::info('Users:', ['users' => $users]);
 
-        ], 200);
+        // Log the initial value of the 'page' parameter
+        Log::info('Initial Page parameter:', ['page' => $request->input('page')]);
+        // Define the number of items to return per page
+        $perPage = 10;
+        // Get the page number from the request, default to 1 for GET requests
+        $page = $request->input('page', 1);        
+        // Calculate the offset based on the page number and perPage
+        $offset = ($page - 1) * $perPage;
+
+        // Slice the files to get the paginated result
+        $userList = $users->slice($offset, $perPage);
+
+        Log::info('User List:', ['userList' => $userList]);
+
+        // Process the sliced files and create the response
+        $data = [];
+
+        foreach ($userList as $user) {
+            $data[] = [
+                'name' => $user->name,
+                'email' => $user->email,
+                'profile_picture_path' => $user->profile_picture_path,
+                'domain' => $user->domain,
+                'email_verified_at' => $user->email_verified_at,
+                'is_active' => $user->is_active,
+                'id' => $user->id,
+                'roles' => $user->roles->name,
+                'gender' => $user->gender,
+            ];
+        }
+
+        Log::info('Response List:', ['data' => $data]);
+
+        return response()->json($data, 200);
     }
 
     function usersChangeStatus(Request $request){

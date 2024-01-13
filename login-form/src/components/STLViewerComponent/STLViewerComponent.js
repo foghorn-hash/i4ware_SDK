@@ -6,6 +6,7 @@ import { ModalWindow3DViewer } from './ModalWindow3DViewer.js'
 import './STLViewerComponent.css';
 import FileUploadForm from '../../components/FileUploadForm/FileUploadForm';
 import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA} from "../../constants/apiConstants";
+import LOADING from "../../1487-loading.gif";
 import InfiniteScroll from 'react-infinite-scroller';
 
 function STLViewerComponent() {
@@ -108,7 +109,7 @@ function STLViewerComponent() {
           pageStart={1}
           loadMore={loadMore}
           hasMore={hasMore}
-          loader={<div className="loader" key={0}>Loading ...</div>}
+          loader={<div className="loading">Loading...</div>}
         >
           <Row className='STLViewerComponent-row'>
             {stlItems.map((file, index) => (

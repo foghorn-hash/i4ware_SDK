@@ -16,7 +16,7 @@ import * as Yup from "yup";
 import TextInput, { PassWordInput } from "./../common/TextInput";
 import Select from "react-select";
 import PermissionGate from "../../contexts/PermissionGate";
-import { FormCheck } from "react-bootstrap";
+import { FormCheck, Container } from "react-bootstrap";
 import ChangePassword from "./ChangePassword";
 import LOADING from "../../1487-loading.gif";
 import DefaultMaleImage from "../../male-default-profile-picture.png";
@@ -24,6 +24,8 @@ import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import { render } from "react-dom";
 import { ReactGrid, Column, Row } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
+import InfiniteScroll from 'react-infinite-scroller';
+import axios from 'axios'; // Import Axios
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()
@@ -40,7 +42,7 @@ const validationSchema = Yup.object().shape({
 });
 
 function ManageAdmin() {
-  const [data, setData] = useState(null);
+  const [users, setUsers] = useState([]);
   const [modalState, setModalState] = useState(false);
   const [modalStateApproval, setModalStateApproval] = useState(null);
   const [modalStateActivate, setModalStateActivate] = useState(false);
@@ -52,17 +54,11 @@ function ManageAdmin() {
   const [rolesforusers, setRolesforUsers] = useState([]);
   const [selectedRole, setSelectedRole] = useState("");
   const [imageSrc, setImageSrc] = useState(null);
-  //const [defaultImage, setDefaultImage] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); 
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await request().get("/api/manage/users");
-        setData(res.data.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
   
     const fetchRolesForAdd = async () => {
       try {
@@ -82,17 +78,41 @@ function ManageAdmin() {
       }
     };
   
-    fetchUsers();
     fetchRolesForAdd();
     fetchAllRoles();
   }, []);
 
-  const nextPage = (url) => {
-    request()
-      .get(url)
-      .then((res) => {
-        setData(res.data.data);
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true); // Set isLoading to true when starting the request
+      const response = await axios.get(`${API_BASE_URL}/api/manage/users?page=${page}`, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
+        },
       });
+      const newUsers = response.data;
+      setUsers((prevUsers) => [...prevUsers, ...newUsers]);
+      // Check if there are more pages to load
+      if (newUsers.length < 10) {
+        setHasMore(false);
+      }
+      else {
+      // Increment the page number
+      setPage(prevPage => prevPage + 1);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false); // Set isLoading to false when the request is complete
+    }
+  };
+
+  const loadMore = () => {
+    //console.log("loadMore, page before update: " + page)
+    // Check if there are more items to load and no ongoing request
+    if (hasMore && !isLoading) {
+      fetchUsers();
+    }
   };
 
   const changeRole = (values) => {
@@ -106,7 +126,7 @@ function ManageAdmin() {
         request()
           .get("/api/manage/users")
           .then((res) => {
-            setData(res.data.data);
+            setUsers(res.data.data);
           });
       });
   };
@@ -121,7 +141,7 @@ function ManageAdmin() {
         request()
           .get("/api/manage/users")
           .then((res) => {
-            setData(res.data.data);
+            setUsers(res.data.data);
           });
       });
   };
@@ -137,7 +157,7 @@ function ManageAdmin() {
         request()
           .get("/api/manage/users")
           .then((res) => {
-            setData(res.data.data);
+            setUsers(res.data.data);
           });
       });
   };
@@ -145,10 +165,6 @@ function ManageAdmin() {
   const handleRoleChange = (event) => {
     setSelectedRole(event.target.value);
     alert(event.target.value);
-  }
-
-  if (!data) {
-    return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
   }
 
   return (
@@ -177,7 +193,7 @@ function ManageAdmin() {
                   request()
                     .get("/api/manage/users")
                     .then((res) => {
-                      setData(res.data.data);
+                      setUsers(res.data.data);
                     });
                 });
               }}
@@ -317,55 +333,70 @@ function ManageAdmin() {
           </div>
         </PermissionGate>
       }
-      <table className="table mt-3">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">ID</th>
-            <th scope="col">Ava.</th>
-            <th scope="col">Name</th>
-            <th scope="col">Verified</th>
-            <th scope="col">Email</th>
-            <th scope="col">Role</th>
-            <th scope="col">Domain</th>
-            <th scope="col">Status</th>
-            <th></th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {data &&
-            data.data.map((item, index) => {
-              const profilePicUrl = item.profile_picture_path ? (API_BASE_URL + item.profile_picture_path.replaceAll('public/uploads', '/storage/uploads')) : null;
-              const defaultImg = item.gender === "male" ? DefaultMaleImage : DefaultFemaleImage;
-              return (
-                <tr key={index + 1}>
-                  <td>{index + 1}</td>
-                  <td>{item.id}</td>
-                  <td><img className="max-height-profile-pic-manage-users" src={profilePicUrl || defaultImg} /></td>
-                  <td>{item.name}</td>
-                  <td>
-                    {item.email_verified_at != null && "true"}{" "}
-                    {item.email_verified_at == null && "false"}
-                  </td>
-                  <td>{item.email}</td>
-                  <td>{item.roles ? item.roles.name : "not-assigned"}</td>
-                  <td>{item.domain}</td>
-                  <td>
-                    <FormCheck
-                      type="switch"
-                      disabled
-                      checked={item.is_active === 1 ? true : false}
-                      label=""
-                      onClick={() => {
-                        console.log(item.id);
-                      }}
-                    />
-                  </td>
-                  <>
-                    <td>
-                      <PermissionGate permission={"users.changePassword"}>
+      
+        <div className="mt-3">
+          <div className="table-header">
+            <div>#</div>
+            <div>ID</div>
+            <div>Ava.</div>
+            <div>Name</div>
+            <div>Verified</div>
+            <div>Email</div>
+            <div>Role</div>
+            <div>Domain</div>
+            <div>Status</div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+
+          <div className="table-body">
+          <Container>
+            <InfiniteScroll
+              pageStart={1}
+              loadMore={loadMore}
+              hasMore={hasMore}
+              loader={<div className="loading-screen"><img src={LOADING} alt="Loading..." key={0} /></div>}
+            >
+            {users.map((item, index) => {
+                const profilePicUrl = item.profile_picture_path
+                  ? API_BASE_URL + item.profile_picture_path.replaceAll('public/uploads', '/storage/uploads')
+                  : null;
+                const defaultImg =
+                  item.gender === 'male' ? DefaultMaleImage : DefaultFemaleImage;
+
+                return (
+                  <div key={index + 1} className="table-row">
+                    <div className="table-row-id">{index + 1}</div>
+                    <div className="table-row-id">{item.id}</div>
+                    <div>
+                      <img
+                        className="max-height-profile-pic-manage-users"
+                        src={profilePicUrl || defaultImg}
+                        alt={`Profile of ${item.name}`}
+                      />
+                    </div>
+                    <div>{item.name}</div>
+                    <div>
+                      {item.email_verified_at != null && 'true'}{' '}
+                      {item.email_verified_at == null && 'false'}
+                    </div>
+                    <div>{item.email}</div>
+                    <div>{item.roles ? item.roles.name : 'not-assigned'}</div>
+                    <div>{item.domain}</div>
+                    <div>
+                      <FormCheck
+                        type="switch"
+                        disabled
+                        checked={item.is_active === 1 ? true : false}
+                        label=""
+                        onClick={() => {
+                          console.log(item.id);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <PermissionGate permission={'users.changePassword'}>
                         <Button
                           variant="secondary"
                           size="sm"
@@ -374,9 +405,9 @@ function ManageAdmin() {
                           Change Password
                         </Button>
                       </PermissionGate>
-                    </td>
-                    <td>
-                      <PermissionGate permission={"users.changeRole"}>
+                    </div>
+                    <div>
+                      <PermissionGate permission={'users.changeRole'}>
                         <Button
                           variant="secondary"
                           size="sm"
@@ -388,58 +419,25 @@ function ManageAdmin() {
                           Change Role
                         </Button>
                       </PermissionGate>
-                    </td>
-                    <td>
-                      <PermissionGate permission={"users.statusChange"}>
+                    </div>
+                    <div>
+                      <PermissionGate permission={'users.statusChange'}>
                         <Button
-                          variant={"primary"}
+                          variant={'primary'}
                           size="sm"
                           onClick={() => setModalStateApproval(item.id)}
                         >
-                          {item.is_active === 1
-                            ? "Deactivate User"
-                            : "Active User"}
+                          {item.is_active === 1 ? 'Deactivate User' : 'Active User'}
                         </Button>
                       </PermissionGate>
-                    </td>
-                  </>
-                </tr>
-              );
-            })}
-        </tbody>
-      </table>
-      <nav>
-        <ul className="pagination">
-          {data &&
-            data.links.map((link, index) => {
-              return (
-                <li
-                  key={index + 1}
-                  className={link.active ? "page-item active" : "page-item"}
-                  onClick={() => {
-                    if (link.url) {
-                      nextPage(link.url);
-                    }
-                  }}
-                >
-                  <button
-                    className={
-                      link.url == null ? "disabled page-link" : "page-link"
-                    }
-                    href="#"
-                    disabled={link.url == null}
-                  >
-                    {link.label.includes("Previous")
-                      ? "Previous"
-                      : link.label.includes("Next")
-                      ? "Next"
-                      : link.label}
-                  </button>
-                </li>
-              );
-            })}
-        </ul>
-      </nav>
+                    </div>
+                  </div>
+                );
+              })}
+              </InfiniteScroll>
+            </Container>
+          </div>
+        </div>
       <Modal show={modalStateChangeRole}>
         {
           <div className="">
