@@ -99,3 +99,7 @@ table {
 	justify-content: space-between;
 	gap: 8px;
   }
+
+  .spacer {
+	padding-bottom: 40px;
+  }

@@ -431,6 +431,7 @@ function ManageAdmin() {
               })}
               </InfiniteScroll>
           </div>
+          <div className="spacer"></div>
         </div>
       <Modal show={modalStateChangeRole}>
         {
