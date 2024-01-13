@@ -26,6 +26,7 @@ import { ReactGrid, Column, Row } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import InfiniteScroll from 'react-infinite-scroller';
 import axios from 'axios'; // Import Axios
+import Dropdown from "react-bootstrap/Dropdown";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()
@@ -336,22 +337,19 @@ function ManageAdmin() {
       
         <div className="mt-3">
           <div className="table-header">
-            <div>#</div>
-            <div>ID</div>
-            <div>Ava.</div>
+            <div className="column-number">#</div>
+            <div className="column-id">ID</div>
+            <div>Avatar</div>
             <div>Name</div>
             <div>Verified</div>
             <div>Email</div>
             <div>Role</div>
             <div>Domain</div>
             <div>Status</div>
-            <div></div>
-            <div></div>
-            <div></div>
+            <div>Actions</div>
           </div>
 
           <div className="table-body">
-          <Container>
             <InfiniteScroll
               pageStart={1}
               loadMore={loadMore}
@@ -367,24 +365,24 @@ function ManageAdmin() {
 
                 return (
                   <div key={index + 1} className="table-row">
-                    <div className="table-row-id">{index + 1}</div>
-                    <div className="table-row-id">{item.id}</div>
-                    <div>
+                    <div className="column-number">{index + 1}</div>
+                    <div className="column-id">{item.id}</div>
+                    <div className="column-avatar">
                       <img
                         className="max-height-profile-pic-manage-users"
                         src={profilePicUrl || defaultImg}
                         alt={`Profile of ${item.name}`}
                       />
                     </div>
-                    <div>{item.name}</div>
-                    <div>
+                    <div className="column-name">{item.name}</div>
+                    <div className="column-verified">
                       {item.email_verified_at != null && 'true'}{' '}
                       {item.email_verified_at == null && 'false'}
                     </div>
-                    <div>{item.email}</div>
-                    <div>{item.roles ? item.roles.name : 'not-assigned'}</div>
-                    <div>{item.domain}</div>
-                    <div>
+                    <div className="column-email">{item.email}</div>
+                    <div className="column-role">{item.roles ? item.roles : 'not-assigned'}</div>
+                    <div className="column-domain">{item.domain}</div>
+                    <div className="column-status">
                       <FormCheck
                         type="switch"
                         disabled
@@ -395,47 +393,43 @@ function ManageAdmin() {
                         }}
                       />
                     </div>
-                    <div>
-                      <PermissionGate permission={'users.changePassword'}>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setModalStatePassword(item.id)}
-                        >
-                          Change Password
-                        </Button>
-                      </PermissionGate>
-                    </div>
-                    <div>
-                      <PermissionGate permission={'users.changeRole'}>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
+                    <div className="column-actions">
+                    <Dropdown>
+                      <Dropdown.Toggle variant="success" id="dropdown-basic">
+                        Actions
+                      </Dropdown.Toggle>
+
+                      <Dropdown.Menu>
+                        <PermissionGate permission={'users.changePassword'}>
+                          <Dropdown.Item
+                            onClick={() => {
+                              setModalStatePassword(item.id);
+                            }}
+                          >
+                            Change Password
+                          </Dropdown.Item>
+                        </PermissionGate>
+                        <PermissionGate permission={'users.changeRole'}>
+                          <Dropdown.Item onClick={() => {
                             setModalStateChangeRole(true);
                             setChangeRoleUserId(item.id);
-                          }}
-                        >
-                          Change Role
-                        </Button>
-                      </PermissionGate>
-                    </div>
-                    <div>
-                      <PermissionGate permission={'users.statusChange'}>
-                        <Button
-                          variant={'primary'}
-                          size="sm"
-                          onClick={() => setModalStateApproval(item.id)}
-                        >
-                          {item.is_active === 1 ? 'Deactivate User' : 'Active User'}
-                        </Button>
-                      </PermissionGate>
+                          }}>
+                            Change Role
+                          </Dropdown.Item>
+                        </PermissionGate>
+                        <PermissionGate permission={'users.statusChange'}>
+                          <Dropdown.Item onClick={() => {
+                            setModalStateApproval(item.id);
+                          }}>{item.is_active === 1 ? 'Deactivate User' : 'Active User'}
+                          </Dropdown.Item>
+                        </PermissionGate>
+                      </Dropdown.Menu>
+                    </Dropdown>
                     </div>
                   </div>
                 );
               })}
               </InfiniteScroll>
-            </Container>
           </div>
         </div>
       <Modal show={modalStateChangeRole}>

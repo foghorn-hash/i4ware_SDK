@@ -33,27 +33,42 @@ table {
   }
   
   /* Styles for the table header */
-  .table-header {
+  .table-header, .table-row {
 	display: grid;
-	grid-template-columns: repeat(12, 1fr);
-	font-weight: bold;
-	border-bottom: 1px solid #ccc;
-	padding: 8px;
-  }
-  
-  /* Styles for each table row */
-  .table-row {
-	display: grid;
-	grid-template-columns: repeat(12, 1fr);
+	grid-template-columns: 50px 50px 80px 120px 60px 220px 1fr 1fr 60px 100px; /* adjust as needed */
 	border-bottom: 1px solid #eee;
 	padding: 8px;
+	line-height: 30px; /* height of the div */;
   }
 
-   /* Styles for each table row */
-   .table-row-id {
-	display: block;
-	padding: 0;
-	width: 20px;
+  .column-number,
+  .column-id,
+  .column-avatar,
+  .column-name,
+  .column-verified {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+  }
+
+  .column-email {
+	display: flex;
+	align-items: center;
+  }
+
+  .column-domain {
+	display: flex;
+	align-items: center;
+  }
+
+  .column-status {
+	display: flex;
+	align-items: center;
+  }
+
+  .column-actions {
+	display: flex;
+	align-items: center;
   }
   
   /* Style for the profile picture */
