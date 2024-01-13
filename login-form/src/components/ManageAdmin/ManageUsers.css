@@ -43,12 +43,26 @@ table {
 
   .column-number,
   .column-id,
-  .column-avatar,
-  .column-name,
   .column-verified {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+  }
+
+  .column-name {
+	display: flex;
+	align-items: center !important;
+  }
+
+  .column-role {
+	display: flex;
+	align-items: center !important;
+  }
+
+  .column-avatar {
+	display: flex !important;
+	justify-content: center !important;
+	align-items: center !important;
   }
 
   .column-email {

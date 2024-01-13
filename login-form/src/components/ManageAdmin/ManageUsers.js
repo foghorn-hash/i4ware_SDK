@@ -339,7 +339,7 @@ function ManageAdmin() {
           <div className="table-header">
             <div className="column-number">#</div>
             <div className="column-id">ID</div>
-            <div>Avatar</div>
+            <div className="column-avatar">Avatar</div>
             <div>Name</div>
             <div>Verified</div>
             <div>Email</div>
