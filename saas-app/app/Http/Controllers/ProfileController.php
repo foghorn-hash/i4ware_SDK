@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Domain;
 use App\Models\Permission;
+use App\Models\UserVerify;
 use Auth;
 use Validator;
 use Illuminate\Support\Facades\Hash;
@@ -98,6 +99,11 @@ class ProfileController extends Controller
 
         $user->email_verified_at = date('Y-m-d H:i:s');
         $user->save();
+
+        UserVerify::where('user_id', $id)->update([
+            'verified' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
 
         return response()->json([
             'success' => true
