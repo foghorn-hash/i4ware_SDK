@@ -89,6 +89,21 @@ class ProfileController extends Controller
             'success' => true
         ], 200);
     }
+
+    function usersVerify(Request $request){
+        
+        $id = $request->id;
+
+        $user = User::where('id', $id)->first();
+
+        $user->email_verified_at = date('Y-m-d H:i:s');
+        $user->save();
+
+        return response()->json([
+            'success' => true
+        ], 200);
+    }
+
     function usersChangePassword(Request $request){
         
         $id = $request->id;

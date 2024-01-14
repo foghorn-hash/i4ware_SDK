@@ -35,18 +35,22 @@ table {
   /* Styles for the table header */
   .table-header, .table-row {
 	display: grid;
-	grid-template-columns: 50px 50px 80px 120px 60px 220px 1fr 1fr 60px 100px; /* adjust as needed */
+	grid-template-columns: 50px 50px 80px 160px 80px 400px 1fr 1fr 60px 100px; /* adjust as needed */
 	border-bottom: 1px solid #eee;
 	padding: 8px;
 	line-height: 30px; /* height of the div */;
   }
 
   .column-number,
-  .column-id,
-  .column-verified {
+  .column-id {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+  }
+
+  .column-verified {
+	display: flex;
+	align-items: center !important;
   }
 
   .column-name {

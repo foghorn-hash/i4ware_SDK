@@ -39,6 +39,7 @@ Route::group(['prefix' => 'manage', 'middleware' => 'CORS'], function ($router) 
 
 	
 	Route::post('/users/change-status', [ProfileController::class, 'usersChangeStatus'])->name('manage.users-change-status');
+	Route::post('/users/verify', [ProfileController::class, 'usersVerify'])->name('manage.users-verify');
 	Route::post('/users/change-password', [ProfileController::class, 'usersChangePassword'])->name('manage.users-change-password');
 	Route::post('/users/add-user', [ProfileController::class, 'usersAdd'])->name('manage.users-add');
 	Route::get('/users', [ProfileController::class, 'users'])->name('manage.users');

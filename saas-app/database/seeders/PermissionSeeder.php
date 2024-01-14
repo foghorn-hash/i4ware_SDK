@@ -35,6 +35,7 @@ class PermissionSeeder extends Seeder
             "users.changePassword",
             "users.changeRole",
             "users.addUser",
+            "users.verifyUser",
             "settings.manage",
             "roles.view",
             "roles.edit",

@@ -9,6 +9,7 @@ import Modal from "./../Modal/Modal.js";
 import ModalApproval from "./../ModalApproval/ModalApproval.js";
 import ModalActivate from "./../ModalActivate/ModalActivate.js";
 import ModalPasswordChange from "./../ModalPasswordChange/ModalPasswordChange.js";
+import ModalVerify from "./../ModalVerify/ModalVerify.js";
 import Spinner from "react-bootstrap/Spinner";
 import isEmpty from "lodash/isEmpty";
 import { Formik, Field, Form } from "formik";
@@ -48,6 +49,7 @@ function ManageAdmin() {
   const [modalStateApproval, setModalStateApproval] = useState(null);
   const [modalStateActivate, setModalStateActivate] = useState(false);
   const [modalStatePassword, setModalStatePassword] = useState(null);
+  const [modalStateVerfiy, setModalStateVerify] = useState(null);
   const [modalStateChangeRole, setModalStateChangeRole] = useState(false);
   const [changeRoleUserId, setChangeRoleUserId] = useState(false);
   const { authState, authActions } = React.useContext(AuthContext);
@@ -139,6 +141,21 @@ function ManageAdmin() {
       })
       .then((res) => {
         setModalStateApproval(null);
+        request()
+          .get("/api/manage/users")
+          .then((res) => {
+            setUsers(res.data.data);
+          });
+      });
+  };
+
+  const userVerifyHandler = () => {
+    request()
+      .post("/api/manage/users/verify", {
+        id: modalStateVerfiy,
+      })
+      .then((res) => {
+        setModalStateVerify(null);
         request()
           .get("/api/manage/users")
           .then((res) => {
@@ -296,6 +313,25 @@ function ManageAdmin() {
           </div>
         }
       </ModalApproval>
+      <ModalVerify show={modalStateVerfiy !== null}>
+        {
+          <div>
+            <h1>Are you sure?</h1>
+            <div>
+              Are you sure about that you want to verify this user?
+            </div>
+            <div className="spacer"></div>
+            <div>
+              <div className="float-left">
+                <Button onClick={userVerifyHandler}>Yes</Button>
+              </div>
+              <div className="float-right">
+                <Button onClick={() => setModalStateVerify(null)}>No</Button>
+              </div>
+            </div>
+          </div>
+        }
+      </ModalVerify>
       <ModalActivate show={modalStateActivate}>
         {
           <div>
@@ -421,6 +457,12 @@ function ManageAdmin() {
                           <Dropdown.Item onClick={() => {
                             setModalStateApproval(item.id);
                           }}>{item.is_active === 1 ? 'Deactivate User' : 'Active User'}
+                          </Dropdown.Item>
+                        </PermissionGate>
+                        <PermissionGate permission={'users.verifyUser'}>
+                          <Dropdown.Item onClick={() => {
+                            setModalStateVerify(item.id);
+                          }}>Verify User
                           </Dropdown.Item>
                         </PermissionGate>
                       </Dropdown.Menu>
