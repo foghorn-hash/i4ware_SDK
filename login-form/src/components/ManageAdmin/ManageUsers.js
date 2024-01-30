@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
-import { API_BASE_URL, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
+import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import { AuthContext } from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import Button from "react-bootstrap/Button";
@@ -28,19 +28,109 @@ import "@silevis/reactgrid/styles.css";
 import InfiniteScroll from 'react-infinite-scroller';
 import axios from 'axios'; // Import Axios
 import Dropdown from "react-bootstrap/Dropdown";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    areYouSure: "Are you sure?",
+    wantToChangeUserStatus: "Are you sure about that you want to change this user status?",
+    wantToVerifyUser: "Are you sure about that you want to verify this user?",
+    wantToActivateUser: "Are you sure about that you want to activate this user?",
+    yes: "Yes",
+    no: "No",
+    close: "Close",
+    actions: "Actions",
+    changePassword: "Change Password",
+    changeRole: "Change Role",
+    verifyUser: "Verify User",
+    deactivateUser: "Deactivate User",
+    activateUser: "Activate User",
+    submit: "Submit",
+    addUser: "Add",
+    fullName: "Fullname",
+    gender: "Gender",
+    male: "Male",
+    female: "Female",
+    email: "Email",
+    role: "Role",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    columnName: "Name",
+    columnVerified: "Verified",
+    columnDomain: "Domain",
+    columnStatus: "Status",
+    columnActions: "Actions",
+    nameRequired: "Name is required",
+    invalidEmail: "Invalid email",
+    emailRequired: "Email is required",
+    passwordMin: "Password must be at least 8 characters",
+    passwordRequired: "Password is required",
+    passwordsMustMatch: "Passwords must match",
+    confirmPasswordRequired: "Confirm password is required",
+    notAssigned: "not-assigned",
+  },
+  fi: {
+    areYouSure: "Oletko varma?",
+    wantToChangeUserStatus: "Haluatko varmasti muuttaa tämän käyttäjän tilaa?",
+    wantToVerifyUser: "Haluatko varmasti vahvistaa tämän käyttäjän?",
+    wantToActivateUser: "Haluatko varmasti aktivoida tämän käyttäjän?",
+    yes: "Kyllä",
+    no: "Ei",
+    close: "Sulje",
+    actions: "Toiminnot",
+    changePassword: "Vaihda salasana",
+    changeRole: "Vaihda roolia",
+    verifyUser: "Vahvista käyttäjä",
+    deactivateUser: "Poista käyttäjä käytöstä",
+    activateUser: "Aktivoi käyttäjä",
+    submit: "Lähetä",
+    addUser: "Lisää",
+    fullName: "Koko nimi",
+    gender: "Sukupuoli",
+    male: "Mies",
+    female: "Nainen",
+    email: "Sähköposti",
+    role: "Rooli",
+    password: "Salasana",
+    confirmPassword: "Vahvista salasana",
+    columnName: "Nimi",
+    columnVerified: "Vahvistettu",
+    columnDomain: "Verkkotunnus",
+    columnStatus: "Tila",
+    columnActions: "Toiminnot",
+    nameRequired: "Nimi vaaditaan",
+    invalidEmail: "Sähköpostiosoite on virheellinen",
+    emailRequired: "Sähköposti vaaditaan",
+    passwordMin: "Salasanan on oltava vähintään 8 merkkiä",
+    passwordRequired: "Salasana vaaditaan",
+    passwordsMustMatch: "Salasanojen on täsmättävä",
+    confirmPasswordRequired: "Vahvista salasana vaaditaan",
+    notAssigned: "ei osoitettu",
+  }
+});
+
+var query = window.location.search.substring(1);
+var urlParams = new URLSearchParams(query);
+var localization = urlParams.get('lang');
+
+if (localization===null) {
+  strings.setLanguage(API_DEFAULT_LANGUAGE);
+} else {
+  strings.setLanguage(localization);
+}
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()
-    .required('Name is required'),
+    .required(strings.nameRequired),
   email: Yup.string()
-    .email('Invalid email')
-    .required('Email is required'),
+    .email(strings.invalidEmail)
+    .required(strings.emailRequired),
   password: Yup.string()
-    .min(8, 'Password must be at least 8 characters')
-    .required('Password is required'),
+    .min(8, strings.passwordMin)
+    .required(strings.passwordRequired),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], 'Passwords must match')
-    .required('Confirm password is required')
+    .oneOf([Yup.ref('password'), null], strings.passwordsMustMatch)
+    .required(strings.confirmPassword)
 });
 
 function ManageAdmin() {
@@ -59,8 +149,8 @@ function ManageAdmin() {
   const [imageSrc, setImageSrc] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false); 
-
+  const [isLoading, setIsLoading] = useState(false);
+  
   useEffect(() => {
   
     const fetchRolesForAdd = async () => {
@@ -190,7 +280,7 @@ function ManageAdmin() {
       <Modal show={modalState}>
         {
           <div>
-            <h1>Add User</h1>
+            <h1>{strings.addUser}</h1>
             <Formik
               initialValues={{
                 name: "",
@@ -220,35 +310,35 @@ function ManageAdmin() {
                <form className="row">
                <div className="col-12">
                  <TextInput
-                   placeholder="Fullname"
-                   label={"Fullname"}
+                   placeholder={strings.fullName}
+                   label={strings.fullName}
                    name="name"
                  />
                </div>
                <div className="col-12 mt-2">
                 <label for="validationCustom03" className={"form-label"}>
-                   {"Gender"}
+                   {strings.gender}
                 </label>
                 <br />
                 <Field className="select-role" as="select" name="gender">
-                    <option value="male">Male</option>
-                  <option value="female">Female</option>
+                    <option value="male">{strings.male}</option>
+                  <option value="female">{strings.female}</option>
                 </Field>
               </div>
                <div className="col-12 mt-2">
                  <TextInput
-                   label={"Email "}
+                   label={strings.email}
                    placeholder="Email"
                    name="email"
                  />
                </div>
                <div className="col-12 mt-2">
                 <label for="validationCustom03" className={"form-label"}>
-                   {"Role"}
+                   {strings.role}
                 </label>
                 <br />
                 <Field className="select-role" as="select" name="role">
-                      <option key="0" value="NULL">not-assigned</option>
+                      <option key="0" value="NULL">{strings.notAssigned}</option>
                   {rolesforusers.map((item, index) => {
                     return (
                       <option key={item.id} value={item.id}>{item.name}</option>
@@ -258,7 +348,7 @@ function ManageAdmin() {
               </div>
                <div className="form-group  mt-2 text-left">
                  <label for="validationCustom03" className={"form-label"}>
-                   {"Password"}
+                   {strings.password}
                  </label>
                  <PassWordInput
                    label={"Password"}
@@ -269,7 +359,7 @@ function ManageAdmin() {
                </div>
                <div className="form-group  mt-2 text-left">
                  <label for="validationCustom03" className={"form-label"}>
-                   {"Confirm Password"}
+                   {strings.confirmPassword}
                  </label>
                  <PassWordInput
                    label={"Confirm Password"}
@@ -281,10 +371,10 @@ function ManageAdmin() {
                <div className="spacer"></div>
             <div>
               <div className="float-left">
-                <Button onClick={submitForm} >Add</Button>
+                <Button onClick={submitForm} >{strings.addUser}</Button>
               </div>
               <div className="float-right">
-                <Button onClick={() => setModalState(false)} >Close</Button>
+                <Button onClick={() => setModalState(false)} >{strings.close}</Button>
               </div>
             </div>
              </form>
@@ -297,17 +387,17 @@ function ManageAdmin() {
       <ModalApproval show={modalStateApproval !== null}>
         {
           <div>
-            <h1>Are you sure?</h1>
+            <h1>{strings.areYouSure}</h1>
             <div>
-              Are you sure about that you want to change this user status?
+              {strings.wantToChangeUserStatus}
             </div>
             <div className="spacer"></div>
             <div>
               <div className="float-left">
-                <Button onClick={userStatusHandler}>Yes</Button>
+                <Button onClick={userStatusHandler}>{strings.yes}</Button>
               </div>
               <div className="float-right">
-                <Button onClick={() => setModalStateApproval(null)}>No</Button>
+                <Button onClick={() => setModalStateApproval(null)}>{strings.no}</Button>
               </div>
             </div>
           </div>
@@ -316,17 +406,17 @@ function ManageAdmin() {
       <ModalVerify show={modalStateVerfiy !== null}>
         {
           <div>
-            <h1>Are you sure?</h1>
+            <h1>{strings.areYouSure}</h1>
             <div>
-              Are you sure about that you want to verify this user?
+              {strings.wantToVerifyUser}
             </div>
             <div className="spacer"></div>
             <div>
               <div className="float-left">
-                <Button onClick={userVerifyHandler}>Yes</Button>
+                <Button onClick={userVerifyHandler}>{strings.yes}</Button>
               </div>
               <div className="float-right">
-                <Button onClick={() => setModalStateVerify(null)}>No</Button>
+                <Button onClick={() => setModalStateVerify(null)}>{strings.no}</Button>
               </div>
             </div>
           </div>
@@ -335,15 +425,15 @@ function ManageAdmin() {
       <ModalActivate show={modalStateActivate}>
         {
           <div>
-            <h1>Are you sure?</h1>
-            <div>Are you sure about that you want to activate this user?</div>
+            <h1>{strings.areYouSure}</h1>
+            <div>{strings.wantToActivateUser}</div>
             <div className="spacer"></div>
             <div>
               <div className="float-left">
-                <Button>Yes</Button>
+                <Button>{strings.yes}</Button>
               </div>
               <div className="float-right">
-                <Button onClick={() => setModalStateActivate(false)}>No</Button>
+                <Button onClick={() => setModalStateActivate(false)}>{strings.no}</Button>
               </div>
             </div>
           </div>
@@ -365,7 +455,7 @@ function ManageAdmin() {
               onClick={() => setModalState(true)}
               disabled={!rolesforusers || rolesforusers.length === 0}
             >
-              Add User
+              {strings.addUser}
             </Button>
           </div>
         </PermissionGate>
@@ -375,14 +465,14 @@ function ManageAdmin() {
           <div className="table-header">
             <div className="column-number">#</div>
             <div className="column-id">ID</div>
-            <div className="column-avatar">Avatar</div>
-            <div>Name</div>
-            <div>Verified</div>
-            <div>Email</div>
-            <div>Role</div>
-            <div>Domain</div>
-            <div>Status</div>
-            <div>Actions</div>
+            <div className="column-avatar">avatar</div>
+            <div>{strings.columnName}</div>
+            <div>{strings.columnVerified}</div>
+            <div>{strings.email}</div>
+            <div>{strings.role}</div>
+            <div>{strings.columnDomain}</div>
+            <div>{strings.columnStatus}</div>
+            <div>{strings.columnActions}</div>
           </div>
 
           <div className="table-body">
@@ -432,7 +522,7 @@ function ManageAdmin() {
                     <div className="column-actions">
                     <Dropdown>
                       <Dropdown.Toggle variant="success" id="dropdown-basic">
-                        Actions
+                        {strings.actions}
                       </Dropdown.Toggle>
 
                       <Dropdown.Menu>
@@ -442,7 +532,7 @@ function ManageAdmin() {
                               setModalStatePassword(item.id);
                             }}
                           >
-                            Change Password
+                            {strings.changePassword}
                           </Dropdown.Item>
                         </PermissionGate>
                         <PermissionGate permission={'users.changeRole'}>
@@ -450,19 +540,19 @@ function ManageAdmin() {
                             setModalStateChangeRole(true);
                             setChangeRoleUserId(item.id);
                           }}>
-                            Change Role
+                            {strings.changeRole}
                           </Dropdown.Item>
                         </PermissionGate>
                         <PermissionGate permission={'users.statusChange'}>
                           <Dropdown.Item onClick={() => {
                             setModalStateApproval(item.id);
-                          }}>{item.is_active === 1 ? 'Deactivate User' : 'Active User'}
+                          }}>{item.is_active === 1 ? strings.deactivateUser : strings.activateUser}
                           </Dropdown.Item>
                         </PermissionGate>
                         <PermissionGate permission={'users.verifyUser'}>
                           <Dropdown.Item onClick={() => {
                             setModalStateVerify(item.id);
-                          }}>Verify User
+                          }}>{strings.verifyUser}
                           </Dropdown.Item>
                         </PermissionGate>
                       </Dropdown.Menu>
@@ -478,7 +568,7 @@ function ManageAdmin() {
       <Modal show={modalStateChangeRole}>
         {
           <div className="">
-            <h1>Change Role</h1>
+            <h1>{strings.changeRole}</h1>
             <Formik
               initialValues={{
                 roleId: "",
@@ -497,7 +587,7 @@ function ManageAdmin() {
                         setFieldValue("roleId", e.target.value);
                       }}
                     >
-                      <option key="0" value="NULL">not-assigned</option>
+                      <option key="0" value="NULL">{strings.notAssigned}</option>
                       {roles.map((item) => {
                         return <option value={item.id}>{item.name}</option>;
                       })}
@@ -507,14 +597,14 @@ function ManageAdmin() {
                   <div className="spacer"></div>
                   <div>
                     <div className="float-left">
-                      <Button type="submit">Submit</Button>
+                      <Button type="submit">{strings.submit}</Button>
                     </div>
                     <div className="float-right">
                       <Button
                         type="button"
                         onClick={() => setModalStateChangeRole(false)}
                       >
-                        Close
+                        {strings.close}
                       </Button>
                     </div>
                   </div>

@@ -1,12 +1,50 @@
 import React, {useState} from "react";
 import {useEffect} from "react";
+import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import {AuthContext} from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import {Formik, Field} from "formik";
 import * as Yup from 'yup';
 import { withRouter } from "react-router-dom";
 import TextInput from "./../common/TextInput";
+import LocalizedStrings from 'react-localization';
 
+let strings = new LocalizedStrings({
+  en: {
+    manageDomain: "Manage Domain",
+    technicalContactEmail: "Technical Contact Email",
+    billingContactEmail: "Billing Contact Email",
+    mobileNumber: "Mobile Number",
+    companyName: "Company Name",
+    addressLine1: "Address Line 1",
+    addressLine2: "Address Line 2",
+    city: "City",
+    country: "Country",
+    zip: "Zip",
+    vatId: "VAT-ID",
+    save: "Save",
+    invalidEmail: "Invalid email",
+    required: "Required",
+    mobileNumberStringError: "Mobile number should be in string with Country Code"
+  },
+  fi: {
+    manageDomain: "Hallinnoi Domainia",
+    technicalContactEmail: "Tekninen Yhteyshenkilön Sähköposti",
+    billingContactEmail: "Laskutuksen Yhteyshenkilön Sähköposti",
+    mobileNumber: "Matkapuhelinnumero",
+    companyName: "Yrityksen Nimi",
+    addressLine1: "Osoite 1",
+    addressLine2: "Osoite 2",
+    city: "Kaupunki",
+    country: "Maa",
+    zip: "Postinumero",
+    vatId: "ALV-tunnus",
+    save: "Tallenna",
+    invalidEmail: "Virheellinen sähköpostiosoite",
+    required: "Vaadittu",
+    mobileNumberStringError: "Matkapuhelinnumeron tulee olla merkkijonona maakoodin kanssa"
+  }
+});
 
 const SignupSchema = Yup.object().shape({
   technical_contact_email: Yup.string().email('Invalid email').required('Required'),
@@ -18,6 +56,16 @@ const SignupSchema = Yup.object().shape({
   country: Yup.string().required('Required'),
   zip: Yup.string().required('Required'),
 });
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
 function ManageDomainForm(props) {
   const {authState, authActions} = React.useContext(AuthContext);
@@ -52,7 +100,7 @@ function ManageDomainForm(props) {
 
   return (
     <div style={{marginTop: "2em"}}>
-      <h3 className="my-2">Manage Domain</h3>
+      <h3 className="my-2">{strings.manageDomain}</h3>
       <div className="my-2">
         <Formik
           initialValues={props.location.state && props.location.state.from === "edit"?{
@@ -80,45 +128,45 @@ function ManageDomainForm(props) {
             <form class="row g-3">
               <div class="col-12">
                 <TextInput
-                  label={"Technical Contact Email"}
+                  label={strings.technicalContactEmail}
                   name="technical_contact_email"
                 />
               </div>
               <div class="col-md-4">
                 <TextInput
-                  label={"Billing Contact Email"}
+                  label={strings.billingContactEmail}
                   name="billing_contact_email"
                 />
               </div>
               <div class="col-md-4">
-                <TextInput type={'tel'}  label={"Mobile Number"} name="mobile_no" />
+                <TextInput type={'tel'}  label={strings.mobileNumber} name="mobile_no" />
               </div>
 			  <div class="col-md-4">
-                <TextInput label={"VAT-ID"} name="vat_id" />
+                <TextInput label={strings.vatId} name="vat_id" />
               </div>
               <div class="col-md-12">
-                <TextInput label={"Company Name"} name="company_name" />
+                <TextInput label={strings.companyName} name="company_name" />
               </div>
               <div class="col-12">
-                <TextInput label={"Address Line 1"} name="address_line_1" />
+                <TextInput label={strings.addressLine1} name="address_line_1" />
               </div>
               <div class="col-12">
-                <TextInput label={"Address Line 2"} name="address_line_2" />
+                <TextInput label={strings.addressLine2} name="address_line_2" />
               </div>
               <div class="col-4">
-                <TextInput label={"City"} name="city" />
+                <TextInput label={strings.city} name="city" />
               </div>
               <div class="col-4">
-                <TextInput label={"Country"} name="country" />
+                <TextInput label={strings.country} name="country" />
               </div>
               <div class="col-4">
-                <TextInput label={"Zip"} name="zip" />
+                <TextInput label={strings.zip} name="zip" />
               </div>
               <div class="col-12">
                 <button type="button" onClick={()=>{
                   submitForm();
                 }} class="btn btn-primary">
-                  Save
+                  {strings.save}
                 </button>
               </div>
             </form>

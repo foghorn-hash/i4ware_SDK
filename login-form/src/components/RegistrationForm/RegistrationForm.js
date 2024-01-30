@@ -14,7 +14,7 @@ import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
   en:{
-    email:"Email address",
+    email:"Email",
     enteremail:"Enter email",
     newershare:"We'll never share your email with anyone else.",
     password:"Password",
@@ -28,9 +28,27 @@ let strings = new LocalizedStrings({
     gender:"Gender",
     name:"Name",
     success_registeration:"Registration successful and verification email has been sent.",
+    selectPrivacyPolicy: "Please Select Privacy Policy.",
+    neverShareName: "We'll never share your name with anyone else.",
+    neverShareGender: "We'll never share your gender with anyone else.",
+    domainInUse: "You need to know right domain that is in use.",
+    neverShareDomain: "We'll never share your domain with anyone else.",
+    passwordStronglyCrypted: "Password is strongly encrypted and is secure in our database.",
+    privacyPolicy: "Privacy Policy",
+    dataProcessingAgreement: "Data Processing Agreement",
+    agreedOn: "Agreed on",
+    and: "and",
+    required: "Required",
+    register: "Register",
+    loginHere: "Login here",
+    tooLong: "Too Long!",
+    tooShort: "Too Short!",
+    invalidEmail: "Invalid email",
+    invalidDomain: "Domain is invalid",
+    passwordsDontMatch: "Password and Confirm password should be same."
   },
   fi: {
-    email:"Sähköpostiosoite",
+    email:"Sähköposti",
     enteremail:"Syötä sähköpostiosoite",
     newershare:"Enme koskaan jaa sähköpostiosoitettasi muille.",
     password:"Salasana",
@@ -44,28 +62,56 @@ let strings = new LocalizedStrings({
     gender:"Sukupuoli",
     name:"Nimi",
     success_in_registeration:"Rekisteräinti onnistui ja vahvistus sähköposti on lähetetty.",
+    selectPrivacyPolicy: "Valitse tietosuojakäytäntö.",
+    neverShareName: "Emme koskaan jaa nimeäsi kenenkään muun kanssa.",
+    neverShareGender: "Emme koskaan jaa sukupuoltasi kenenkään muun kanssa.",
+    domainInUse: "Sinun on tiedettävä käytössä oleva oikea verkkotunnus.",
+    neverShareDomain: "Emme koskaan jaa verkkotunnustasi kenenkään muun kanssa.",
+    passwordStronglyCrypted: "Salasana on vahvasti salattu ja turvallinen tietokannassamme.",
+    privacyPolicy: "Tietosuojakäytäntö",
+    dataProcessingAgreement: "Tietojenkäsittelysopimus",
+    agreedOn: "Hyväksyt",
+    and: "ja",
+    required: "Vaadittu",
+    register: "Rekisteröidy",
+    loginHere: "Kirjaudu tästä",
+    tooLong: "Liian pitkä!",
+    tooShort: "Liian lyhyt!",
+    invalidEmail: "Virheellinen sähköpostiosoite",
+    invalidDomain: "Verkkotunnus on virheellinen",
+    passwordsDontMatch: "Salasanan ja vahvistetun salasanan tulee olla sama."
   }
  });
 
+ var query = window.location.search.substring(1);
+ var urlParams = new URLSearchParams(query);
+ var localization = urlParams.get('lang');
+
+ if (localization==null) {
+   strings.setLanguage(API_DEFAULT_LANGUAGE);
+ } else {
+   strings.setLanguage(localization);
+ }
+
 const SignupSchema = Yup.object().shape({
-    name: Yup.string().required("Required").max(32, "Too Long!"),
-    gender: Yup.string().required("Required").max(6, "Too Long!"),
+    name: Yup.string().required(strings.required).max(32, strings.tooLong),
+    gender: Yup.string().required(strings.required).max(6, strings.tooLong),
     email: Yup.string()
-      .email("Invalid email")
-      .required("Required")
-      .max(64, "Too Long!"),
+      .email(strings.invalidEmail)
+      .required(strings.required)
+      .max(64, strings.tooLong),
     domain: Yup.string()
-      .matches(/([a-z0-9]+\.)*[a-z0-9]+\.[a-z]+/, "Domain is invalid")
-      .required("Required"),
+      .matches(/([a-z0-9]+\.)*[a-z0-9]+\.[a-z]+/, strings.invalidDomain)
+      .required(strings.required),
     password: Yup.string()
-      .required("Required")
-      .min(8, "Too Short!")
-      .max(32, "Too Long!"),
+      .required(strings.required)
+      .min(8, strings.tooShort)
+      .max(32, strings.tooLong),
     confirmPassword: Yup.string()
-      .required("Required")
+      .required(strings.required)
       .oneOf(
         [Yup.ref("password"), null],
-        "Password and Confirm password should be same."
+        strings.passwordsDontMatch
       ),
 });
 
@@ -79,16 +125,6 @@ function RegistrationForm(props) {
     successMessage: null,
     gender: "male"
   });
-  
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
-
-  if (localization==null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
 
   const [error, setError] = useState(null);
   const [agree, setAgree] = useState(false);
@@ -200,7 +236,7 @@ function RegistrationForm(props) {
               return (
                 <Form className="Register-form"> 
                   {
-                    submitCount > 0 && agree == false && <div className="alert alert-danger" >Please Select Privacy Policy.</div>
+                    submitCount > 0 && agree == false && <div className="alert alert-danger" >{strings.selectPrivacyPolicy}</div>
                   }
                   <div className="form-group text-left">
                     <TextInput
@@ -209,7 +245,7 @@ function RegistrationForm(props) {
                       name="name"
                     />
                     <small id="domainHelp" className="form-text text-muted">
-                      We'll never share your name with anyone else.
+                      {strings.neverShareName}
                     </small>
                   </div>
                   <div className="form-group text-left">
@@ -223,7 +259,7 @@ function RegistrationForm(props) {
                     </Field>
                     <br />
                     <small id="domainHelp" className="form-text text-muted">
-                      We'll never share your gender with anyone else.
+                      {strings.neverShareGender}
                     </small>
                   </div>
                   {!setting.disable_registeration_from_others &&
@@ -257,7 +293,7 @@ function RegistrationForm(props) {
                       name="domain"
                     />
                     <small id="domainHelp" className="form-text text-muted">
-                      You need to know right domain that is in use.
+                      {strings.domainInUse}
                     </small>
                   </div>
                   }
@@ -269,7 +305,7 @@ function RegistrationForm(props) {
                       name="domain"
                     />
                     <small id="domainHelp" className="form-text text-muted">
-                      We'll never share your domain with anyone else.
+                      {strings.neverShareDomain}
                     </small>
                   </div>
                   }
@@ -284,7 +320,7 @@ function RegistrationForm(props) {
                       type="password"
                     />
             <small id="emailHelp" className="form-text text-muted">
-            Password is strongly cypted and is secure in our database.
+            {strings.passwordStronglyCrypted}
             </small>
                   </div>
                   <div className="form-group text-left">
@@ -298,7 +334,7 @@ function RegistrationForm(props) {
                       type="password"
                     />
             <small id="emailHelp" className="form-text text-muted">
-            Password is strongly cypted and is secure in our database.
+            {strings.passwordStronglyCrypted}
             </small>
                   </div>
                   {setting.show_captcha && <div className="mt-2">
@@ -313,9 +349,9 @@ function RegistrationForm(props) {
                       }
                     }} />
                     <label className="form-check-label" for="term">
-                      Agreed on{" "}
-                      <a href="https://www.i4ware.fi/#privacy" target="_blank">Privacy Policy</a>{" "}
-                      and <a href="https://www.i4ware.fi/#data" target="_blank"> Data Processing Agreement </a>
+                      {strings.agreedOn}{" "}
+                      <a href="https://www.i4ware.fi/#privacy" target="_blank">{strings.privacyPolicy}</a>{" "}
+                      {strings.and} <a href="https://www.i4ware.fi/#data" target="_blank"> {strings.dataProcessingAgreement} </a>
                     </label>
                   </div>
 
@@ -324,7 +360,7 @@ function RegistrationForm(props) {
                     className="btn btn-primary mt-3"
                     disabled={setting.show_captcha?!captchaSuccess:false}
                   >
-                    Register
+                    {strings.register}
                   </button>
                 </Form>
               );
@@ -333,7 +369,7 @@ function RegistrationForm(props) {
           <div className="mt-2">
             <span className="account-question">{strings.account} </span>
             <span className="loginText" onClick={() => redirectToLogin()}>
-              Login here
+              {strings.loginHere}
             </span>
           </div>
         </div>

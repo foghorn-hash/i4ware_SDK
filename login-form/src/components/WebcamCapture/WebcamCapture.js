@@ -1,10 +1,26 @@
 import React, { useRef, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
-import { API_BASE_URL, ACCESS_TOKEN_NAME } from '../../constants/apiConstants';
+import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from '../../constants/apiConstants';
 import './WebcamCapture.css';
 import ImageCropper from "./../ImageCropper/ImageCropper";
 import request from "../../utils/Request";
 import Axios from 'axios';
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    capturePhoto: "Capture Photo",
+    upload: "Upload",
+    removeImage: "Remove Image",
+    closeOverlay: "Close",
+  },
+  fi: {
+    capturePhoto: "Ota valokuva",
+    upload: "Lataa",
+    removeImage: "Poista kuva",
+    closeOverlay: "Sulje",
+  }
+});
 
 const WebcamCapture = ({ onClose, loadUserData}) => {
     const webcamRef = useRef(null);
@@ -16,6 +32,16 @@ const WebcamCapture = ({ onClose, loadUserData}) => {
     const profileRef = useRef();
     const [showCropper, setShowCropper] = useState(false);
     const [showMessage, setShowMessage] = useState(null);
+
+    var query = window.location.search.substring(1);
+    var urlParams = new URLSearchParams(query);
+    var localization = urlParams.get('lang');
+
+    if (localization == null) {
+      strings.setLanguage(API_DEFAULT_LANGUAGE);
+    } else {
+      strings.setLanguage(localization);
+    }
 
     const upload = async () => {
         if (!croppedImageFile) return;
@@ -89,7 +115,7 @@ const WebcamCapture = ({ onClose, loadUserData}) => {
         />
         <br />
         <button className="Webcam-capture-button" onClick={capture}>
-          Capture Photo
+          {strings.capturePhoto}
         </button>
         {imageSrc && (
             <ImageCropper
@@ -107,11 +133,11 @@ const WebcamCapture = ({ onClose, loadUserData}) => {
             />
         )}
         {imageSrc && <button className="Webcam-upload-button" onClick={upload}>
-            Upload
+            {strings.upload}
         </button>}
         {imageSrc && <button className="Webcam-remove-button " onClick={()=>{
           setImageSrc(null)
-        }}> Remove Image </button>}
+        }}> {strings.removeImage} </button>}
       </div>
     </div>
   );

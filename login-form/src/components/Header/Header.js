@@ -17,19 +17,43 @@ import PermissionGate from "../../contexts/PermissionGate";
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
- en:{
-   login:"Login",
-   logout:"Logout"
- },
- fi: {
-   login:"Kijaudu",
-   logout:"Kirjaudu ulos",
- }
+  en: {
+    login: "Login",
+    logout: "Logout",
+    myProfile: "My Profile",
+    stlViewer: "3D Viewer",
+    manageUsers: "Manage Users",
+    manageDomains: "Manage Domains",
+    manageRoles: "Manage Roles",
+    settings: "Settings",
+    welcome: "Welcome"
+  },
+  fi: {
+    login: "Kirjaudu sisään",
+    logout: "Kirjaudu ulos",
+    myProfile: "Oma Profiili",
+    stlViewer: "3D Katseluohjelma",
+    manageUsers: "Hallitse Käyttäjiä",
+    manageDomains: "Hallitse Domaineja",
+    manageRoles: "Hallitse Roolit",
+    settings: "Asetukset",
+    welcome: "Tervetuloa"
+  }
 });
 
 function Header(props) {
   const { authState, authActions } = useContext(AuthContext);
   const [lang, setLang] = useState(API_DEFAULT_LANGUAGE);
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization===null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   const capitalize = (s) => {
     if (typeof s !== "string") return "";
@@ -40,16 +64,6 @@ function Header(props) {
   );
   if (props.location.pathname === "/") {
     title = "Welcome";
-  }
-  
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
-
-  if (localization===null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
   }
 
   function renderLogout(localization) {
@@ -145,29 +159,29 @@ function Header(props) {
               navbarScroll
             >
               {authState.isLogged && (
-                <NavLink className="Header-nav-link" to="/my-profile">My Profile</NavLink>
+                <NavLink className="Header-nav-link" to="/my-profile">{strings.myProfile}</NavLink>
               )}
               {authState.isLogged && (
-                <NavLink className="Header-nav-link" to="/stl-viewer">3D Viewer</NavLink>
+                <NavLink className="Header-nav-link" to="/stl-viewer">{strings.stlViewer}</NavLink>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"users.view"}>
-                  <NavLink className="Header-nav-link" to="/manage-users">Manage Users</NavLink>
+                  <NavLink className="Header-nav-link" to="/manage-users">{strings.manageUsers}</NavLink>
                 </PermissionGate>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"domain.view"}>
-                  <NavLink className="Header-nav-link" to="/manage-domains">Manage Domains</NavLink>
+                  <NavLink className="Header-nav-link" to="/manage-domains">{strings.manageDomains}</NavLink>
                 </PermissionGate>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"roles.view"}>
-                  <NavLink className="Header-nav-link" to="/manage-roles">Manage Roles</NavLink>
+                  <NavLink className="Header-nav-link" to="/manage-roles">{strings.manageRoles}</NavLink>
                 </PermissionGate>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"settings.manage"}>
-                  <NavLink className="Header-nav-link" to="/settings">Settings</NavLink>
+                  <NavLink className="Header-nav-link" to="/settings">{strings.settings}</NavLink>
                 </PermissionGate>
               )}
             </Nav>

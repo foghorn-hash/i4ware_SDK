@@ -1,12 +1,34 @@
 import React, {useState} from "react";
 import {useEffect} from "react";
+import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import {AuthContext} from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import {Formik, Field} from "formik";
 import * as Yup from 'yup';
 import { withRouter } from "react-router-dom";
 import TextInput from "../common/TextInput";
+import LocalizedStrings from 'react-localization';
 
+let strings = new LocalizedStrings({
+  en: {
+    addRole: "Add Role",
+    editRole: "Edit Role",
+    roleName: "Role Name",
+    permission: "Permission :",
+    save: "Save",
+    required: "Required",
+    allDomains: "All domains"
+  },
+  fi: {
+    addRole: "Lisää Rooli",
+    editRole: "Muokkaa Roolia",
+    roleName: "Roolin Nimi",
+    permission: "Oikeudet :",
+    save: "Tallenna",
+    required: "Vaadittu",
+    allDomains: "Kaikki domainit"
+  }
+});
 
 const validateSchema = Yup.object().shape({
   name: Yup.string().required('Required'),
@@ -17,6 +39,16 @@ function RoleForm(props) {
   const [permissions, setPermission] = React.useState([]);
   const [editRole, setEditRole] = React.useState(null);
   const [selectPermissions, setSelectPermissions] = React.useState([]);
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   useEffect(()=>{
     // fetch permission
@@ -72,7 +104,7 @@ function RoleForm(props) {
 
   return (
     <div style={{marginTop: "2em"}}>
-      <h3 className="my-2">{editRole?'Edit Role':'Add Role'}</h3>
+      <h3 className="my-2">{editRole?strings.editRole:strings.addRole}</h3>
       <div className="my-2">
         <Formik
           initialValues={{
@@ -93,18 +125,18 @@ function RoleForm(props) {
               <div class="col-12" >
               <div class="col-4">
                 <TextInput
-                  label={"Role Name"}
+                  label={strings.roleName}
                   name="name"
                   value={values.name}
                 />
               </div>
               </div>
               <div class="w-50 col-12 row mt-3">
-                <h5>Permission :</h5>
+                <h5>{strings.permission}</h5>
                 {
                   permissions.map((permission)=>{
                     var domain;
-                    if (permission.domain==null) { domain = "All domains"; } else { domain = permission.domain; }
+                    if (permission.domain==null) { domain = strings.allDomains; } else { domain = permission.domain; }
                     return <div className="col-4" >
                       
                       <div class="form-check">
@@ -128,7 +160,7 @@ function RoleForm(props) {
                 <button type="button" onClick={()=>{
                   submitForm();
                 }} class="btn btn-primary">
-                  Save
+                  {strings.save}
                 </button>
               </div>
             </form>

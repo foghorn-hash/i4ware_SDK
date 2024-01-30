@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import Axios from "axios";
 import Cropper from "./../ImageCropper/ImageCropper";
 import { getCroppedImg } from "./../ImageCropper/cropImage";
-import { API_BASE_URL, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
+import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import request from "../../utils/Request";
 import TextInput from "./../common/TextInput";
 import { AuthContext } from "../../contexts/auth.contexts";
@@ -16,6 +16,42 @@ import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import ImageCropper from "./../ImageCropper/ImageCropper";
 import WebcamCapture from "../../components/WebcamCapture/WebcamCapture";
 import Webcam from 'react-webcam';
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    myDetails: "My Details",
+    uploadImage: "Upload Image",
+    removeImage: "Remove Image",
+    cropImage: "Crop Image",
+    capturePhoto: "Capture Photo",
+    fullname: "Fullname",
+    gender: "Gender",
+    male: "Male",
+    female: "Female",
+    save: "Save",
+    saving: "Saving...",
+    nameRequired: "Name is required",
+    genderRequired: "Gender is required",
+    loading: "Loading...",
+  },
+  fi: {
+    myDetails: "Omat tiedot",
+    uploadImage: "Lataa kuva",
+    removeImage: "Poista kuva",
+    cropImage: "Rajaa kuva",
+    capturePhoto: "Ota valokuva",
+    fullname: "Koko nimi",
+    gender: "Sukupuoli",
+    male: "Mies",
+    female: "Nainen",
+    save: "Tallenna",
+    saving: "Tallennetaan...",
+    nameRequired: "Nimi vaaditaan",
+    genderRequired: "Sukupuoli vaaditaan",
+    loading: "Ladataan...",
+  }
+});
 
 function MyProfile(props) {
   const [data, setData] = useState(null);
@@ -31,6 +67,16 @@ function MyProfile(props) {
   const webcamRef = useRef(null);
   // State for controlling webcam overlay visibility
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   const onCropChange = useCallback((cropTemp) => {
     setCrop(cropTemp);
@@ -72,8 +118,8 @@ function MyProfile(props) {
 
   
   const SignupSchema = Yup.object().shape({
-    name: Yup.string().required("Name is required"),
-    gender: Yup.string().required("Gender is required"),
+    name: Yup.string().required(strings.nameRequired),
+    gender: Yup.string().required(strings.genderRequired),
   });
 
   const handleSubmit = async (values, formProps) => {
@@ -162,7 +208,7 @@ function MyProfile(props) {
   return (
     <div className="mt-2">
         {showMessage && <div className="alert alert-success" >{showMessage}</div>}
-        <h3 className="my-2">My Details</h3>
+        <h3 className="my-2">{strings.myDetails}</h3>
         {!imageSrc && <img className="max-height-profile-pic" src={data.profile_picture_path?(API_BASE_URL + data.profile_picture_path):defaultImage} />}
         <br />
         {imageSrc && (
@@ -182,13 +228,13 @@ function MyProfile(props) {
         )}
         {!imageSrc && <button className="btn btn-info " onClick={()=>{
           profileRef.current.click();
-        }} > Upload Image </button>}
+        }} > {strings.uploadImage} </button>}
         {imageSrc && <button className="btn btn-danger " onClick={()=>{
           setImageSrc(null)
-        }} > Remove Image </button>}
+        }} > {strings.removeImage} </button>}
         {imageSrc && <button className="btn btn-info mx-2 " onClick={()=>{
           setShowCropper(true)
-        }} > Crop Image </button>}
+        }} > {strings.cropImage} </button>}
       <input className="btn btn-primary" style={{display: "none"}} type="file" ref={profileRef} onChange={onFileChange} />
       <br />
       <br />
@@ -199,7 +245,7 @@ function MyProfile(props) {
           loadUserData={loadUserData}
       />
       )}
-      <button className="btn btn-primary" onClick={openWebcam}>Capture Photo</button>
+      <button className="btn btn-primary" onClick={openWebcam}>{strings.capturePhoto}</button>
       <br />
       <br />
       <div className="userForm">
@@ -217,7 +263,7 @@ function MyProfile(props) {
             <Form className="row g-3">
               <div className="col-12">
                 <CustomTextInput
-                  label="Fullname"
+                  label={strings.fullname}
                   name="name"
                   type="text"
                   className="form-control"
@@ -225,12 +271,12 @@ function MyProfile(props) {
               </div>
               <div className="col-12">
                 <label for="gender" className="select-gender-label-myprofile">
-                  Gender
+                  {strings.gender}
                 </label>
                 <br />
                 <Field className="select-gender-myprofile" as="select" name="gender">
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="male">{strings.male}</option>
+                  <option value="female">{strings.female}</option>
                 </Field>
               </div>
               <br />
@@ -241,7 +287,7 @@ function MyProfile(props) {
                   className="btn btn-primary"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting === true ? "Saving..." : "Save"}
+                  {isSubmitting === true ? strings.saving : strings.save}
                 </button>
               </div>
             </Form>

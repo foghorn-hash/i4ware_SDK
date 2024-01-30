@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
 import "./ShowResetPasswordForm.css";
-import {API_BASE_URL} from "../../constants/apiConstants";
+import {API_BASE_URL, API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
 import {AuthContext} from "./../../contexts/auth.contexts";
 import {withRouter} from "react-router-dom";
 import {useContext} from "react";
@@ -11,6 +11,50 @@ import * as Yup from "yup";
 import TextInput, { PassWordInput } from "./../common/TextInput";
 import Captcha from "demos-react-captcha";
 import "./../../captcha.css";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    invalidEmail: "Invalid email",
+    required: "Required",
+    tooLong: "Too Long!",
+    tooShort: "Too Short!",
+    passwordsDontMatch: "Password and Confirm password should be same.",
+    passwordResetSuccessful: "Password reset successful.",
+    neverShareEmail: "We'll never share your email with anyone else.",
+    passwordStronglyEncrypted: "Password is strongly encrypted and is secure in our database.",
+    submit: "Submit",
+    noAccount: "Don't have an account?",
+    register: "Register",
+    orLogin: "or login?",
+    login: "Login"
+  },
+  fi: {
+    invalidEmail: "Virheellinen sähköpostiosoite",
+    required: "Vaadittu",
+    tooLong: "Liian pitkä!",
+    tooShort: "Liian lyhyt!",
+    passwordsDontMatch: "Salasanan ja vahvistetun salasanan tulee olla sama.",
+    passwordResetSuccessful: "Salasanan nollaus onnistui.",
+    neverShareEmail: "Emme koskaan jaa sähköpostiosoitettasi kenenkään muun kanssa.",
+    passwordStronglyEncrypted: "Salasana on vahvasti salattu ja turvallinen tietokannassamme.",
+    submit: "Lähetä",
+    noAccount: "Eikö sinulla ole tiliä?",
+    register: "Rekisteröidy",
+    orLogin: "tai kirjaudu?",
+    login: "Kirjaudu sisään"
+  }
+});
+
+var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
 const SignupSchema = Yup.object().shape({
   email: Yup.string()

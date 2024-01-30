@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import axios from "axios";
 import request from "../../utils/Request";
 import "./ResetPasswordForm.css";
-import {API_BASE_URL} from "../../constants/apiConstants";
+import {API_BASE_URL, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import {AuthContext} from "./../../contexts/auth.contexts";
 import {withRouter} from "react-router-dom";
 import {useContext} from "react";
@@ -11,12 +11,52 @@ import "./../../captcha.css";
 import {Field, Form, Formik} from "formik";
 import * as Yup from "yup";
 import TextInput from "./../common/TextInput";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en:{
+    neverShareEmail: "We'll never share your email with anyone else.",
+    submit: "Submit",
+    noAccount: "Don't have an account?",
+    register: "Register",
+    orLogin: "or login?",
+    login: "Login",
+    email: "Email",
+    passwordResetSuccess: "Password reset successful and verification email has been sent.",
+    invalidEmail: "Invalid email",
+    required: "Required",
+    tooLong: "Too Long!"
+  },
+  fi: {
+    neverShareEmail: "Emme koskaan jaa sähköpostiosoitettasi kenenkään muun kanssa.",
+    submit: "Lähetä",
+    noAccount: "Eikö sinulla ole tiliä?",
+    register: "Rekisteröidy",
+    orLogin: "tai kirjaudu?",
+    login: "Kirjaudu sisään",
+    email: "Sähköposti",
+    passwordResetSuccess: "Salasanan nollaus onnistui ja vahvistussähköposti on lähetetty.",
+    invalidEmail: "Virheellinen sähköpostiosoite",
+    required: "Vaadittu",
+    tooLong: "Liian pitkä!"
+  }
+});
+
+var query = window.location.search.substring(1);
+var urlParams = new URLSearchParams(query);
+var localization = urlParams.get('lang');
+
+if (localization == null) {
+  strings.setLanguage(API_DEFAULT_LANGUAGE);
+} else {
+  strings.setLanguage(localization);
+}
 
 const ResetSchema = Yup.object().shape({
   email: Yup.string()
-    .email("Invalid email")
-    .required("Required")
-    .max(64, "Too Long!"),
+  .email(strings.invalidEmail)
+  .required(strings.required)
+  .max(64, strings.tooLong),
 });
 
 function ResetPasswordForm(props) {
@@ -71,7 +111,7 @@ function ResetPasswordForm(props) {
           setState(prevState => ({
             ...prevState,
             successMessage:
-              "Password reset successful and verification email has been sent.",
+              strings.passwordResetSuccess,
           }));
           setError(null);
         } else {
@@ -127,12 +167,12 @@ function ResetPasswordForm(props) {
                 <Form className="Reset-form">
                   {!setting.disable_registertion_from_others && <div className="form-group text-left">
                     <TextInput
-                      label={"Email"}
+                      label={strings.email}
                       placeholder="john.doe@domain.com"
                       name="email"
                     />
                     <small id="emailHelp" className="form-text text-muted">
-                      We'll never share your email with anyone else.
+                      {strings.neverShareEmail}
                     </small>
                   </div>
                   }
@@ -143,7 +183,7 @@ function ResetPasswordForm(props) {
                       name="email"
                     />
                     <small id="emailHelp" className="form-text text-muted">
-                      We'll never share your email with anyone else.
+                      {strings.neverShareEmail}
                     </small>
                   </div>
                   }
@@ -155,7 +195,7 @@ function ResetPasswordForm(props) {
                     className="btn btn-primary mt-3"
                     disabled={setting.show_captcha?!captchaSuccess:false}
                   >
-                    Submit
+                    {strings.submit}
                   </button>
                 </Form>
               );
@@ -169,13 +209,13 @@ function ResetPasswordForm(props) {
             {state.successMessage}
           </div>
           <div className="registerMessage">
-            <span>Dont have an account? </span>
+            <span>{strings.noAccount} </span>
             <span className="loginText" onClick={() => redirectToRegister()}>
-              Register
+              {strings.register}
             </span>
-        <span> or login? </span>
+        <span> {strings.orLogin} </span>
             <span className="loginText" onClick={() => redirectToLogin()}>
-              Login
+              {strings.login}
             </span>
           </div>
         </div>

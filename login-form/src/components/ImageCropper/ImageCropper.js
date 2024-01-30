@@ -1,7 +1,19 @@
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
+import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import getCroppedImg, { getCroppedImgFile } from "./cropImage";
 import "./ImageCropper.css";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    cropImage: "Crop Image"
+  },
+  fi: {
+    cropImage: "Rajaa Kuva"
+  }
+});
+
 
 function cropImageFunc(base64Image, crop) {
   return new Promise((resolve, reject) => {
@@ -25,7 +37,16 @@ const ImageCropper = ({ showCropper,setShowCropper, imageSrc, onCropComplete, se
   const [zoom, setZoom] = useState(1);
   const [cropArea, setCropArea] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
-  
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   const onCropChange = useCallback((cropTmp) => {
     setCrop(cropTmp);
@@ -70,7 +91,7 @@ const ImageCropper = ({ showCropper,setShowCropper, imageSrc, onCropComplete, se
           )}
           <br />
           {/* <button className="toggleImageButton btn btn-primary" onClick={() => setShowCropper(!showCropper)}>Toggle Cropper</button> */}
-          <button className="cropImageButton btn btn-primary" onClick={cropImage}>Crop Image</button>
+          <button className="cropImageButton btn btn-primary" onClick={cropImage}>{strings.cropImage}</button>
         </div>)}
         </div>
         {croppedImage && (

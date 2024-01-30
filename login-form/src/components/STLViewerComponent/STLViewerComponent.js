@@ -8,6 +8,22 @@ import FileUploadForm from '../../components/FileUploadForm/FileUploadForm';
 import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA} from "../../constants/apiConstants";
 import LOADING from "../../1487-loading.gif";
 import InfiniteScroll from 'react-infinite-scroller';
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    viewSTL: "View STL",
+    modelViewerTitle: "3D Model Viewer",
+    close: "Close",
+    loading: "Loading...",
+  },
+  fi: {
+    viewSTL: "Näytä STL",
+    modelViewerTitle: "3D-mallin katseluohjelma",
+    close: "Sulje",
+    loading: "Ladataan...",
+  }
+});
 
 function STLViewerComponent() {
 
@@ -17,6 +33,16 @@ function STLViewerComponent() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false); 
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   //This is fired when the user uploads a new item (.stl file)
   const newItemIsUploaded = async (fileName) => {
@@ -109,7 +135,7 @@ function STLViewerComponent() {
           pageStart={1}
           loadMore={loadMore}
           hasMore={hasMore}
-          loader={<div className="loading">Loading...</div>}
+          loader={<div className="loading">{strings.isLoading}</div>}
         >
           <Row className='STLViewerComponent-row'>
             {stlItems.map((file, index) => (
@@ -125,7 +151,7 @@ function STLViewerComponent() {
                           alt={`Screenshot for ${file.stl_filename}`}
                         />
                       )}
-                      <Button variant="primary" onClick={() => openModal(file.stl_filename)}>View STL</Button>
+                      <Button variant="primary" onClick={() => openModal(file.stl_filename)}>{strings.viewSTL}</Button>
                     </div>
                   </Card.Body>
                 </Card>
@@ -137,7 +163,7 @@ function STLViewerComponent() {
 
       <Modal show={showModal} onHide={closeModal} dialogClassName="STLViewerComponent-large-modal">
         <Modal.Header closeButton>
-          <Modal.Title>3D Model Viewer</Modal.Title>
+          <Modal.Title>{strings.modelViewerTitle}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Render the viewer within the Modal */}
@@ -145,7 +171,7 @@ function STLViewerComponent() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={closeModal}>
-            Close
+            {strings.close}
           </Button>
         </Modal.Footer>
       </Modal>

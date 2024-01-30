@@ -1,15 +1,50 @@
 import React, {useState} from "react";
 import {useEffect} from "react";
+import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import {AuthContext} from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import {Button} from "react-bootstrap";
 import {withRouter} from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import LOADING from "../../1487-loading.gif";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    add: "Add",
+    numberSign: "#",
+    name: "Name",
+    noData: "No data",
+    edit: "Edit",
+    remove: "Remove",
+    previous: "Previous",
+    next: "Next"
+  },
+  fi: {
+    add: "Lisää",
+    numberSign: "#",
+    name: "Nimi",
+    noData: "Ei tietoja",
+    edit: "Muokkaa",
+    remove: "Poista",
+    previous: "Edellinen",
+    next: "Seuraava"
+  }
+});
 
 function ManageRoles(props) {
   const [data, setData] = useState(null);
   const {authState, authActions} = React.useContext(AuthContext);
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   useEffect(() => {
     request()
@@ -52,7 +87,7 @@ function ManageRoles(props) {
             });
           }}
         >
-          Add
+          {strings.add}
         </Button>
       </div>
 
@@ -63,14 +98,14 @@ function ManageRoles(props) {
             <th scope="col" style={{width: "15px"}}>
               #
             </th>
-            <th scope="col">Name</th>
+            <th scope="col">{strings.name}</th>
             {/* <th scope="col">isActive</th> */}
 			<th scope="col"></th>
           </tr>
         </thead>
         <tbody>
         {data &&
-            data.data.length == 0 && <tr><td>1</td><td>No data</td><td></td></tr>}
+            data.data.length == 0 && <tr><td>1</td><td>{strings.noData}</td><td></td></tr>}
           {data &&
             data.data.map((item, index) => {
               return (
@@ -91,7 +126,7 @@ function ManageRoles(props) {
                           });
                         }}
                       >
-                        Edit
+                        {strings.edit}
                       </Button>
                       <Button
                         className="mx-2 btn-danger"
@@ -100,7 +135,7 @@ function ManageRoles(props) {
                         }}
                         size="sm"
                       >
-                        Remove
+                        {strings.remove}
                       </Button>
                     </td>
                 </tr>

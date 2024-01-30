@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import {useEffect} from "react";
+import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import {AuthContext} from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import {Button} from "react-bootstrap";
@@ -7,12 +8,58 @@ import {withRouter} from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../1487-loading.gif";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    actions: "Actions",
+    extendTrial30Days: "Extend Trial 30 days",
+    makePaidSubscription: "Make a Paid Subscription",
+    downgradeToTrial: "Downgrade to Trial",
+    extendTrialOneYear: "Extend Trial by One year",
+    terminateDomain: "Terminate domain",
+    domain: "Domain",
+    validBeforeAt: "Valid Before At",
+    type: "Type",
+    company: "Company",
+    vatId: "VAT-ID",
+    phone: "Phone",
+    email: "Email",
+    country: "Country",
+    edit: "Edit",
+    paid: "Paid",
+    trial: "Trial",
+    previous: "Previous",
+    next: "Next"
+  },
+  fi: {
+    actions: "Toiminnot",
+    extendTrial30Days: "Jatka kokeilua 30 päivällä",
+    makePaidSubscription: "Tee maksullinen tilaus",
+    downgradeToTrial: "Alenna kokeiluversioksi",
+    extendTrialOneYear: "Jatka kokeilua yhdellä vuodella",
+    terminateDomain: "Lopeta domain",
+    domain: "Domain",
+    validBeforeAt: "Voimassa Ennen",
+    type: "Tyyppi",
+    company: "Yritys",
+    vatId: "ALV-tunnus",
+    phone: "Puhelin",
+    email: "Sähköposti",
+    country: "Maa",
+    edit: "Muokkaa",
+    paid: "Maksettu",
+    trial: "Kokeilu",
+    previous: "Edellinen",
+    next: "Seuraava"
+  }
+});
 
 function Menu({id, domainActionApi}) {
   return (
     <Dropdown>
       <Dropdown.Toggle variant="success" id="dropdown-basic">
-        Actions
+        {strings.actions}
       </Dropdown.Toggle>
 
       <Dropdown.Menu>
@@ -21,25 +68,25 @@ function Menu({id, domainActionApi}) {
             domainActionApi(id, "extend-trial");
           }}
         >
-          Extend Trial 30 days{" "}
+          {strings.extendTrial30Days}{" "}
         </Dropdown.Item>
         <Dropdown.Item onClick={() => {
           domainActionApi(id, "make-paid");
         }}>
-          Make a Paid Subscription
+          {strings.makePaidSubscription}
         </Dropdown.Item>
         <Dropdown.Item onClick={() => {
           domainActionApi(id, "down-to-trial");
-        }}>Downgrade to Trial</Dropdown.Item>
+        }}>{strings.downgradeToTrial}</Dropdown.Item>
         <Dropdown.Item onClick={() => {
           domainActionApi(id, "extend-one-year");
         }} >
-          Extend Trial by One year
+          {strings.extendTrialOneYear}
         </Dropdown.Item>
         <Dropdown.Item onClick={() => {
           domainActionApi(id, "terminate");
         }} style={{background: "#ffbfbf"}} >
-          Terminate domain
+          {strings.terminateDomain}
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
@@ -49,6 +96,15 @@ function Menu({id, domainActionApi}) {
 function ManageDomain(props) {
   const [data, setData] = useState(null);
   
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   const {authState, authActions} = React.useContext(AuthContext);
 
@@ -136,14 +192,14 @@ function ManageDomain(props) {
             <th scope="col" style={{width: "15px"}}>
               #
             </th>
-            <th scope="col">Domain</th>
-            <th scope="col">Valid Before At</th>
-            <th scope="col">Type</th>
-			<th scope="col">Company</th>
-			<th scope="col">VAT-ID</th>
-            <th scope="col">Phone</th>
-            <th scope="col">Email</th>
-            <th scope="col">Country</th>
+            <th scope="col">{strings.domain}</th>
+            <th scope="col">{strings.validBeforeAt}</th>
+            <th scope="col">{strings.type}</th>
+			      <th scope="col">{strings.company}</th>
+			      <th scope="col">{strings.vatId}</th>
+            <th scope="col">{strings.phone}</th>
+            <th scope="col">{strings.email}</th>
+            <th scope="col">{strings.country}</th>
             <th scope="col"></th>
 			<th scope="col"></th>
           </tr>
@@ -156,8 +212,8 @@ function ManageDomain(props) {
                   <td className="w-5">{index + 1}</td>
                   <td>{item.domain}</td>
                   <td>{item.valid_before_at}</td>
-                  <td>{item.type == "paid" && <li className="badge bg-success" >Paid</li>}
-                  {item.type == "trial" && <li className="badge bg-primary" >Trial</li>}
+                  <td>{item.type == "paid" && <li className="badge bg-success" >{strings.paid}</li>}
+                  {item.type == "trial" && <li className="badge bg-primary" >{strings.trial}</li>}
                   </td>
 				  <td>{item.company_name}</td>
 				  <td>{item.vat_id}</td>
@@ -178,7 +234,7 @@ function ManageDomain(props) {
                           });
                         }}
                       >
-                        Edit
+                        {strings.edit}
                       </Button>
                       </PermissionGate>
                       {/* <Button

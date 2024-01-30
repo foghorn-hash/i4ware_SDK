@@ -1,12 +1,26 @@
 import React, {useEffect} from "react";
 import {withRouter} from "react-router-dom";
-import {ACCESS_TOKEN_NAME, API_BASE_URL} from "../../constants/apiConstants";
+import {ACCESS_TOKEN_NAME, API_BASE_URL, API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
 import axios from "axios";
 import UserDataComponent from "../../components/UserDataComponent/UserDataComponent";
 import request from "../../utils/Request";
 import {AuthContext} from "../../contexts/auth.contexts";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../1487-loading.gif";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    showCaptcha: "Show Captcha in Register Form",
+    disableRegistration: "Disable registration from other domains than domain owner",
+    settingUpdated: "Setting Updated successfully",
+  },
+  fi: {
+    showCaptcha: "Näytä Captcha rekisteröintilomakkeessa",
+    disableRegistration: "Estä rekisteröinti muilta kuin domainin omistajilta",
+    settingUpdated: "Asetukset päivitetty",
+  }
+});
 
 function Settings() {
   const {authState, authActions} = React.useContext(AuthContext);
@@ -14,6 +28,16 @@ function Settings() {
   const [setting, setSetting] = React.useState({
     show_captcha: false
   });
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   useEffect(()=>{
     request()
@@ -40,7 +64,7 @@ function Settings() {
     request()
       .post("/api/manage/updateSettings", data)
       .then(res => {
-        setMessage("Setting Update successfully");
+        setMessage(strings.settingUpdated);
         
         setTimeout(() => {
           setMessage(null);
@@ -77,7 +101,7 @@ function Settings() {
             checked={setting.show_captcha}
           />
           <label class="form-check-label" for="defaultCheck1">
-            Show Captcha in Register Form
+            {strings.showCaptcha}
           </label>
           <br />
           <input
@@ -99,7 +123,7 @@ function Settings() {
             checked={setting.disable_registeration_from_others}
           />
           <label class="form-check-label" for="defaultCheck2">
-            Disable registeration from other domains than domain owner
+            {strings.disableRegistration}
           </label>
         </div>
       </div>
