@@ -8,6 +8,7 @@ import {withRouter} from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../1487-loading.gif";
+import InfiniteScroll from 'react-infinite-scroller';
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
@@ -95,7 +96,10 @@ function Menu({id, domainActionApi}) {
 
 function ManageDomain(props) {
   const [data, setData] = useState(null);
-  
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
   var localization = urlParams.get('lang');
@@ -165,129 +169,107 @@ function ManageDomain(props) {
       });
   };
 
+  const loadMore = () => {
+    if (!isLoading && hasMore) {
+      setIsLoading(true);
+      request()
+        .get(`/api/manage/domains?page=${page}`)
+        .then(res => {
+          const newData = [...data, ...res.data.data];
+          setData(newData);
+          setPage(prevPage => prevPage + 1);
+          setHasMore(res.data.next_page_url != null); 
+        })
+        .catch(error => {
+          console.error("Error loading more domains:", error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  };
+
   if (!data) {
     return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
   }
 
   return (
     <>
-     <div className="my-5">
-		{ /*authState.user.role == "admin" && (
-          <Button
-            onClick={() => {
-              props.history.push("/manage-domains/add", {
-                state: {
-                  from: "add",
-                },
-              });
-            }}
-          >
-            Add
-          </Button>
-        )*/	}	
-      </div>
-      <table class="table mt-3">
-        <thead>
-          <tr>
-            <th scope="col" style={{width: "15px"}}>
-              #
-            </th>
-            <th scope="col">{strings.domain}</th>
-            <th scope="col">{strings.validBeforeAt}</th>
-            <th scope="col">{strings.type}</th>
-			      <th scope="col">{strings.company}</th>
-			      <th scope="col">{strings.vatId}</th>
-            <th scope="col">{strings.phone}</th>
-            <th scope="col">{strings.email}</th>
-            <th scope="col">{strings.country}</th>
-            <th scope="col"></th>
-			<th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {data &&
-            data.data.map((item, index) => {
-              return (
-                <tr>
-                  <td className="w-5">{index + 1}</td>
-                  <td>{item.domain}</td>
-                  <td>{item.valid_before_at}</td>
-                  <td>{item.type == "paid" && <li className="badge bg-success" >{strings.paid}</li>}
-                  {item.type == "trial" && <li className="badge bg-primary" >{strings.trial}</li>}
-                  </td>
-				  <td>{item.company_name}</td>
-				  <td>{item.vat_id}</td>
-                  <td>{item.mobile_no}</td>
-                  <td>{item.technical_contact_email}</td>
-                  <td>{item.country}</td>
-                    <td>
-                      <PermissionGate permission={"domain.edit"}>
-                      <Button
-                        className="btn-info" size="sm"
-                        onClick={() => {
-                          props.history.push({
-                            pathname: "/manage-domains/edit",
-                            state: {
-                              item: item,
-                              from: "edit",
-                            },
-                          });
-                        }}
-                      >
-                        {strings.edit}
-                      </Button>
-                      </PermissionGate>
-                      {/* <Button
-                        className="mx-2 btn-danger"
-                        onClick={() => {
-                          removeItem(item);
-                        }}
-                      >
-                        Remove
-                      </Button> */}
-                    </td>
-                  {(
-                    <td>
-                      <PermissionGate permission={"domain.actions"}>
-                        <Menu id={item.id} domainActionApi={(id,action)=>{
-                          domainUpdateApi({
-                            id:id,
-                            action:action
-                          })
-                        }} />
-                      </PermissionGate>
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-        </tbody>
-      </table>
-	  {authState.user.role === "admin" &&
-      <nav>
-        <ul class="pagination">
-          {data &&
-            data.links.map((link, index) => {
-              return (
-                <li
-                  class={link.active ? "page-item active" : "page-item"}
-                  onClick={() => {
-                    nextPage(link.url);
-                  }}
-                >
-                  <button class="page-link" href="#">
-                    {link.label.includes("Previous")
-                      ? "Previous"
-                      : link.label.includes("Next")
-                      ? "Next"
-                      : link.label}
-                  </button>
-                </li>
-              );
-            })}
-        </ul>
-      </nav>
-	  }
+      <InfiniteScroll
+      pageStart={0}
+      loadMore={loadMore}
+      hasMore={!isLoading && hasMore}
+      loader={<div className="loader">Loading...</div>}
+      >
+        <div className="my-5">
+        </div>
+        <table className="table mt-3">
+          <thead>
+            <tr>
+              <th scope="col" style={{width: "15px"}}>#</th>
+              <th scope="col">{strings.domain}</th>
+              <th scope="col">{strings.validBeforeAt}</th>
+              <th scope="col">{strings.type}</th>
+              <th scope="col">{strings.company}</th>
+              <th scope="col">{strings.vatId}</th>
+              <th scope="col">{strings.phone}</th>
+              <th scope="col">{strings.email}</th>
+              <th scope="col">{strings.country}</th>
+              <th scope="col"></th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {data && data.data.map((item, index) => (
+              <tr key={index}>
+                <td className="w-5">{index + 1}</td>
+                <td>{item.domain}</td>
+                <td>{item.valid_before_at}</td>
+                <td>
+                  {item.type === "paid" && <li className="badge bg-success">{strings.paid}</li>}
+                  {item.type === "trial" && <li className="badge bg-primary">{strings.trial}</li>}
+                </td>
+                <td>{item.company_name}</td>
+                <td>{item.vat_id}</td>
+                <td>{item.mobile_no}</td>
+                <td>{item.technical_contact_email}</td>
+                <td>{item.country}</td>
+                <td>
+                  <PermissionGate permission={"domain.edit"}>
+                    <Button
+                      className="btn-info" size="sm"
+                      onClick={() => {
+                        props.history.push({
+                          pathname: "/manage-domains/edit",
+                          state: {
+                            item: item,
+                            from: "edit",
+                          },
+                        });
+                      }}
+                    >
+                      {strings.edit}
+                    </Button>
+                  </PermissionGate>
+                </td>
+                <td>
+                  <PermissionGate permission={"domain.actions"}>
+                    <Menu
+                      id={item.id}
+                      domainActionApi={(id, action) => {
+                        domainUpdateApi({
+                          id: id,
+                          action: action,
+                        });
+                      }}
+                    />
+                  </PermissionGate>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </InfiniteScroll>
     </>
   );
 }

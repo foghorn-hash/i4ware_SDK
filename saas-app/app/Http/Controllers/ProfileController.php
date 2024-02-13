@@ -164,9 +164,9 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if ($user->role == "admin") {
-             $domains = Domain::paginate(10);
+             $domains = Domain::paginate(1000);
         } else {
-             $domains = Domain::where(['domain' => $user->domain])->paginate(10);
+             $domains = Domain::where(['domain' => $user->domain])->paginate(1000);
         }
         //$domains = Domain::paginate(10);
 
@@ -352,7 +352,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $roles = Role::where('domain', '=', $user->domain)->paginate(10);
+        $roles = Role::where('domain', '=', $user->domain)->paginate(1000);
         
         return response()->json([
             'success' => true,

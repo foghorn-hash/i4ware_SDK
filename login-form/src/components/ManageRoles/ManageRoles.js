@@ -7,6 +7,7 @@ import {Button} from "react-bootstrap";
 import {withRouter} from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import LOADING from "../../1487-loading.gif";
+import InfiniteScroll from 'react-infinite-scroller';
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
@@ -35,6 +36,10 @@ let strings = new LocalizedStrings({
 function ManageRoles(props) {
   const [data, setData] = useState(null);
   const {authState, authActions} = React.useContext(AuthContext);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -47,13 +52,26 @@ function ManageRoles(props) {
   }
 
   useEffect(() => {
-    request()
-      .get("/api/manage/roles")
-      .then(res => {
-        setData(res.data.data);
-      })
-  }, []);
-
+    const fetchRoles = async () => {
+      setIsLoading(true);
+      try {
+        const response = await request().get(`/api/manage/roles?page=${page}`);
+        setData(prevData => prevData ? [...prevData, ...response.data.data] : response.data.data);
+        setHasMore(response.data.next_page_url != null);
+      } catch (error) {
+        console.error(error);
+      }
+      setIsLoading(false);
+    };
+  
+    fetchRoles();
+  }, [page]);
+  
+  const loadMore = () => {
+    if (!isLoading && hasMore) {
+      setPage(prevPage => prevPage + 1);
+    }
+  };  
 
   const nextPage = url => {
     request()
@@ -62,6 +80,16 @@ function ManageRoles(props) {
         setData(res.data.data);
       })
   };
+
+  const editRole = (item) => {
+    props.history.push({
+      pathname: "/manage-roles/edit",
+      state: {
+        item: item,
+        from: "edit",
+      },
+    });
+  };  
 
   const removeItem = item => {
     request()
@@ -77,7 +105,7 @@ function ManageRoles(props) {
 
   return (
     <>
-     <div className="my-5">
+      <div className="my-5">
         <Button
           onClick={() => {
             props.history.push("/manage-roles/add", {
@@ -90,82 +118,39 @@ function ManageRoles(props) {
           {strings.add}
         </Button>
       </div>
-
-      
-      <table class="table mt-3">
+  
+      <table className="table mt-3">
         <thead>
           <tr>
-            <th scope="col" style={{width: "15px"}}>
-              #
-            </th>
+            <th scope="col" style={{ width: "15px" }}>#</th>
             <th scope="col">{strings.name}</th>
-            {/* <th scope="col">isActive</th> */}
-			<th scope="col"></th>
+            <th scope="col"></th>
           </tr>
         </thead>
-        <tbody>
-        {data &&
-            data.data.length == 0 && <tr><td>1</td><td>{strings.noData}</td><td></td></tr>}
-          {data &&
-            data.data.map((item, index) => {
-              return (
-                <tr>
-                  <td className="w-5">{index + 1}</td>
-                  <td>{item.name}</td>
-                  {/* <td>{item.isActive === 1?<span className="btn btn-primary" >AA</span>:''}</td> */}
-                    <td>
-                      <Button
-                        className="btn-info" size="sm"
-                        onClick={() => {
-                          props.history.push({
-                            pathname: "/manage-roles/edit",
-                            state: {
-                              item: item,
-                              from: "edit",
-                            },
-                          });
-                        }}
-                      >
-                        {strings.edit}
-                      </Button>
-                      <Button
-                        className="mx-2 btn-danger"
-                        onClick={() => {
-                          removeItem(item);
-                        }}
-                        size="sm"
-                      >
-                        {strings.remove}
-                      </Button>
-                    </td>
-                </tr>
-              );
-            })}
-        </tbody>
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={loadMore}
+          hasMore={hasMore}
+          loader={<div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
+          element="tbody"
+        >
+          {data && data.data.length === 0 && <tr><td colSpan="3">{strings.noData}</td></tr>}
+          {data && data.data.map((item, index) => (
+            <tr key={item.id || index}>
+              <td className="w-5">{index + 1}</td>
+              <td>{item.name}</td>
+              <td>
+                <Button className="btn-info" size="sm" onClick={() => editRole(item)}>
+                  {strings.edit}
+                </Button>
+                <Button className="mx-2 btn-danger" size="sm" onClick={() => removeItem(item)}>
+                  {strings.remove}
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </InfiniteScroll>
       </table>
-      <nav>
-        <ul class="pagination">
-          {data &&
-            data.links.map((link, index) => {
-              return (
-                <li
-                  class={link.active ? "page-item active" : "page-item"}
-                  onClick={() => {
-                    nextPage(link.url);
-                  }}
-                >
-                  <button class="page-link" href="#">
-                    {link.label.includes("Previous")
-                      ? "Previous"
-                      : link.label.includes("Next")
-                      ? "Next"
-                      : link.label}
-                  </button>
-                </li>
-              );
-            })}
-        </ul>
-      </nav>
     </>
   );
 }
