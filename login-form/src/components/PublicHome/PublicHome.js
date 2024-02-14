@@ -7,6 +7,7 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import LOGO_COPY from "../../PoweredBy_TES_DarkWhite.png";
 import LocalizedStrings from 'react-localization';
+import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 
 let strings = new LocalizedStrings({
   en: {

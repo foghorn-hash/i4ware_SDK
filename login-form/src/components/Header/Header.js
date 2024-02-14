@@ -32,7 +32,7 @@ let strings = new LocalizedStrings({
     login: "Kirjaudu sisään",
     logout: "Kirjaudu ulos",
     myProfile: "Oma Profiili",
-    stlViewer: "3D-Katseluohjelma",
+    stlViewer: "3D-katseluohjelma",
     manageUsers: "Käyttäjien hallinta",
     manageDomains: "Domainien hallinta",
     manageRoles: "Roolien hallinta",
