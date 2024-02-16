@@ -52,26 +52,12 @@ function ManageRoles(props) {
   }
 
   useEffect(() => {
-    const fetchRoles = async () => {
-      setIsLoading(true);
-      try {
-        const response = await request().get(`/api/manage/roles?page=${page}`);
-        setData(prevData => prevData ? [...prevData, ...response.data.data] : response.data.data);
-        setHasMore(response.data.next_page_url != null);
-      } catch (error) {
-        console.error(error);
-      }
-      setIsLoading(false);
-    };
-  
-    fetchRoles();
-  }, [page]);
-  
-  const loadMore = () => {
-    if (!isLoading && hasMore) {
-      setPage(prevPage => prevPage + 1);
-    }
-  };  
+    request()
+      .get("/api/manage/roles")
+      .then(res => {
+        setData(res.data.data);
+      })
+  }, []);
 
   const nextPage = url => {
     request()
@@ -98,6 +84,28 @@ function ManageRoles(props) {
         setData(res.data.data);
       })
   }
+
+  const loadMore = () => {
+    if (isLoading || !hasMore) return;
+
+    setIsLoading(true);
+    request()
+      .get(`/api/manage/roles?page=${page}`)
+      .then(res => {
+        if (res.data.data && res.data.data.length > 0) {
+          setData(prevData => [...prevData, ...res.data.data]);
+          setPage(prevPage => prevPage + 1);
+        } else {
+          setHasMore(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error loading more roles:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   if (!data) {
     return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
