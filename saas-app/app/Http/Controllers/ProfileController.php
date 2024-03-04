@@ -195,6 +195,7 @@ class ProfileController extends Controller
                 'mobile_no' => $domain->mobile_no,
                 'technical_contact_email' => $domain->technical_contact_email,
                 'billing_contact_email' => $domain->billing_contact_email,
+                'country' => $domain->country
             ];
             
         }
