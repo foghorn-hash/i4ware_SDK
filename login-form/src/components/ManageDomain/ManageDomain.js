@@ -97,6 +97,7 @@ function Menu({id, domainActionApi}) {
 function ManageDomain(props) {
   const [data, setData] = useState(null);
   const [page, setPage] = useState(1);
+  const [domains, setDomains] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -113,14 +114,30 @@ function ManageDomain(props) {
   const {authState, authActions} = React.useContext(AuthContext);
 
   useEffect(() => {
-    request()
-      .get("/api/manage/domains")
-      .then(res => {
-        setData(res.data.data);
-      })
-
-   
+    loadMore();
   }, []);
+
+  const loadMore = () => {
+    if (isLoading || !hasMore) return;
+
+    setIsLoading(true);
+    request().get(`/api/manage/domains?page=${page}`)
+      .then(res => {
+        const newDomains = res.data;
+        if (newDomains && newDomains.length > 0) {
+          setDomains(prevDomains => [...new Set([...prevDomains, ...newDomains])]);
+          setPage(prevPage => prevPage + 1);
+        } else {
+          setHasMore(false);
+        }
+      })
+      .catch(error => {
+        console.error("Error loading more domains:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+};
 
   const domainUpdateApi = data => {
     request()
@@ -169,27 +186,7 @@ function ManageDomain(props) {
       });
   };
 
-  const loadMore = () => {
-    if (!isLoading && hasMore) {
-      setIsLoading(true);
-      request()
-        .get(`/api/manage/domains?page=${page}`)
-        .then(res => {
-          const newData = [...data, ...res.data.data];
-          setData(newData);
-          setPage(prevPage => prevPage + 1);
-          setHasMore(res.data.next_page_url != null); 
-        })
-        .catch(error => {
-          console.error("Error loading more domains:", error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  };
-
-  if (!data) {
+  if (domains.length === 0 && !isLoading) {
     return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
   }
 
@@ -220,8 +217,8 @@ function ManageDomain(props) {
             </tr>
           </thead>
           <tbody>
-            {data && data.data.map((item, index) => (
-              <tr key={index}>
+          {domains.map((item, index) => (
+              <tr key={item.id || index}>
                 <td className="w-5">{index + 1}</td>
                 <td>{item.domain}</td>
                 <td>{item.valid_before_at}</td>
