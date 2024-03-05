@@ -159,24 +159,52 @@ class ProfileController extends Controller
         
     }  
 
-    public function domains()
+    public function domains(Request $request)
     {
         $user = Auth::user();
-
+    
         if ($user->role == "admin") {
-             $domains = Domain::paginate(1000);
+            $domains = Domain::all();
         } else {
-             $domains = Domain::where(['domain' => $user->domain])->paginate(1000);
+            $domain = DB::table('users')->select('domain')->where('id', '=', Auth::user()->id)->first();
+            $domains = Domain::where('domain', '=', $domain->domain)->get();
         }
-        //$domains = Domain::paginate(10);
+    
+        Log::info('Domains:', ['domains' => $domains]);
+    
+        $perPage = 10;
 
-        return response()->json([
-            'success' => true,
-            'data' => $domains->toArray(),
-            // '$user' => $user
-        ], 200);
+        $page = $request->input('page', 1);
+
+        $offset = ($page - 1) * $perPage;
+    
+        $domainList = $domains->slice($offset, $perPage);
+    
+        Log::info('Domain List:', ['domainList' => $domainList]);
+    
+        $data = [];
+    
+        foreach ($domainList as $domain) {
+            $data[] = [
+                'id' => $domain->id,
+                'domain' => $domain->domain,
+                'valid_before_at' => $domain->valid_before_at,
+                'type' => $domain->type,
+                'company_name' => $domain->company_name,
+                'vat_id' => $domain->vat_id,
+                'mobile_no' => $domain->mobile_no,
+                'technical_contact_email' => $domain->technical_contact_email,
+                'billing_contact_email' => $domain->billing_contact_email,
+                'country' => $domain->country
+            ];
+            
+        }
+    
+        Log::info('Response List:', ['data' => $data]);
+    
+        return response()->json($data, 200);
     }
-
+    
     public function updateDomain(Request $request)
     {
         $user = Auth::user();
@@ -347,18 +375,43 @@ class ProfileController extends Controller
             ], 200);
         }
     }
-    // roles
-    public function roles()
+
+    public function roles(Request $request)
     {
         $user = Auth::user();
+    
+        if ($user->role == "admin") {
+            $roles = Role::all();
+        } else {
+            $roles = Role::where('domain', '=', $user->domain)->get();
+        }
+    
+        Log::info('Roles:', ['roles' => $roles]);
+    
+        $perPage = 10;
 
-        $roles = Role::where('domain', '=', $user->domain)->paginate(1000);
-        
-        return response()->json([
-            'success' => true,
-            'data' => $roles
-        ], 200);
+        $page = $request->input('page', 1);
+
+        $offset = ($page - 1) * $perPage;
+    
+        $roleList = $roles->slice($offset, $perPage);
+    
+        Log::info('Role List:', ['roleList' => $roleList]);
+    
+        $data = [];
+    
+        foreach ($roleList as $role) {
+            $data[] = [
+                'id' => $role->id,
+                'name' => $role->name,
+            ];
+        }
+    
+        Log::info('Response List:', ['data' => $data]);
+    
+        return response()->json($data, 200);
     }
+    
     public function rolesAll()
     {
         $user = Auth::user();
