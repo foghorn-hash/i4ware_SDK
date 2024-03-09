@@ -9,6 +9,7 @@ import LOGO_COPY from "../../PoweredBy_TES_DarkWhite.png";
 import LocalizedStrings from 'react-localization';
 import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 
+// LocalizedStrings
 let strings = new LocalizedStrings({
   en: {
     video: "To view this video please enable JavaScript, and consider upgrading to a",
@@ -24,10 +25,14 @@ let strings = new LocalizedStrings({
   }
 });
 
+// We need to get the language from the URL
 var query = window.location.search.substring(1);
+// We need to get the language from the URL
 var urlParams = new URLSearchParams(query);
+// We need to get the language from the URL
 var localization = urlParams.get('lang');
 
+// Set default language
 if (localization == null) {
   strings.setLanguage(API_DEFAULT_LANGUAGE);
 } else {
@@ -66,4 +71,5 @@ function PublicHome() {
   );
 }
 
+// export default withRouter(PublicHome);
 export default withRouter(PublicHome);
