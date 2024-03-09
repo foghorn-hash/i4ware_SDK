@@ -37,10 +37,10 @@ let strings = new LocalizedStrings({
   fi: {
     actions: "Toiminnot",
     extendTrial30Days: "Jatka kokeilua 30 päivällä",
-    makePaidSubscription: "Tee maksullinen tilaus",
+    makePaidSubscription: "Tee tilaus maksulliseksi",
     downgradeToTrial: "Alenna kokeiluversioksi",
     extendTrialOneYear: "Jatka kokeilua yhdellä vuodella",
-    terminateDomain: "Lopeta domain",
+    terminateDomain: "Mitätöi domain",
     domain: "Domain",
     validBeforeAt: "Voimassa Ennen",
     type: "Tyyppi",
@@ -50,7 +50,7 @@ let strings = new LocalizedStrings({
     email: "Sähköposti",
     country: "Maa",
     edit: "Muokkaa",
-    paid: "Maksettu",
+    paid: "Makssullinen",
     trial: "Kokeilu",
     previous: "Edellinen",
     next: "Seuraava"
