@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import "./ManageRoles.css";
 import { withRouter } from 'react-router-dom';
 import InfiniteScroll from 'react-infinite-scroller';
 import { Button } from 'react-bootstrap';
@@ -32,7 +33,6 @@ let strings = new LocalizedStrings({
 });
 
 function ManageRoles(props) {
-  const [data, setData] = useState(null);
   const {authState, authActions} = React.useContext(AuthContext);
   const [roles, setRoles] = useState([]);
   const [page, setPage] = useState(1);
@@ -75,6 +75,14 @@ function ManageRoles(props) {
       });
   };
 
+  const removeItem = item => {
+    request()
+      .get("/api/manage/role/"+item.id)
+      .then(res => {
+        setRoles(res.data);
+      })
+  }
+
   if (roles.length === 0 && !isLoading) {
     return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
   }
@@ -86,38 +94,53 @@ function ManageRoles(props) {
           {strings.add}
         </Button>
       </div>
-
-      <table className="table mt-3">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">{strings.name}</th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <InfiniteScroll
+      <div className="mt-3">
+          <div className="table-header-roles">
+            <div className="column-number-roles">#</div>
+            <div>{strings.name}</div>
+            <div></div>
+          </div>
+          <div className='table-body-roles'>
+          <InfiniteScroll
           pageStart={0}
           loadMore={loadMore}
           hasMore={hasMore}
           loader={<div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
-          element="tbody"
         >
           {roles.map((role, index) => (
-            <tr key={role.id}>
-              <td>{index + 1}</td>
-              <td>{role.name}</td>
-              <td>
-                <Button className="btn-info" size="sm" onClick={() => props.history.push("/manage-roles/edit", { state: { role, from: "edit" } })}>
+            <div key={role.id} className="table-row-roles">
+              <div className="column-number-roles">{index + 1}</div>
+              <div>{role.name}</div>
+              <div className='column-actions-roles'>
+                <Button 
+                  className="btn-info" 
+                  size="sm" 
+                  onClick={() => {
+                    props.history.push({
+                      pathname: "/manage-roles/edit",
+                      state: {
+                        item: role,
+                        from: "edit",
+                      },
+                    });
+                  }}>
                   {strings.edit}
                 </Button>
-                <Button className="mx-2 btn-danger" size="sm" onClick={() => console.log('Remove role', role.id)}>
+                <Button 
+                  className="mx-2 btn-danger" 
+                  size="sm" 
+                  onClick={() => {
+                    removeItem(role);
+                }}>
                   {strings.remove}
                 </Button>
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
         </InfiniteScroll>
-      </table>
+        <div className="spacer"></div>
+        </div>
+      </div>
     </>
   );
 }

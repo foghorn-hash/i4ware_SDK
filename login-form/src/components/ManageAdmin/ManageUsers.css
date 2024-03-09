@@ -6,11 +6,6 @@
 	padding-bottom: 20px;
 }
 
-table {
-	color: white !important;
-	background-color: transparent !important;
-}
-
 .select-role {
 	border: 1px #ced4da solid;
 	border-radius: 4px;
@@ -18,7 +13,6 @@ table {
 	background-color: white;
 	color: #747373;
 	width: 50%;
-
 }
 
 .max-height-profile-pic-manage-users {
