@@ -6,7 +6,6 @@ import { Player } from 'video-react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import LOGO_COPY from "../../PoweredBy_TES_DarkWhite.png";
-import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
 import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 
