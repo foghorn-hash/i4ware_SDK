@@ -26,7 +26,8 @@ let strings = new LocalizedStrings({
     manageDomains: "Manage Domains",
     manageRoles: "Manage Roles",
     settings: "Settings",
-    welcome: "Welcome"
+    welcome: "Welcome",
+    videoPhoto: "Video/Photo",
   },
   fi: {
     login: "Kirjaudu sisään",
@@ -37,7 +38,8 @@ let strings = new LocalizedStrings({
     manageDomains: "Domainien hallinta",
     manageRoles: "Roolien hallinta",
     settings: "Asetukset",
-    welcome: "Tervetuloa"
+    welcome: "Tervetuloa",
+    videoPhoto: "Video/Kuva",
   }
 });
 
@@ -163,6 +165,9 @@ function Header(props) {
               )}
               {authState.isLogged && (
                 <NavLink className="Header-nav-link" to="/stl-viewer">{strings.stlViewer}</NavLink>
+              )}
+              {authState.isLogged && (
+                <NavLink className="Header-nav-link" to="/video-photo">{strings.videoPhoto}</NavLink>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"users.view"}>

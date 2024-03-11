@@ -22,7 +22,8 @@ import ManageDomainForm from "./components/ManageDomain/ManageDomainForm";
 import Settings from "./components/Settings/Settings";
 import ManageRoles from "./components/ManageRoles/ManageRoles";
 import RoleForm from "./components/ManageRoles/RoleForm";
-import STLViewerComponent from "./components/STLViewerComponent/STLViewerComponent"
+import STLViewerComponent from "./components/STLViewerComponent/STLViewerComponent";
+import VideoPhoto from "./components/VideoPhoto/VideoPhoto";
 import ErrorBoundary from "./contexts/ErrorBoundry";
 import LOGO from "./52311-logo-transparent.png";
 
@@ -101,6 +102,7 @@ function App() {
               <PrivateRoute path="/manage-roles" component={ManageRoles} />
               <PrivateRoute path="/settings" component={Settings} />
               <PrivateRoute path="/stl-viewer" component={STLViewerComponent} />
+              <PrivateRoute path="/video-photo" component={VideoPhoto} />
             </Switch>
           </Container>
         </AuthProvider>
