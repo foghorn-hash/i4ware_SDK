@@ -6,9 +6,8 @@ use App\Models\Role;
 use App\Models\RolePermissions;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Domain;
+use App\Models\Assets;
 use App\Models\Permission;
-use App\Models\UserVerify;
 use Auth;
 use Validator;
 use Illuminate\Support\Facades\Hash;
@@ -32,8 +31,7 @@ class GalleryController extends Controller
     {
         $user = Auth::user();
 
-        /*** Uncomment the following line to enable the middleware
-
+        // Get the assets
         if ($user->role == "admin") {
             $assets = Assets::with('roles')->get();
         } else {
@@ -50,8 +48,6 @@ class GalleryController extends Controller
 
         // Slice the files to get the paginated result
         $assetsList = $assets->slice($offset, $perPage);
-
-        */
 
         // Process the sliced files and create the response
         $data = [];
