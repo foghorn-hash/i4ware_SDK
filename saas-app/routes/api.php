@@ -78,4 +78,5 @@ Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
 
 Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router) {
 	Route::get('/assets', [GalleryController::class, 'assets'])->name('assets.asset-items');
+	Route::post('/upload-media', [GalleryController::class, 'uploadMedia'])->name('gallery.upload-media');
 });

@@ -19,14 +19,14 @@ class CreatePhotosVideosTable extends Migration
             $table->string('asset_path');
             $table->string('file_type')->default('photo');
             $table->string('user_id');
-            $table->string('domain')->unique();        
+            $table->string('domain');        
             $table->softDeletes();
             $table->timestamps();
         });
         
 		Schema::table('photos_videos', function (Blueprint $table) {
 		 	$table->index('domain');
-		 	$table->foreign('domain')->references('domain')->on('photos_videos')->onDelete('cascade');;
+		 	$table->foreign('domain')->references('domain')->on('domains')->onDelete('cascade');
 		});
 
     }
