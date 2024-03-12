@@ -25,6 +25,9 @@ If you found this project useful, then make sure to star the project.
 2. Run `npm install` or `yarn install`  
 3. And then use `npm run start` or `yarn start` command to start the project in browser. 
 
+## Loging Indicator SVG file credits:
+
+<a href="https://www.svgbackgrounds.com/elements/animated-svg-preloaders/">Animated SVG Preloaders by SVGBackgrounds.com</a>
 
 ## Contributors ✨
 
