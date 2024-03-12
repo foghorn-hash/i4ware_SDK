@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StlController;
+use App\Http\Controllers\GalleryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,4 +74,8 @@ Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
 	Route::get('/stl-items', [StlController::class, 'getStlItems'])->name('stl.stl-items');
 	Route::get('/stl-item', [StlController::class, 'getStlItem'])->name('stl.stl-item');
 	Route::post('/stl-file', [StlController::class, 'getStlFile'])->name('stl.stl-file');
+});
+
+Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router) {
+	Route::get('/assets', [GalleryController::class, 'assets'])->name('assets.asset-items');
 });
