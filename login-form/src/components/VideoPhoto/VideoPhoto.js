@@ -70,7 +70,7 @@ function VideoPhoto(props) {
           });
     };
 
-    if (assets.length === 0 && !isLoading) {
+    if (isLoading) {
         return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
     }
     

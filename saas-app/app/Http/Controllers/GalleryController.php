@@ -52,7 +52,7 @@ class GalleryController extends Controller
         // Process the sliced files and create the response
         $data = [];
 
-        //foreach ($assetsList as $assets) {
+        foreach ($assetsList as $assets) {
             $data[] = [
                 'id' => $assets->id,
                 'filename' => $assets->filename,
@@ -60,7 +60,7 @@ class GalleryController extends Controller
                 'domain' => $assets->domain,
                 'user_id' => $assets->user_id,                
             ];
-        //}
+        }
 
         return response()->json($data, 200);
     }
