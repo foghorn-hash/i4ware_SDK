@@ -2,6 +2,7 @@ import React, {useState, useContext,useEffect} from "react";
 import "./VideoPhoto.css";
 import { withRouter } from "react-router-dom";
 import request from "../../utils/Request";
+import {Button} from "react-bootstrap";
 import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
 import LOADING from "../../1487-loading.gif";
@@ -12,9 +13,17 @@ import LocalizedStrings from 'react-localization';
 let strings = new LocalizedStrings({
     en: {
         videoPhoto: "Video/Photo",
+        uploadPhoto: "Upload Photo",
+        capturePhoto: "Capture Photo",
+        uploadVideo: "Upload Video",
+        captureVideo: "Capture Video",
     },
     fi: {
         videoPhoto: "Video/Kuva",
+        uploadPhoto: "Lataa kuva",
+        captureVideo: "Ota video",
+        uploadVideo: "Lataa video",
+        captureVideo: "Ota video",
     }
 });
 
@@ -66,8 +75,38 @@ function VideoPhoto(props) {
     }
     
     return (
-        <div>
+        <div className="VideoPhoto-main">
             <h3>{strings.videoPhoto}</h3>
+            <div className="VideoPhoto-button-bar">
+            <Button
+              className="VideoPhoto-button"
+              variant="primary"
+              size="sm"
+            >
+              {strings.uploadPhoto}
+            </Button>
+            <Button
+              className="VideoPhoto-button"
+              variant="primary"
+              size="sm"
+            >
+              {strings.capturePhoto}
+            </Button>
+            <Button
+              className="VideoPhoto-button"
+              variant="primary"
+              size="sm"
+            >
+              {strings.uploadVideo}
+            </Button>
+            <Button
+              className="VideoPhoto-button"
+              variant="primary"
+              size="sm"
+            >
+              {strings.captureVideo}
+            </Button>
+          </div>
         </div>
     );
 }
