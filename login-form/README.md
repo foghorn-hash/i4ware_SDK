@@ -54,4 +54,4 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 ## Development Environment
 
-We want to do Developent Environment with XAMPP including PHP 8.2 and MySQL for Back-end Source Code with Laravel 10.+.
+We want to do Developent Environment with XAMPP including PHP 8.2 and MySQL for Back-end Source Code with Laravel 9.+.
