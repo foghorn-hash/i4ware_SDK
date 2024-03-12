@@ -160,7 +160,7 @@ function STLViewerComponent() {
           </Row>
         </InfiniteScroll>
       </Container>
-
+      {isLoading && <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
       <Modal show={showModal} onHide={closeModal} dialogClassName="STLViewerComponent-large-modal">
         <Modal.Header closeButton>
           <Modal.Title>{strings.modelViewerTitle}</Modal.Title>
