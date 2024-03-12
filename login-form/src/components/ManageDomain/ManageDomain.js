@@ -8,7 +8,7 @@ import {Button} from "react-bootstrap";
 import {withRouter} from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import PermissionGate from "../../contexts/PermissionGate";
-import LOADING from "../../1487-loading.gif";
+import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
 import LocalizedStrings from 'react-localization';
 

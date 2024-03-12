@@ -5,7 +5,7 @@ import InfiniteScroll from 'react-infinite-scroller';
 import { Button } from 'react-bootstrap';
 import request from '../../utils/Request';
 import { AuthContext } from '../../contexts/auth.contexts';
-import LOADING from '../../1487-loading.gif';
+import LOADING from '../../tube-spinner.svg';
 import LocalizedStrings from 'react-localization';
 import { API_DEFAULT_LANGUAGE } from '../../constants/apiConstants';
 

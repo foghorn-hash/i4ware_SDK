@@ -19,7 +19,7 @@ import Select from "react-select";
 import PermissionGate from "../../contexts/PermissionGate";
 import { FormCheck, Container } from "react-bootstrap";
 import ChangePassword from "./ChangePassword";
-import LOADING from "../../1487-loading.gif";
+import LOADING from "../../tube-spinner.svg";
 import DefaultMaleImage from "../../male-default-profile-picture.png";
 import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import { render } from "react-dom";

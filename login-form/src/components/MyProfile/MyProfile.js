@@ -10,7 +10,7 @@ import request from "../../utils/Request";
 import TextInput from "./../common/TextInput";
 import { AuthContext } from "../../contexts/auth.contexts";
 import "./MyProfile.css";
-import LOADING from "../../1487-loading.gif";
+import LOADING from "../../tube-spinner.svg";
 import DefaultMaleImage from "../../male-default-profile-picture.png";
 import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import ImageCropper from "./../ImageCropper/ImageCropper";

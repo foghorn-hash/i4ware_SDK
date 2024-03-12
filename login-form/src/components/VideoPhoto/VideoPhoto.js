@@ -5,7 +5,7 @@ import request from "../../utils/Request";
 import {Button} from "react-bootstrap";
 import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
-import LOADING from "../../1487-loading.gif";
+import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';

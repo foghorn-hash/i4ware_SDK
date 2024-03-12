@@ -6,7 +6,7 @@ import { ModalWindow3DViewer } from './ModalWindow3DViewer.js'
 import './STLViewerComponent.css';
 import FileUploadForm from '../../components/FileUploadForm/FileUploadForm';
 import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA} from "../../constants/apiConstants";
-import LOADING from "../../1487-loading.gif";
+import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
 import LocalizedStrings from 'react-localization';
 

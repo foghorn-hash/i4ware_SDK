@@ -6,7 +6,7 @@ import UserDataComponent from "../../components/UserDataComponent/UserDataCompon
 import request from "../../utils/Request";
 import {AuthContext} from "../../contexts/auth.contexts";
 import PermissionGate from "../../contexts/PermissionGate";
-import LOADING from "../../1487-loading.gif";
+import LOADING from "../../tube-spinner.svg";
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
