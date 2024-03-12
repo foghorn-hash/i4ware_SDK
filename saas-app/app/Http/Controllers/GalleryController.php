@@ -54,10 +54,11 @@ class GalleryController extends Controller
 
         //foreach ($assetsList as $assets) {
             $data[] = [
-                'filename' => '',
-                'asset_path' => '',
-                'domain' => '',
-                'user_id' => '',                
+                'id' => $assets->id,
+                'filename' => $assets->filename,
+                'asset_path' => $assets->asset_path,
+                'domain' => $assets->domain,
+                'user_id' => $assets->user_id,                
             ];
         //}
 
