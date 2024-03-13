@@ -25,6 +25,9 @@ If you found this project useful, then make sure to star the project.
 2. Run `npm install` or `yarn install`  
 3. And then use `npm run start` or `yarn start` command to start the project in browser. 
 
+## Loading Indicator SVG file credits:
+
+<a href="https://www.svgbackgrounds.com/elements/animated-svg-preloaders/">Animated SVG Preloaders by SVGBackgrounds.com</a>
 
 ## Contributors ✨
 
@@ -51,4 +54,4 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 ## Development Environment
 
-We want to do Developent Environment with XAMPP including PHP 8.2 and MySQL for Back-end Source Code with Laravel 10.+.
+We want to do Developent Environment with XAMPP including PHP 8.2 and MySQL for Back-end Source Code with Laravel 9.+.
