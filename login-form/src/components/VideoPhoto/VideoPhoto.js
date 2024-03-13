@@ -7,6 +7,8 @@ import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../con
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
 import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
+
+import ImageVideoGallary from "../imageVideoGallary/imageVideoGallary";
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
 
@@ -131,14 +133,15 @@ function VideoPhoto(props) {
                   {strings.captureVideo}
               </Button>
           </div>
-          <div className="gallery">
+          <ImageVideoGallary data={assets} />
+
+{/*           <div className="gallery">
                 {assets.map((asset, index) => (
                     <div key={index} className="gallery-item">
                         <img src={`${process.env.REACT_APP_SERVER_URL}storage/${asset.asset_path}`} alt={asset.filename} />
                     </div>
                 ))}
-          </div>
-
+          </div> */}
           
       </div>
   );

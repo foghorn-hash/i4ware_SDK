@@ -1,0 +1,43 @@
+.image-video-gallary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 10px;
+    position: relative;
+  }
+  
+  .image-video-item {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .image-video-item img {
+    width: 100%;
+    height: auto;
+  }
+
+  .image-video-item video{
+    max-height: 181px;
+    object-fit: cover;
+  }
+
+  .image-video-item:has(video)::after {
+    content: "";
+    position: absolute;
+    background-image: url("../../play-button.png");
+    width: 50px;
+    height: 50px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-size: cover;
+    margin: auto;
+}
+.modal{
+    display: block;
+}
+.modal-content{
+    width: 50%;
+    top: 10%;
+    left: 25%;
+}
