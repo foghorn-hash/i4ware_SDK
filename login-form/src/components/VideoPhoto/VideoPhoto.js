@@ -9,6 +9,7 @@ import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
 
 import ImageVideoGallary from "../imageVideoGallary/imageVideoGallary";
+import CaptureVideoPhoto from '../CaptureVideoPhoto/CaptureVideoPhoto';
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
 
@@ -37,6 +38,17 @@ function VideoPhoto(props) {
   const { authState, authActions } = useContext(AuthContext);
   const [selectedFile, setSelectedFile] = useState(null);
 
+  const [showCapturePhoto, setShowCapturePhoto] = useState(false);
+
+  const [showCaptureVideo, setShowCaptureVideo] = useState(false);
+  const handleCapturePhoto = () => {
+    setShowCapturePhoto(!showCapturePhoto);
+  };
+
+  const handleCaptureVideo = () => {
+    setShowCaptureVideo(!showCaptureVideo);
+  };
+  
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
   var localization = urlParams.get('lang');
@@ -115,6 +127,7 @@ function VideoPhoto(props) {
                   className="VideoPhoto-button"
                   variant="primary"
                   size="sm"
+                  onClick={handleCapturePhoto}
               >
                   {strings.capturePhoto}
               </Button>
@@ -129,20 +142,16 @@ function VideoPhoto(props) {
                   className="VideoPhoto-button"
                   variant="primary"
                   size="sm"
+                  onClick={handleCaptureVideo}
               >
                   {strings.captureVideo}
               </Button>
           </div>
+          {/* show Gallary */}
           <ImageVideoGallary data={assets} />
-
-{/*           <div className="gallery">
-                {assets.map((asset, index) => (
-                    <div key={index} className="gallery-item">
-                        <img src={`${process.env.REACT_APP_SERVER_URL}storage/${asset.asset_path}`} alt={asset.filename} />
-                    </div>
-                ))}
-          </div> */}
-          
+          {/* show capture VideoPhoto model */}
+          {showCapturePhoto &&  <CaptureVideoPhoto model= {true}  captureType="photo" />}
+          {showCaptureVideo &&  <CaptureVideoPhoto model= {true}  captureType="video" />}
       </div>
   );
 }
