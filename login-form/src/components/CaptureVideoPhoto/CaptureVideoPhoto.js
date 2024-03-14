@@ -3,6 +3,7 @@ import Webcam from 'react-webcam';
 import axios from 'axios';
 import request from "../../utils/Request";
 import './CaptureVideoPhoto.css';
+import Swal from 'sweetalert2';
 
 const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
   const webcamRef = useRef(null);
@@ -11,7 +12,11 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isCapturingVideo, setIsCapturingVideo] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photovideoUploading, setvideoUploading] = useState(false)
 
+  const [show, setShow] = useState(false);
+   const handleClose = () => setShow(false);
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -20,6 +25,8 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
     const photo = webcamRef.current.getScreenshot();
     setCapturedPhoto(photo);
   };
+
+
 
   const startVideoCapture = () => {
     setIsCapturingVideo(true);
@@ -77,40 +84,84 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
 
   const uploadPhoto = () => {
     if (capturedPhoto) {
+      setPhotoUploading(true);
       // Append the file extension to the filename
       const filename = `captured-photo.${getPhotoExtension()}`;
-
+  
       const formData = new FormData();
       formData.append('file', dataURItoBlob(capturedPhoto), filename);
-
+  
       request().post('/api/gallery/upload-media', formData)
         .then(response => {
-          console.log("Photo uploaded successfully");
-          onUpload();
+          console.log("Photo uploaded successfully", response.data.message);
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Upload Successful', 
+            text: response.data.message,  
+          }).then((result) => {
+            if (result.isConfirmed) {
+             
+
+              setPhotoUploading(false);
+              setIsModalOpen(false);  
+              onUpload();
+              // window.location.reload(); 
+            }
+          });
         })
         .catch(error => {
           console.error("Error uploading photo:", error);
+          setPhotoUploading(false);
         });
     }
   };
+  
 
-  const uploadVideo = () => {
-    if (recordedChunks.length) {
-      const blob = new Blob(recordedChunks, {
-        type: 'video/webm',
-      });
-      const formData = new FormData();
-      formData.append('file', blob, 'captured-video.webm');
 
-      request().post('/api/gallery/upload-media', formData)
-        .then(response => {
-          console.log("Video uploaded successfully");
-        })
-        .catch(error => {
-          console.error("Error uploading video:", error);
+
+
+
+    const uploadVideo = () => {
+      setIsModalOpen(false);  
+      if (recordedChunks.length) {
+        setvideoUploading(true);
+        const blob = new Blob(recordedChunks, {
+          type: 'video/webm',
         });
-    }
-  };
+        const formData = new FormData();
+        formData.append('file', blob, 'captured-video.webm');
+
+        request().post('/api/gallery/upload-media', formData)
+          .then(response => {
+            console.log(response)
+            setvideoUploading(false);
+                setIsModalOpen(false);  
+            console.log("Video uploaded successfully");
+            Swal.fire({
+              icon: 'success',
+              title: 'Upload Successful', 
+              text: response.data.message,  
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.reload(); 
+
+                setvideoUploading(false);
+                setIsModalOpen(false);  
+                onUpload(); 
+              }
+            });
+          })
+          .catch(error => {
+            console.error("Error uploading photo:", error);
+            setvideoUploading(false);
+          });
+      }
+    };
+
+
+
+
 
   const getPhotoExtension = () => {
     // Get the image format from the data URI
@@ -130,15 +181,15 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
 
   return (
     <div>
-      {isModalOpen && (
+      {isModalOpen && (!photoUploading || !photovideoUploading) && (
         <div className="webcam-overlay">
           <div className="Webcam-container">
             <div className='Webcam-close-container'>
               <button className="close-overlay-button" onClick={closeModal}>
                 X
               </button>
-            </div>
-            {!capturedPhoto && 
+            </div>  
+            {!capturedPhoto &&
               <Webcam
                 ref={webcamRef}
                 videoConstraints={{
@@ -174,6 +225,8 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
 
           </div>
         </div>
+
+
       )}
     </div>
   );

@@ -1,8 +1,8 @@
 import React, {useState, useContext,useEffect} from "react";
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 import "./VideoPhoto.css";
 import { withRouter } from "react-router-dom";
-import request from "../../utils/Request";
+import request from "../../utils/Request";  
 import {Button} from "react-bootstrap";
 import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
@@ -91,15 +91,14 @@ function VideoPhoto(props) {
   };
 
   const handleUpload = () => {
-      const formData = new FormData();
+      const formData = new FormData();  
       formData.append('file', selectedFile);
 
       request().post('/api/gallery/upload-media', formData)
           .then(response => {
-              // Handle success response
-              Swal.fire("response.message.data");
-              console.log("sfsfsf",response.message);
-              // You might want to update the assets state to reflect the newly uploaded photo
+              
+              console.log("Photo uploaded successfully");
+              
           })
           .catch(error => {
               // Handle error
@@ -115,19 +114,19 @@ function VideoPhoto(props) {
       <div className="VideoPhoto-main">
           <h3>{strings.videoPhoto}</h3>
           <div className="VideoPhoto-button-bar">
-          <input type="file" accept="image/*,video/*" onChange={handleFileChange} />
+          <input   type="file" accept="image/*,video/*" onChange={handleFileChange} />
               <Button
                   className="VideoPhoto-button"
                   variant="primary"
                   size="sm"
                   onClick={handleUpload}
-                  disabled={!selectedFile}
+
               >
                   {strings.uploadPhoto}
               </Button>
               <Button
-                  className="VideoPhoto-button"
-                  variant="primary"
+                  className="VideoPhoto-button" 
+                  variant="primary"                                                                         
                   size="sm"
                   onClick={handleCapturePhoto}
               >
@@ -153,7 +152,7 @@ function VideoPhoto(props) {
           <ImageVideoGallary data={assets} />
           {/* show capture VideoPhoto model */}
           {showCapturePhoto &&  <CaptureVideoPhoto model= {true}  captureType="photo" onUpload={loadMore}/>}
-          {showCaptureVideo &&  <CaptureVideoPhoto model= {true}  captureType="video" />}
+          {showCaptureVideo &&  <CaptureVideoPhoto model= {true}  captureType="video" onUpload={loadMore} />}
       </div>
   );
 }
