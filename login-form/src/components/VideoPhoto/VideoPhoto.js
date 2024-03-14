@@ -1,4 +1,5 @@
 import React, {useState, useContext,useEffect} from "react";
+import Swal from 'sweetalert2'
 import "./VideoPhoto.css";
 import { withRouter } from "react-router-dom";
 import request from "../../utils/Request";
@@ -96,7 +97,8 @@ function VideoPhoto(props) {
       request().post('/api/gallery/upload-media', formData)
           .then(response => {
               // Handle success response
-              console.log("Photo uploaded successfully");
+              Swal.fire("response.message.data");
+              console.log("sfsfsf",response.message);
               // You might want to update the assets state to reflect the newly uploaded photo
           })
           .catch(error => {
@@ -150,7 +152,7 @@ function VideoPhoto(props) {
           {/* show Gallary */}
           <ImageVideoGallary data={assets} />
           {/* show capture VideoPhoto model */}
-          {showCapturePhoto &&  <CaptureVideoPhoto model= {true}  captureType="photo" />}
+          {showCapturePhoto &&  <CaptureVideoPhoto model= {true}  captureType="photo" onUpload={loadMore}/>}
           {showCaptureVideo &&  <CaptureVideoPhoto model= {true}  captureType="video" />}
       </div>
   );

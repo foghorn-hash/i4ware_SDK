@@ -52,6 +52,7 @@ class GalleryController extends Controller
                 'id' => $asset->id,
                 'filename' => $asset->filename,
                 'asset_path' => $asset->asset_path,
+                'file_type' =>$asset->file_type,
                 'domain' => $asset->domain,
                 'user_id' => $asset->user_id,                
             ];
@@ -63,13 +64,13 @@ class GalleryController extends Controller
     public function uploadMedia(Request $request)
     {
         // Validate the incoming request
-        $validator = Validator::make($request->all(), [
-            'file' => 'required|file|mimes:jpeg,png,jpg,gif,mp4|max:4096', // Adjust max file size if needed
+     /*    $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif,webm,mp4|max:4096', // Adjust max file size if needed
         ]);
     
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 400);
-        }
+        } */
     
         // Handle file upload
         if ($request->hasFile('file')) {
@@ -98,8 +99,4 @@ class GalleryController extends Controller
     
         return response()->json(['error' => 'Media file not found in request'], 400);
     }
-    
-    
-
-
 }
