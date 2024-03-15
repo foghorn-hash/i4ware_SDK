@@ -15,6 +15,10 @@ use DB;
 use Illuminate\Support\Carbon;
 use Storage;
 use Illuminate\Support\Facades\Log;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use FFMpeg\Format\Video\X264;
+use App\Events\VideoCompressed;
+use FFMpeg\Coordinate\Dimension;
 
 class GalleryController extends Controller
 {
@@ -61,7 +65,7 @@ class GalleryController extends Controller
         return response()->json($data, 200);
     }
 
-    public function uploadMedia(Request $request)
+    public function uploadMediaOLD(Request $request)
     {
         // Validate the incoming request
      /*    $validator = Validator::make($request->all(), [
@@ -97,6 +101,103 @@ class GalleryController extends Controller
             return response()->json(['message' => 'Media uploaded successfully'], 200);
         }
     
+        return response()->json(['error' => 'Media file not found in request'], 400);
+    }
+
+    public function uploadMedia(Request $request)
+    {
+        // Validate the incoming request
+        /*       $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif,webm,mp4|max:50000', // Adjust max file size if needed
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 400);
+        } */
+
+        // Handle file upload
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+
+            // Generate a unique filename
+            $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+            // Determine if the file is a video
+            $isVideo = $file->getClientOriginalExtension() === 'mp4';
+
+            // Move the uploaded file to the storage directory
+            $path = $file->storeAs('public/photos_videos', $filename);
+
+             $path_to_store_in_db = 'photos_videos/'.$filename;
+
+            // Compress video if it's a video
+            if ($isVideo) {
+
+                Log::info('1111111');
+               
+                    // Define the low bitrate format
+                    $lowBitrateFormat = (new X264('libmp3lame', 'libx264'))->setKiloBitrate(500);
+                
+                    // Open the video file
+                    FFMpeg::fromDisk('public')
+                        ->open($path_to_store_in_db)
+                        ->addFilter(function ($filters) {
+                            // Resize the video to 960x540 pixels
+                            $filters->resize(new Dimension(960, 540));
+                        })
+                        ->export()
+                        ->toDisk('public') // Change 's3' to 'public' to save it locally
+                        ->inFormat($lowBitrateFormat)
+                        ->save('photos_videos/compressed_'.$filename);
+               
+            
+                //compress using command
+                 /*         Log::info('222222');
+                // Define the input and output paths
+                $inputPath = public_path('storage/' . $path_to_store_in_db);
+                $outputPath = public_path('storage/photos_videos/compressed_' . $filename);
+
+                // Construct the ffmpeg command
+                $ffmpegCommand = "ffmpeg -i $inputPath -c:v libx264 -c:a aac $outputPath";
+
+                // Execute the ffmpeg command
+                exec($ffmpegCommand, $output, $returnCode);
+                Log::info('2222', [$returnCode]);
+                // Check if the command executed successfully
+                if ($returnCode === 0) {
+                    Log::info('444444444',$output);
+                    // Compression successful
+                    $path_to_store_in_db = 'photos_videos/compressed_' . $filename;
+                } else {
+                    // Compression failed
+                    // Handle the error
+                } */
+
+                //compress using package.
+              /*  $video = FFMpeg::fromDisk('public')->open($path_to_store_in_db);
+               
+                $video->export()
+                    ->inFormat(new X264('aac'))
+                    ->save('photos_videos/compressed_'.$filename);
+
+                $path_to_store_in_db = 'photos_videos/compressed_'.$filename;  */
+            }
+
+            // Create a new record in the database
+            $media = new Assets();
+            $media->filename = $filename;
+            $media->asset_path = $path_to_store_in_db;
+            $media->file_type = $file->getClientOriginalExtension();
+            $media->user_id = auth()->id(); // Assuming user is authenticated
+            $media->domain = auth()->user()->domain; // Assuming domain is associated with the user
+
+            // Save the record
+            $media->save();
+
+
+            return response()->json(['message' => 'Media uploaded successfully'], 200);
+        }
+
         return response()->json(['error' => 'Media file not found in request'], 400);
     }
 }
