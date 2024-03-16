@@ -28,6 +28,7 @@ let strings = new LocalizedStrings({
     settings: "Settings",
     welcome: "Welcome",
     videoPhoto: "Video/Photo",
+    stlWireframeViewer: "STL Wireframe Viewer",
   },
   fi: {
     login: "Kirjaudu sisään",
@@ -40,6 +41,7 @@ let strings = new LocalizedStrings({
     settings: "Asetukset",
     welcome: "Tervetuloa",
     videoPhoto: "Video/Kuva",
+    stlWireframeViewer: "STL-rautalankakatselu"
   }
 });
 
@@ -165,6 +167,9 @@ function Header(props) {
               )}
               {authState.isLogged && (
                 <NavLink className="Header-nav-link" to="/stl-viewer">{strings.stlViewer}</NavLink>
+              )}
+              {authState.isLogged && (
+                <NavLink className="Header-nav-link" to="/stl-wireframe-viewer">{strings.stlWireframeViewer}</NavLink>
               )}
               {authState.isLogged && (
                 <NavLink className="Header-nav-link" to="/video-photo">{strings.videoPhoto}</NavLink>
