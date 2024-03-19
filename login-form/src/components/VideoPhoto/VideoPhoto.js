@@ -1,14 +1,14 @@
-import React, {useState, useContext,useEffect} from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import Swal from 'sweetalert2';
 import "./VideoPhoto.css";
 import { withRouter } from "react-router-dom";
-import request from "../../utils/Request";  
-import {Button} from "react-bootstrap";
+import request from "../../utils/Request";
+import { Button } from "react-bootstrap";
 import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
 import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
-
+import Axios from 'axios';
 import ImageVideoGallary from "../imageVideoGallary/imageVideoGallary";
 import CaptureVideoPhoto from '../CaptureVideoPhoto/CaptureVideoPhoto';
 // ES6 module syntax
@@ -32,129 +32,284 @@ let strings = new LocalizedStrings({
 });
 
 function VideoPhoto(props) {
-  const [page, setPage] = useState(1);
-  const [assets, setAssets] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const { authState, authActions } = useContext(AuthContext);
-  const [selectedFile, setSelectedFile] = useState(null);
+    const [page, setPage] = useState(1);
+    const [assets, setAssets] = useState([]);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const { authState, authActions } = useContext(AuthContext);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const fileInputRef = useRef(null);
 
-  const [showCapturePhoto, setShowCapturePhoto] = useState(false);
 
-  const [showCaptureVideo, setShowCaptureVideo] = useState(false);
-  const handleCapturePhoto = () => {
-    setShowCapturePhoto(!showCapturePhoto);
-  };
+    const [showCapturePhoto, setShowCapturePhoto] = useState(false);
 
-  const handleCaptureVideo = () => {
-    setShowCaptureVideo(!showCaptureVideo);
-  };
-  
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+    const [showCaptureVideo, setShowCaptureVideo] = useState(false);
+    //   const handleCapturePhoto = () => {
+    //     setShowCapturePhoto(!showCapturePhoto);
+    //   };
+    const handleCapturePhoto = () => {
+        setSelectedFile(null); // Reset selected file
+        setShowCapturePhoto(!showCapturePhoto);
+    };
 
-  if (localization == null) {
-      strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-      strings.setLanguage(localization);
-  }
 
-  useEffect(() => {
-      loadMore();
+    const handleCaptureVideo = () => {
+        setShowCaptureVideo(!showCaptureVideo);
+    };
+
+    var query = window.location.search.substring(1);
+    var urlParams = new URLSearchParams(query);
+    var localization = urlParams.get('lang');
+
+    if (localization == null) {
+        strings.setLanguage(API_DEFAULT_LANGUAGE);
+    } else {
+        strings.setLanguage(localization);
+    }
+
+    useEffect(() => {
+        loadMore();
     }, []);
-  
+
     const loadMore = () => {
-      if (isLoading || !hasMore) return;
+        if (isLoading || !hasMore) return;
+
+        setIsLoading(true);
+        request().get(`/api/gallery/assets?page=${page}`)
+            .then(res => {
+                const newAssets = res.data;
+                if (newAssets && newAssets.length > 0) {
+                    setAssets(prevAssets => [...new Set([...prevAssets, ...newAssets])]);
+                    setPage(prevPage => prevPage + 1);
+                } else {
+                    setHasMore(false);
+                }
+            })
+            .catch(error => {
+                console.error("Error loading more domains:", error);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    };
+
   
-      setIsLoading(true);
-      request().get(`/api/gallery/assets?page=${page}`)
-        .then(res => {
-          const newAssets = res.data;
-          if (newAssets && newAssets.length > 0) {
-            setAssets(prevAssets => [...new Set([...prevAssets, ...newAssets])]);
-            setPage(prevPage => prevPage + 1);
-          } else {
-            setHasMore(false);
-          }
-        })
-        .catch(error => {
-          console.error("Error loading more domains:", error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-  };
+    const handleFileChange = async (event) => {
+        debugger
+        const file = event.target.files[0];
+        console.log(file)
+    
+        // Check if a file is selected
+        if (!file) {
+            console.error("No file selected");
+            return;
+        }
+    
+        // Check if the selected file type is not jpg or png
+        if (!file.type.includes('image/jpeg') && !file.type.includes('image/png')) {
+            console.error("Image type is not supported");
+            alert("Image type is not supported. Please upload a JPEG (jpg) or PNG (png) image.");
+            return;
+        }
+    
+        setSelectedFile(file);
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            await request().post('/api/gallery/upload-media', formData);
+            console.log("Image uploaded successfully");
+            // alert("Image uploaded successfully");
+        } catch (error) {
+            console.error("Error uploading image:", error);
+        }
+    };
 
-  const handleFileChange = (event) => {
-      setSelectedFile(event.target.files[0]);
-  };
+    // const handleFileChange = async (event) => {
+    //     const file = event.target.files[0];
 
-  const handleUpload = () => {
-      const formData = new FormData();  
-      formData.append('file', selectedFile);
+    //     // Check if a file is selected
+    //     if (!event) {
+    //         console.error("No file selected");
+    //         return;
+    //     }
 
-      request().post('/api/gallery/upload-media', formData)
-          .then(response => {
-              
-              console.log("Photo uploaded successfully");
-              
-          })
-          .catch(error => {
-              // Handle error
-              console.error("Error uploading photo:", error);
-          });
-  };
+    //     // Check if the selected file type is not an image
+    //     if (!file.type.includes('image/')) {
+    //         console.error("File type is not supported");
+    //         alert("File type is not supported. Please upload an image.");
+    //         return;
+    //     }
 
-  if (isLoading) {
-      return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
-  }
-  
-  return (
-      <div className="VideoPhoto-main">
-          <h3>{strings.videoPhoto}</h3>
-          <div className="VideoPhoto-button-bar">
-          <input   type="file" accept="image/*,video/*" onChange={handleFileChange} />
-              <Button
-                  className="VideoPhoto-button"
-                  variant="primary"
-                  size="sm"
-                  onClick={handleUpload}
+    //     setSelectedFile(file);
 
-              >
-                  {strings.uploadPhoto}
-              </Button>
-              <Button
-                  className="VideoPhoto-button" 
-                  variant="primary"                                                                         
-                  size="sm"
-                  onClick={handleCapturePhoto}
-              >
-                  {strings.capturePhoto}
-              </Button>
-              <Button
-                  className="VideoPhoto-button"
-                  variant="primary"
-                  size="sm"
-              >
-                  {strings.uploadVideo}
-              </Button>
-              <Button
-                  className="VideoPhoto-button"
-                  variant="primary"
-                  size="sm"
-                  onClick={handleCaptureVideo}
-              >
-                  {strings.captureVideo}
-              </Button>
-          </div>
-          {/* show Gallary */}
-          <ImageVideoGallary data={assets} />
-          {/* show capture VideoPhoto model */}
-          {showCapturePhoto &&  <CaptureVideoPhoto model= {true}  captureType="photo" onUpload={loadMore}/>}
-          {showCaptureVideo &&  <CaptureVideoPhoto model= {true}  captureType="video" onUpload={loadMore} />}
-      </div>
-  );
+    //     const formData = new FormData();
+    //     formData.append('file', file);
+
+    //     try {
+    //         await request().post('/api/gallery/upload-media', formData);
+    //         console.log("Image uploaded successfully");
+    //         alert("Image uploaded successfully");
+    //     } catch (error) {
+    //         console.error("Error uploading image:", error);
+    //     }
+    // };
+    
+
+
+    const handleVideoChange = async (event) => {
+        debugger
+        const file = event.target.files[0]; // Define 'file' variable here
+    
+        if (!file) {
+            console.error("No file selected");
+            return;
+        }
+        // Check if the file size exceeds 15 MB
+        if (file.size > 15 * 1024 * 1024) {
+            console.error("Video size is too large");
+            alert("Video size is too large. Please upload a video file less than 15 MB.");
+            return;
+        }
+    
+        setSelectedFile(file); // Set selected file in the state
+    
+        const formData = new FormData();
+        formData.append('file', file); // Append 'file' to formData
+    
+        try {
+            await request().post('/api/gallery/upload-media', formData);
+            console.log("Video uploaded successfully");
+            alert("Video uploaded successfully");
+        } catch (error) {
+            console.error("Error uploading video:", error);
+        }
+    };
+    
+
+
+    const handleButtonClick = () => {
+        fileInputRef.current.click();
+    };
+
+      const handleUpload = async () => {
+          const formData = new FormData();  
+          formData.append('file', selectedFile);
+
+          await request().post('/api/gallery/upload-media', formData)
+              .then(response => {
+
+                  console.log("Photo uploaded successfully");
+
+              })
+              .catch(error => {
+                  // Handle error
+                  console.error("Error uploading photo:", error);
+              });
+      };
+
+
+
+
+    // const handleUpload = async () => {
+    //     const formData = new FormData();  
+    //     formData.append('file', selectedFile);
+
+    //     try {
+    //       const response = await Axios.post('/api/gallery/upload-media', formData, {
+    //         headers: {
+    //           'Content-Type': 'multipart/form-data',
+    //         },
+    //       });
+
+    //       console.log("Photo uploaded successfully");
+
+    //     } catch (error) {
+    //       // Handle error
+    //       console.error("Error uploading photo:", error);
+    //     }
+    //   };
+
+
+    if (isLoading) {
+        return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
+    }
+
+    return (
+        <div className="VideoPhoto-main">
+            <h3>{strings.videoPhoto}</h3>
+            <div className="VideoPhoto-button-bar">
+                {/* <input type="file" accept="image/*,video/*" onChange={handleFileChange} /> */}
+                {/* <Button
+                    className="VideoPhoto-button"
+                    variant="primary"
+                    size="sm"
+                    onClick={handleUpload}
+
+                >
+                    {strings.uploadPhoto}
+                </Button> */}
+
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                    accept="image/jpeg, image/png" // This line restricts accepted file types to images and videos
+                />
+                <Button
+                    className="VideoPhoto-button"
+                    variant="primary"
+                    size="sm"
+                    onClick={handleButtonClick}
+                >
+                    {strings.uploadPhoto}
+                </Button>
+
+
+                <Button
+                    className="VideoPhoto-button"
+                    variant="primary"
+                    size="sm"
+                    onClick={handleCapturePhoto}
+                >
+                    {strings.capturePhoto}
+                </Button>
+
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleVideoChange}
+                    accept="video/*" // Only accept video files
+                />
+                <Button
+                    className="VideoPhoto-button"
+                    variant="primary"
+                    size="sm"
+                    onClick={handleButtonClick}
+                >
+                    {strings.uploadVideo}
+                </Button>
+
+
+                <Button
+                    className="VideoPhoto-button"
+                    variant="primary"
+                    size="sm"
+                    onClick={handleCaptureVideo}
+                >
+                    {strings.captureVideo}
+                </Button>
+            </div>
+            {/* show Gallary */}
+            <ImageVideoGallary data={assets} />
+            {/* show capture VideoPhoto model */}
+            {showCapturePhoto && <CaptureVideoPhoto model={true} captureType="photo" onUpload={loadMore} />}
+            {showCaptureVideo && <CaptureVideoPhoto model={true} captureType="video" onUpload={loadMore} />}
+        </div>
+    );
 }
 
 

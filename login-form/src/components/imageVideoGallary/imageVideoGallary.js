@@ -19,10 +19,10 @@ const ImageVideoGallary = ({ data }) => {
       {data.map((item) => (
         <div key={item.id} className="image-video-item" onClick={() => openModal(item)}>
           { /\.(jpg|jpeg|png|gif)$/i.test(item.asset_path) ? (
-            <img src={`${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`} alt={item.filename} />
+            <img src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${item.asset_path}`} alt={item.filename} />
           ) : (
             <video >
-              <source src={`${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`} type="video/mp4" />
+              <source src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${item.asset_path}`} type="video/mp4" />
             </video>           
           )}
         </div>
@@ -37,10 +37,10 @@ const ImageVideoGallary = ({ data }) => {
             </button>
           </div>
             { /\.(jpg|jpeg|png|gif)$/i.test(selectedItem.asset_path) ? (
-              <img src={`${process.env.REACT_APP_SERVER_URL}/storage/${selectedItem.asset_path}`} alt={selectedItem.filename} />
+              <img src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${selectedItem.asset_path}`} alt={selectedItem.filename} />
             ) : (
               <video controls>
-                <source src={`${process.env.REACT_APP_SERVER_URL}/storage/${selectedItem.asset_path}`} type="video/mp4" />
+                <source src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${selectedItem.asset_path}`} type="video/mp4" />
               </video>
             )}
           </div>
