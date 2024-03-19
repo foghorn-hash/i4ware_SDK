@@ -38,8 +38,9 @@ function VideoPhoto(props) {
     const [isLoading, setIsLoading] = useState(false);
     const { authState, authActions } = useContext(AuthContext);
     const [selectedFile, setSelectedFile] = useState(null);
-    const fileInputRef = useRef(null);
 
+    const fileInputRef = useRef(null);
+      const videoFileInputRef = useRef(null); 
 
     const [showCapturePhoto, setShowCapturePhoto] = useState(false);
 
@@ -95,7 +96,7 @@ function VideoPhoto(props) {
 
   
     const handleFileChange = async (event) => {
-        debugger
+        // debugger
         const file = event.target.files[0];
         console.log(file)
     
@@ -118,11 +119,14 @@ function VideoPhoto(props) {
         try {
             await request().post('/api/gallery/upload-media', formData);
             console.log("Image uploaded successfully");
-            // alert("Image uploaded successfully");
+           
         } catch (error) {
             console.error("Error uploading image:", error);
         }
     };
+
+
+
 
     // const handleFileChange = async (event) => {
     //     const file = event.target.files[0];
@@ -157,7 +161,7 @@ function VideoPhoto(props) {
 
 
     const handleVideoChange = async (event) => {
-        debugger
+        // debugger
         const file = event.target.files[0]; // Define 'file' variable here
     
         if (!file) {
@@ -190,6 +194,11 @@ function VideoPhoto(props) {
     const handleButtonClick = () => {
         fileInputRef.current.click();
     };
+
+    const handleButtonClickvideo = () => {
+        videoFileInputRef.current.click();
+    };
+    
 
       const handleUpload = async () => {
           const formData = new FormData();  
@@ -255,7 +264,7 @@ function VideoPhoto(props) {
                     ref={fileInputRef}
                     style={{ display: 'none' }}
                     onChange={handleFileChange}
-                    accept="image/jpeg, image/png" // This line restricts accepted file types to images and videos
+                    accept="image/jpeg, image/png" 
                 />
                 <Button
                     className="VideoPhoto-button"
@@ -265,6 +274,9 @@ function VideoPhoto(props) {
                 >
                     {strings.uploadPhoto}
                 </Button>
+
+
+
 
 
                 <Button
@@ -279,7 +291,7 @@ function VideoPhoto(props) {
 
                 <input
                     type="file"
-                    ref={fileInputRef}
+                    ref={videoFileInputRef}
                     style={{ display: 'none' }}
                     onChange={handleVideoChange}
                     accept="video/*" // Only accept video files
@@ -288,7 +300,7 @@ function VideoPhoto(props) {
                     className="VideoPhoto-button"
                     variant="primary"
                     size="sm"
-                    onClick={handleButtonClick}
+                    onClick={handleButtonClickvideo}
                 >
                     {strings.uploadVideo}
                 </Button>
