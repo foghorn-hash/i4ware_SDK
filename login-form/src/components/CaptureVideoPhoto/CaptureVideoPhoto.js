@@ -16,7 +16,7 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
   const [photovideoUploading, setvideoUploading] = useState(false)
 
   const [show, setShow] = useState(false);
-   const handleClose = () => setShow(false);
+  const handleClose = () => setShow(false);
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -25,8 +25,6 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
     const photo = webcamRef.current.getScreenshot();
     setCapturedPhoto(photo);
   };
-
-
 
   const startVideoCapture = () => {
     setIsCapturingVideo(true);
@@ -117,11 +115,6 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
     }
   };
   
-
-
-
-
-
     const uploadVideo = () => {
       setIsModalOpen(false);  
       if (recordedChunks.length) {
@@ -158,10 +151,6 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
           });
       }
     };
-
-
-
-
 
   const getPhotoExtension = () => {
     // Get the image format from the data URI
