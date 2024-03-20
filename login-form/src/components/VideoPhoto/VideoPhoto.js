@@ -169,7 +169,7 @@ function VideoPhoto(props) {
             return;
         }
         // Check if the file size exceeds 15 MB
-        if (file.size > 15 * 1024 * 1024) {
+        if (file.size > 100 * 1024 * 1024) {
             console.error("Video size is too large");
             alert("Video size is too large. Please upload a video file less than 15 MB.");
             return;
