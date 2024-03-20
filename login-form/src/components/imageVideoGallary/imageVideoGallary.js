@@ -34,14 +34,14 @@ const ImageVideoGallary = ({ data }) => {
               onError={handleVideoError}
             >
               <source
-                src={`${process.env.REACT_APP_SERVER_URL}/storage/public/${item.asset_path}`}
+                src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${item.asset_path}`}
                 type="video/mp4"
               />
               Your browser does not support the video tag.
             </video>
           ) : /\.(jpg|jpeg|png|gif)$/i.test(item.asset_path) ? (
             <img
-              src={`${process.env.REACT_APP_SERVER_URL}/storage/public/${item.asset_path}`}
+              src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${item.asset_path}`}
               alt={item.filename}
               onError={(e) => console.error('Image loading error:', e)}
             />
@@ -65,14 +65,14 @@ const ImageVideoGallary = ({ data }) => {
                   onError={handleVideoError}
                 >
                   <source
-                    src={`${process.env.REACT_APP_SERVER_URL}/storage/public/${selectedItem.asset_path}`}
+                    src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${selectedItem.asset_path}`}
                     type="video/mp4"
                   />
                   Your browser does not support the video tag.
                 </video>
               ) : /\.(jpg|jpeg|png|gif)$/i.test(selectedItem.asset_path) ? (
                 <img
-                  src={`${process.env.REACT_APP_SERVER_URL}/storage/public/${selectedItem.asset_path}`}
+                  src={`${process.env.REACT_APP_SERVER_STORAGE_URL}/${selectedItem.asset_path}`}
                   alt={selectedItem.filename}
                   onError={(e) => console.error('Image loading error:', e)}
                 />
