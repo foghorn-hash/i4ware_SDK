@@ -124,3 +124,9 @@ body {
   width: 100px;
   height: 100px;
 }
+
+.App-license-button {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
