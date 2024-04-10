@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StlController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\ChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,3 +81,7 @@ Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router)
 	Route::get('/assets', [GalleryController::class, 'assets'])->name('assets.asset-items');
 	Route::post('/upload-media', [GalleryController::class, 'uploadMedia'])->name('gallery.upload-media');
 });
+
+Route::post('messages', [ChatController::class, 'message']);
+Route::get('/messages', [ChatController::class, 'getMessages']);
+Route::post('/typing', [ChatController::class, 'userTyping']);

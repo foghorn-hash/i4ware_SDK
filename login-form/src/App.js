@@ -24,6 +24,7 @@ import ManageRoles from "./components/ManageRoles/ManageRoles";
 import RoleForm from "./components/ManageRoles/RoleForm";
 import STLViewerComponent from "./components/STLViewerComponent/STLViewerComponent";
 import VideoPhoto from "./components/VideoPhoto/VideoPhoto";
+import PusherChat from "./components/PusherChat/PusherChat";
 import ErrorBoundary from "./contexts/ErrorBoundry";
 import LOGO from "./52311-logo-transparent.png";
 
@@ -103,6 +104,7 @@ function App() {
               <PrivateRoute path="/settings" component={Settings} />
               <PrivateRoute path="/stl-viewer" component={STLViewerComponent} />
               <PrivateRoute path="/video-photo" component={VideoPhoto} />
+              <PrivateRoute path="/Pusher-Chat" component={PusherChat} />
             </Switch>
           </Container>
         </AuthProvider>
