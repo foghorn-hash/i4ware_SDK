@@ -53,7 +53,7 @@ class CompressVideo implements ShouldQueue
             ->inFormat(new X264('aac'))
             ->save('photos_videos/compressed'.$this->filename);
 
-        $compressedFilename = 'compressed_'.$this->filename;
+        $compressedFilename = 'compressed'.$this->filename;
         $compressedPath = 'photos_videos/'.$compressedFilename;
          // Update the record in the database
          $media = Assets::find($this->mediaId);
