@@ -46,7 +46,7 @@
   justify-content: center;
   z-index: 9999; /* Ensure it appears on top of other content */
 }
-.modal-container {
+.model.mediapopup .modal-container {
   /* Styles for the webcam container (your existing styles) */
   display: flex;
   flex-direction: column;
@@ -58,7 +58,7 @@
   border-radius: 15px;
   opacity: 1.8;
 }
-.modal-content{
+.model.mediapopup .modal-content{
     width: 50%;
  
 }
