@@ -51,7 +51,7 @@ const ImageVideoGallary = ({ data }) => {
         </div>
       ))}
       {selectedItem && (
-        <div className="modal">
+        <div className="modal mediapopup">
           <div className="modal-container">
             <div className="modal-content">
               <div className='close-button-container'>
