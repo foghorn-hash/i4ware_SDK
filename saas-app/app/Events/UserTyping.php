@@ -3,14 +3,12 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Foundation\Events\Dispatchable;
 
-class UserTyping implements ShouldBroadcast
+class UserTyping implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -25,6 +23,12 @@ class UserTyping implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new PresenceChannel('chat');
+        return new Channel('chat');
+    }
+
+    public function broadcastAs()
+    {
+        return 'user-typing';
     }
 }
+

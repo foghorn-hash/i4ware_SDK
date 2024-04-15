@@ -2,7 +2,21 @@ import React, { useEffect, useState, useRef } from 'react';
 import Pusher from 'pusher-js';
 import Axios from 'axios';
 import './Chat.css';
-import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA } from "../../constants/apiConstants";
+import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en: {
+    send: "Send",
+    typing: "is typing...",
+    box: "Write a message..."
+  },
+  fi: {
+    send: "Lähetä",
+    typing: "kirjoittaa...",
+    box: "Kirjoita viesti..."
+  }
+});
 
 const App = () => {
   const [username, setUsername] = useState(localStorage.getItem(ACCESS_USER_DATA) || 'Guest');
@@ -11,6 +25,16 @@ const App = () => {
   const [typingIndicator, setTypingIndicator] = useState('');
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   useEffect(() => {
     fetchUsername();
@@ -41,7 +65,7 @@ const App = () => {
 
     channel.bind('user-typing', ({ username: typingUsername, isTyping }) => {
         if (isTyping) {
-            setTypingIndicator(`${typingUsername} is typing...`);
+            setTypingIndicator(`${typingUsername} ${strings.typing}`);
             clearTimeout(typingTimeoutRef.current);
             typingTimeoutRef.current = setTimeout(() => {
                 setTypingIndicator('');
@@ -113,11 +137,11 @@ const App = () => {
       <form onSubmit={submitMessage} className="message-form">
         <input
           className="message-input"
-          placeholder="Write a message..."
+          placeholder={strings.box}
           value={message}
           onChange={handleTyping}
         />
-        <button type="submit" className="send-button">Send</button>
+        <button type="submit" className="send-button">{strings.send}</button>
       </form>
     </div>
   );

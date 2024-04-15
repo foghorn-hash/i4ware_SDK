@@ -44,7 +44,9 @@ class ChatController extends Controller
         $username = $request->username;
         $isTyping = $request->isTyping;
     
-        event(new UserTyping($username, $isTyping));
-    }
+        broadcast(new UserTyping($username, $isTyping))->toOthers();
+    
+        return response()->json(['status' => 'success']);
+    }      
 
 }
