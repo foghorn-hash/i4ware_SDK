@@ -71,7 +71,24 @@ function VideoPhoto(props) {
     useEffect(() => {
         loadMore();
     }, []);
+    useEffect(() => {
+        // Function to handle scrolling event
+        const handleScroll = () => {
+            if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
+                // If user scrolled to the bottom of the page, call loadMore function
+                loadMore();
+            }
+        };
 
+        // Add scroll event listener when component mounts
+        window.addEventListener('scroll', handleScroll);
+
+        // Remove scroll event listener when component unmounts
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [assets, isLoading, hasMore, page]);
+ 
     const loadMore = () => {
         if (isLoading || !hasMore) return;
 
