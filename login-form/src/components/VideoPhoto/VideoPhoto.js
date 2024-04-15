@@ -119,45 +119,12 @@ function VideoPhoto(props) {
         try {
             await request().post('/api/gallery/upload-media', formData);
             console.log("Image uploaded successfully");
-           
+            alert("Image uploaded successfully");
+             window.location.reload(); 
         } catch (error) {
             console.error("Error uploading image:", error);
         }
     };
-
-
-
-
-    // const handleFileChange = async (event) => {
-    //     const file = event.target.files[0];
-
-    //     // Check if a file is selected
-    //     if (!event) {
-    //         console.error("No file selected");
-    //         return;
-    //     }
-
-    //     // Check if the selected file type is not an image
-    //     if (!file.type.includes('image/')) {
-    //         console.error("File type is not supported");
-    //         alert("File type is not supported. Please upload an image.");
-    //         return;
-    //     }
-
-    //     setSelectedFile(file);
-
-    //     const formData = new FormData();
-    //     formData.append('file', file);
-
-    //     try {
-    //         await request().post('/api/gallery/upload-media', formData);
-    //         console.log("Image uploaded successfully");
-    //         alert("Image uploaded successfully");
-    //     } catch (error) {
-    //         console.error("Error uploading image:", error);
-    //     }
-    // };
-    
 
 
     const handleVideoChange = async (event) => {
@@ -184,12 +151,11 @@ function VideoPhoto(props) {
             await request().post('/api/gallery/upload-media', formData);
             console.log("Video uploaded successfully");
             alert("Video uploaded successfully");
+            window.location.reload(); 
         } catch (error) {
             console.error("Error uploading video:", error);
         }
     };
-    
-
 
     const handleButtonClick = () => {
         fileInputRef.current.click();
@@ -199,8 +165,7 @@ function VideoPhoto(props) {
         videoFileInputRef.current.click();
     };
     
-
-      const handleUpload = async () => {
+    const handleUpload = async () => {
           const formData = new FormData();  
           formData.append('file', selectedFile);
 
@@ -218,27 +183,6 @@ function VideoPhoto(props) {
 
 
 
-
-    // const handleUpload = async () => {
-    //     const formData = new FormData();  
-    //     formData.append('file', selectedFile);
-
-    //     try {
-    //       const response = await Axios.post('/api/gallery/upload-media', formData, {
-    //         headers: {
-    //           'Content-Type': 'multipart/form-data',
-    //         },
-    //       });
-
-    //       console.log("Photo uploaded successfully");
-
-    //     } catch (error) {
-    //       // Handle error
-    //       console.error("Error uploading photo:", error);
-    //     }
-    //   };
-
-
     if (isLoading) {
         return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
     }
@@ -247,18 +191,6 @@ function VideoPhoto(props) {
         <div className="VideoPhoto-main">
             <h3>{strings.videoPhoto}</h3>
             <div className="VideoPhoto-button-bar">
-                {/* <input type="file" accept="image/*,video/*" onChange={handleFileChange} /> */}
-                {/* <Button
-                    className="VideoPhoto-button"
-                    variant="primary"
-                    size="sm"
-                    onClick={handleUpload}
-
-                >
-                    {strings.uploadPhoto}
-                </Button> */}
-
-
                 <input
                     type="file"
                     ref={fileInputRef}

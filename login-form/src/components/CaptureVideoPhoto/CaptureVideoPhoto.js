@@ -13,10 +13,8 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isCapturingVideo, setIsCapturingVideo] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false)
-  const [photovideoUploading, setvideoUploading] = useState(false)
+  const [videoUploading, setvideoUploading] = useState(false)
 
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -60,29 +58,29 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
     }
   };
 
-  const handleDownload = () => {
-    if (recordedChunks.length) {
-      const blob = new Blob(recordedChunks, {
-        type: 'video/webm',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      document.body.appendChild(a);
-      a.style = 'display: none';
-      a.href = url;
-      a.download = 'captured-video.webm';
-      a.click();
-      window.URL.revokeObjectURL(url);
-      setRecordedChunks([]);
-
-      // Upload the video after downloading
-      uploadVideo();
-    }
-  };
+  // const handleDownload = () => {
+  //   if (recordedChunks.length) {
+  //     const blob = new Blob(recordedChunks, {
+  //       type: 'video/webm',
+  //     });
+  //     const url = URL.createObjectURL(blob);
+  //     const a = document.createElement('a');
+  //     document.body.appendChild(a);
+  //     a.style = 'display: none';
+  //     a.href = url;
+  //     a.download = 'captured-video.webm';
+  //     a.click();
+  //     window.URL.revokeObjectURL(url);
+  //     setRecordedChunks([]);
+  //     // Upload the video after downloading
+  //     uploadVideo();
+  //   }
+  // };
 
   const uploadPhoto = () => {
     if (capturedPhoto) {
       setPhotoUploading(true);
+      setIsModalOpen(false);
       // Append the file extension to the filename
       const filename = `captured-photo.${getPhotoExtension()}`;
   
@@ -92,19 +90,16 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
       request().post('/api/gallery/upload-media', formData)
         .then(response => {
           console.log("Photo uploaded successfully", response.data.message);
-          
+          setIsModalOpen(false);
+          setPhotoUploading(false);
           Swal.fire({
             icon: 'success',
             title: 'Upload Successful', 
             text: response.data.message,  
           }).then((result) => {
-            if (result.isConfirmed) {
-             
-
-              setPhotoUploading(false);
-              setIsModalOpen(false);  
-              onUpload();
-              // window.location.reload(); 
+            if (result.isConfirmed) {  
+              window.location.reload();          
+              onUpload();             
             }
           });
         })
@@ -115,10 +110,10 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
     }
   };
   
-    const uploadVideo = () => {
+  const uploadVideo = () => {
       setIsModalOpen(false);  
       if (recordedChunks.length) {
-        setvideoUploading(true);
+      //  setvideoUploading(true);
         const blob = new Blob(recordedChunks, {
           type: 'video/webm',
         });
@@ -129,7 +124,7 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
           .then(response => {
             console.log(response)
             setvideoUploading(false);
-                setIsModalOpen(false);  
+            setIsModalOpen(false);  
             console.log("Video uploaded successfully");
             Swal.fire({
               icon: 'success',
@@ -137,10 +132,7 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
               text: response.data.message,  
             }).then((result) => {
               if (result.isConfirmed) {
-                window.location.reload(); 
-
-                setvideoUploading(false);
-                setIsModalOpen(false);  
+                window.location.reload();  
                 onUpload(); 
               }
             });
@@ -150,7 +142,7 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
             setvideoUploading(false);
           });
       }
-    };
+  };
 
   const getPhotoExtension = () => {
     // Get the image format from the data URI
@@ -170,7 +162,7 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
 
   return (
     <div>
-      {isModalOpen && (!photoUploading || !photovideoUploading) && (
+      {isModalOpen && (!photoUploading || !videoUploading) && (
         <div className="webcam-overlay">
           <div className="Webcam-container">
             <div className='Webcam-close-container'>
