@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Pusher from 'pusher-js';
 import Axios from 'axios';
 import './Chat.css';
-import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
@@ -56,7 +56,7 @@ const App = () => {
   }, [messages]);
 
   const initializePusher = () => {
-    const pusher = new Pusher('your_pusher_key', { cluster: 'your_cluster' });
+    const pusher = new Pusher(API_PUSHER_KEY, { cluster: API_PUSHER_CLUSTER });
     const channel = pusher.subscribe('chat');
 
     channel.bind('message', (newMessage) => {
