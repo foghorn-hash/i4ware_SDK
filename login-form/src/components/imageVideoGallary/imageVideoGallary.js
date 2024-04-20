@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useInsertionEffect } from 'react';
 import './imageVideoGallary.css';
 
 const ImageVideoGallary = ({ data }) => {
