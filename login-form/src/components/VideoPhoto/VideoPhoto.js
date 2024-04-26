@@ -26,7 +26,7 @@ let strings = new LocalizedStrings({
     fi: {
         videoPhoto: "Video/Kuva",
         uploadPhoto: "Lataa kuva",
-        captureVideo: "Ota video",
+        capturePhoto: "Ota kuva",
         uploadVideo: "Lataa video",
         captureVideo: "Ota video",
     }
@@ -114,62 +114,45 @@ function VideoPhoto(props) {
 
   
     const handleFileChange = async (event) => {
-        // debugger
         const file = event.target.files[0];
-        console.log(file)
-    
-        // Check if a file is selected
         if (!file) {
             console.error("No file selected");
             return;
         }
-    
-        // Check if the selected file type is not jpg or png
         if (!file.type.includes('image/jpeg') && !file.type.includes('image/png')) {
             console.error("Image type is not supported");
             alert("Image type is not supported. Please upload a JPEG (jpg) or PNG (png) image.");
             return;
         }
-    
-        setSelectedFile(file);
         const formData = new FormData();
         formData.append('file', file);
         try {
-            await request().post('/api/gallery/upload-media', formData);
+            const response = await request().post('/api/gallery/upload-media', formData);
             console.log("Image uploaded successfully");
-            alert("Image uploaded successfully");
-             window.location.reload(); 
+            setAssets(prevAssets => [...prevAssets, response.data.asset]);
         } catch (error) {
             console.error("Error uploading image:", error);
         }
     };
-
+    
 
     const handleVideoChange = async (event) => {
-        // debugger
-        const file = event.target.files[0]; // Define 'file' variable here
-    
+        const file = event.target.files[0];
         if (!file) {
             console.error("No file selected");
             return;
         }
-        // Check if the file size exceeds 15 MB
         if (file.size > 100 * 1024 * 1024) {
             console.error("Video size is too large");
             alert("Video size is too large. Please upload a video file less than 15 MB.");
             return;
         }
-    
-        setSelectedFile(file); // Set selected file in the state
-    
         const formData = new FormData();
-        formData.append('file', file); // Append 'file' to formData
-    
+        formData.append('file', file);
         try {
-            await request().post('/api/gallery/upload-media', formData);
+            const response = await request().post('/api/gallery/upload-media', formData);
             console.log("Video uploaded successfully");
-            alert("Video uploaded successfully");
-            window.location.reload(); 
+            setAssets(prevAssets => [...prevAssets, response.data.asset]);
         } catch (error) {
             console.error("Error uploading video:", error);
         }
