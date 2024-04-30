@@ -28,6 +28,7 @@ let strings = new LocalizedStrings({
     settings: "Settings",
     welcome: "Welcome",
     videoPhoto: "Video/Photo",
+    chat: "Chat",
   },
   fi: {
     login: "Kirjaudu sisään",
@@ -40,6 +41,7 @@ let strings = new LocalizedStrings({
     settings: "Asetukset",
     welcome: "Tervetuloa",
     videoPhoto: "Video/Kuva",
+    chat: "Chatti",
   }
 });
 
@@ -168,6 +170,9 @@ function Header(props) {
               )}
               {authState.isLogged && (
                 <NavLink className="Header-nav-link" to="/video-photo">{strings.videoPhoto}</NavLink>
+              )}
+              {authState.isLogged && (
+                <NavLink className="Header-nav-link" to="/pusher-Chat">{strings.chat}</NavLink>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"users.view"}>

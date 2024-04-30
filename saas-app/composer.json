@@ -12,7 +12,8 @@
         "laravel/passport": "^10.3",
         "laravel/sanctum": "^2.14",
         "laravel/tinker": "^2.5",
-        "pbmedia/laravel-ffmpeg": "^8.3"
+        "pbmedia/laravel-ffmpeg": "^8.3",
+        "pusher/pusher-php-server": "^7.2"
     },
     "require-dev": {
 		"spatie/laravel-ignition": "^1.0",
