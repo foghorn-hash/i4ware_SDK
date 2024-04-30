@@ -109,7 +109,7 @@ function App() {
               <PrivateRoute path="/settings" component={Settings} />
               <PrivateRoute path="/stl-viewer" component={STLViewerComponent} />
               <PrivateRoute path="/video-photo" component={VideoPhoto} />
-              <PrivateRoute path="/pusher-Chat" component={PusherChat} />
+              <PrivateRoute path="/pusher-chat" component={PusherChat} />
             </Switch>
           </Container>
         </AuthProvider>

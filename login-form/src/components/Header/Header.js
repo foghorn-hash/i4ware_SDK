@@ -172,7 +172,7 @@ function Header(props) {
                 <NavLink className="Header-nav-link" to="/video-photo">{strings.videoPhoto}</NavLink>
               )}
               {authState.isLogged && (
-                <NavLink className="Header-nav-link" to="/pusher-Chat">{strings.chat}</NavLink>
+                <NavLink className="Header-nav-link" to="/pusher-chat">{strings.chat}</NavLink>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"users.view"}>
