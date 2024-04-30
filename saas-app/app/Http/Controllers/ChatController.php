@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\Message;
-use App\Events\userTyping;
+use App\Events\UserTyping;
 use App\Models\Message as MessageModel;
 use Illuminate\Http\Request;
 
