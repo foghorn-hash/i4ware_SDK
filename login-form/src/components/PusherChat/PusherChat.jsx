@@ -15,6 +15,11 @@ let strings = new LocalizedStrings({
     send: "Lähetä",
     typing: "kirjoittaa...",
     box: "Kirjoita viesti..."
+  },
+  se: {
+    send: "Skicka",
+    typing: "skriver...",
+    box: "Skriv meddelande..."
   }
 });
 

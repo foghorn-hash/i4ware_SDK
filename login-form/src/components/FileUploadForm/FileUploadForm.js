@@ -15,6 +15,11 @@ let strings = new LocalizedStrings({
     uploadStlFile: "Lataa STL-tiedosto",
     browse: "Selaa...",
     upload: "Lataa"
+  },
+  se: {
+    uploadStlFile: "Ladda upp STL-fil",
+    browse: "Bläddra...",
+    upload: "Ladda upp"
   }
 });
 

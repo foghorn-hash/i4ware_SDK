@@ -16,6 +16,11 @@ let strings = new LocalizedStrings({
       emailVerification: "Sähköpostin Varmistus",
       goToLogin: "Siirry kirjautumaan?",
       loginHere: "Kirjaudu tästä"
+    },
+    se: {
+      emailVerification: "E-postverifiering",
+      goToLogin: "Gå till inloggning?",
+      loginHere: "Logga in här"
     }
   });
 

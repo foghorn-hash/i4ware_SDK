@@ -43,6 +43,21 @@ let strings = new LocalizedStrings({
     register: "Rekisteröidy",
     orLogin: "tai kirjaudu?",
     login: "Kirjaudu sisään"
+  },
+  se: {
+    invalidEmail: "Ogiltig e-postadress",
+    required: "Obligatoriskt",
+    tooLong: "För långt!",
+    tooShort: "För kort!",
+    passwordsDontMatch: "Lösenord och bekräftelse lösenord måste vara samma.",
+    passwordResetSuccessful: "Återställning av lösenord lyckades.",
+    neverShareEmail: "Vi delar aldrig din e-postadress med någon annan.",
+    passwordStronglyEncrypted: "Ditt lösenord är starkt krypterat och säkert i vår databas.",
+    submit: "Skicka",
+    noAccount: "Har du inget konto?",
+    register: "Registrera",
+    orLogin: "eller logga in?",
+    login: "Logga in"
   }
 });
 

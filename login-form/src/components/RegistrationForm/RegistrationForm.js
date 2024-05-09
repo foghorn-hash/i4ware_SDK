@@ -80,7 +80,41 @@ let strings = new LocalizedStrings({
     invalidEmail: "Virheellinen sähköpostiosoite",
     invalidDomain: "Verkkotunnus on virheellinen",
     passwordsDontMatch: "Salasanan ja vahvistetun salasanan tulee olla sama."
-  }
+  },
+  se: {
+    email: "E-post",
+    enteremail: "Ange din e-postadress",
+    newershare: "Jag delar aldrig din e-postadress med andra.",
+    password: "Lösenord",
+    male: "Man",
+    female: "Kvinna",
+    account: "Har redan ett konto?",
+    register: "Registrera",
+    confirmPassword: "Bekräfta lösenord",
+    domain: "Domän",
+    error: "Oväntat fel!",
+    gender: "Kön",
+    name: "Namn",
+    success_in_registeration: "Registreringen lyckades och en bekräftelse har skickats till din e-post.",
+    selectPrivacyPolicy: "Välj integritetspolicy.",
+    neverShareName: "Vi delar aldrig ditt namn med någon annan.",
+    neverShareGender: "Vi delar aldrig ditt kön med någon annan.",
+    domainInUse: "Du måste ange en giltig domän som inte redan är i användning.",
+    neverShareDomain: "Vi delar aldrig din domän med någon annan.",
+    passwordStronglyCrypted: "Ditt lösenord är starkt krypterat och säkert i vår databas.",
+    privacyPolicy: "Integritetspolicy",
+    dataProcessingAgreement: "Dataprocessavtal",
+    agreedOn: "Jag godkänner",
+    and: "och",
+    required: "Obligatoriskt",
+    register: "Registrera",
+    loginHere: "Logga in här",
+    tooLong: "För långt!",
+    tooShort: "För kort!",
+    invalidEmail: "Ogiltig e-postadress",
+    invalidDomain: "Ogiltig domän",
+    passwordsDontMatch: "Lösenorden matchar inte."
+}
  });
 
  var query = window.location.search.substring(1);

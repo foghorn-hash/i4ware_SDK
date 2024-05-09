@@ -20,6 +20,13 @@ let strings = new LocalizedStrings({
     confirmPassword: "Vahvista Salasana",
     change: "Vaihda",
     close: "Sulje"
+  },
+  se: {
+    passwordChange: "Byt lösenord",
+    password: "Lösenord",
+    confirmPassword: "Bekräfta lösenord",
+    change: "Ändra",
+    close: "Stäng"
   }
 });
 

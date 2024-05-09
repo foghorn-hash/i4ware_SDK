@@ -54,6 +54,27 @@ let strings = new LocalizedStrings({
     trial: "Kokeilu",
     previous: "Edellinen",
     next: "Seuraava"
+  },
+  se: {
+    actions: "Åtgärder",
+    extendTrial30Days: "Förläng provperioden med 30 dagar",
+    makePaidSubscription: "Gör prenumeration betald",
+    downgradeToTrial: "Nedgradera till provperiod",
+    extendTrialOneYear: "Förläng provperioden med ett år",
+    terminateDomain: "Avsluta domän",
+    domain: "Domän",
+    validBeforeAt: "Giltig till",
+    type: "Typ",
+    company: "Företag",
+    vatId: "Momsnummer",
+    phone: "Telefon",
+    email: "E-post",
+    country: "Land",
+    edit: "Redigera",
+    paid: "Betald",
+    trial: "Prov",
+    previous: "Föregående",
+    next: "Nästa"
   }
 });
 

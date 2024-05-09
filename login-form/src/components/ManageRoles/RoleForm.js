@@ -27,7 +27,16 @@ let strings = new LocalizedStrings({
     save: "Tallenna",
     required: "Vaadittu",
     allDomains: "Kaikki domainit"
-  }
+  },
+  se: {
+    addRole: "Lägg till roll",
+    editRole: "Redigera roll",
+    roleName: "Rollnamn",
+    permission: "Behörigheter:",
+    save: "Spara",
+    required: "Obligatoriskt",
+    allDomains: "Alla domäner"
+}
 });
 
 const validateSchema = Yup.object().shape({

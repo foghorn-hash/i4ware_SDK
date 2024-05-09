@@ -43,6 +43,23 @@ let strings = new LocalizedStrings({
     invalidEmail: "Virheellinen sähköpostiosoite",
     required: "Vaadittu",
     mobileNumberStringError: "Matkapuhelinnumeron tulee olla merkkijonona maakoodin kanssa"
+  },
+  se: {
+    manageDomain: "Hantera domän",
+    technicalContactEmail: "Teknisk kontaktpersons e-post",
+    billingContactEmail: "Faktureringskontaktpersons e-post",
+    mobileNumber: "Mobilnummer",
+    companyName: "Företagsnamn",
+    addressLine1: "Adressrad 1",
+    addressLine2: "Adressrad 2",
+    city: "Stad",
+    country: "Land",
+    zip: "Postnummer",
+    vatId: "Momsnummer",
+    save: "Spara",
+    invalidEmail: "Ogiltig e-postadress",
+    required: "Obligatoriskt",
+    mobileNumberStringError: "Mobilnummer måste vara en sträng med landskod"
   }
 });
 

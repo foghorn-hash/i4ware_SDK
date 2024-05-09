@@ -19,6 +19,11 @@ let strings = new LocalizedStrings({
     showCaptcha: "Näytä Captcha rekisteröintilomakkeessa",
     disableRegistration: "Estä rekisteröinti muilta kuin domainin omistajilta",
     settingUpdated: "Asetukset päivitetty",
+  },
+  se: {
+    showCaptcha: "Visa Captcha i registreringsformuläret",
+    disableRegistration: "Blockera registrering för andra än domänägare",
+    settingUpdated: "Inställningar uppdaterade"
   }
 });
 

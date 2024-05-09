@@ -11,6 +11,9 @@ let strings = new LocalizedStrings({
   },
   fi: {
     cropImage: "Rajaa Kuva"
+  },
+  se: {
+    cropImage: "Beskär bild"
   }
 });
 

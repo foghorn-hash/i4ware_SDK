@@ -38,7 +38,22 @@ let strings = new LocalizedStrings({
    error_username_or_password:"Käyttätunnsu tai salasana on pakollinen",
    error_domain_is_expired:"Käyttätunnus ja salasana eivät täsmää tai domainin tilaus ei ole validi tai on umpeuttunut!",
    success_in_login:"Kirjatuminen onnistui. Uudelleen ohjataan kotisivulle..",
- }
+ },
+ se: {
+  email: "E-postadress",
+  enteremail: "Ange e-postadress",
+  newershare: "Jag delar aldrig din e-postadress med andra.",
+  password: "Lösenord",
+  submit: "Skicka",
+  account: "Har du ett konto?",
+  register: "Registrera dig",
+  forgot: "Eller har du glömt lösenordet?",
+  reset: "Återställ",
+  error: "Oväntat fel!",
+  error_username_or_password: "Användarnamn eller lösenord är obligatoriska",
+  error_domain_is_expired: "Användarnamn eller lösenord matchar inte, eller domänen är ogiltig eller har löpt ut!",
+  success_in_login: "Inloggning lyckades. Omdirigerar till startsidan...",
+}
 });
 
 function LoginForm(props) {

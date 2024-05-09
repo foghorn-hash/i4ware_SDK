@@ -22,6 +22,12 @@ let strings = new LocalizedStrings({
     web: "verkkoselaimeen, joka",
     support: "tukee HTML5-videota",
     copyright: "| i4ware - SDK | Tekijänoikeudet © i4ware Software 2004-2023, kaikki oikeudet pidätetään. | Versio 1.0.0"
+  },
+  se: {
+    video: "För att se den här videon, aktivera JavaScript och överväg att uppgradera",
+    web: "din webbläsare till en som",
+    support: "stöder HTML5-video",
+    copyright: "| i4ware - SDK | Upphovsrätt © i4ware Software 2004-2023, alla rättigheter förbehållna. | Version 1.0.0"
   }
 });
 

@@ -29,6 +29,16 @@ let strings = new LocalizedStrings({
     remove: "Poista",
     previous: "Edellinen",
     next: "Seuraava"
+  },
+  se: {
+    add: "Lägg till",
+    numberSign: "#",
+    name: "Namn",
+    noData: "Inga data",
+    edit: "Redigera",
+    remove: "Ta bort",
+    previous: "Föregående",
+    next: "Nästa"
   }
 });
 

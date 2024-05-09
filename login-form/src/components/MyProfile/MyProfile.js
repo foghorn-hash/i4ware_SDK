@@ -50,6 +50,22 @@ let strings = new LocalizedStrings({
     nameRequired: "Nimi vaaditaan",
     genderRequired: "Sukupuoli vaaditaan",
     loading: "Ladataan...",
+  },
+  se: {
+    myDetails: "Mina uppgifter",
+    uploadImage: "Ladda upp bild",
+    removeImage: "Ta bort bild",
+    cropImage: "Beskär bild",
+    capturePhoto: "Ta foto",
+    fullname: "Fullständigt namn",
+    gender: "Kön",
+    male: "Man",
+    female: "Kvinna",
+    save: "Spara",
+    saving: "Sparar...",
+    nameRequired: "Namn är obligatoriskt",
+    genderRequired: "Kön är obligatoriskt",
+    loading: "Laddar...",
   }
 });
 

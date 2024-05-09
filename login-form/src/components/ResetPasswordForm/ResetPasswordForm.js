@@ -39,7 +39,20 @@ let strings = new LocalizedStrings({
     invalidEmail: "Virheellinen sähköpostiosoite",
     required: "Vaadittu",
     tooLong: "Liian pitkä!"
-  }
+  },
+  se: {
+    neverShareEmail: "Vi delar aldrig din e-postadress med någon annan.",
+    submit: "Skicka",
+    noAccount: "Har du inget konto?",
+    register: "Registrera",
+    orLogin: "eller logga in?",
+    login: "Logga in",
+    email: "E-post",
+    passwordResetSuccess: "Återställning av lösenord lyckades och en bekräftelse har skickats till din e-post.",
+    invalidEmail: "Ogiltig e-postadress",
+    required: "Obligatoriskt",
+    tooLong: "För långt!"
+}
 });
 
 var query = window.location.search.substring(1);

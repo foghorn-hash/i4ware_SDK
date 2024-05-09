@@ -42,6 +42,19 @@ let strings = new LocalizedStrings({
     welcome: "Tervetuloa",
     videoPhoto: "Video/Kuva",
     chat: "Chatti",
+  },
+  se: {
+    login: "Logga in",
+    logout: "Logga ut",
+    myProfile: "Min Profil",
+    stlViewer: "3D-visningsprogram",
+    manageUsers: "Hantera användare",
+    manageDomains: "Hantera domäner",
+    manageRoles: "Hantera roller",
+    settings: "Inställningar",
+    welcome: "Välkommen",
+    videoPhoto: "Video/Foto",
+    chat: "Chatt",
   }
 });
 
@@ -131,6 +144,7 @@ function Header(props) {
         <select id="language-selector" className="language-selector" onChange={handleLocalization}>
           <option value="fi" selected={language === 'fi'}>Finnish</option>
           <option value="en" selected={language === 'en'}>English</option>
+          <option value="se" selected={language === 'se'}>Swidish</option>
         </select>
   
         {authState.isLogged ? (

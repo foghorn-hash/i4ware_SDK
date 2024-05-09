@@ -22,6 +22,12 @@ let strings = new LocalizedStrings({
     modelViewerTitle: "3D-mallin katseluohjelma",
     close: "Sulje",
     loading: "Ladataan...",
+  },
+  se: {
+    viewSTL: "Visa STL",
+    modelViewerTitle: "3D-modellvisare",
+    close: "Stäng",
+    loading: "Laddar...",
   }
 });
 
