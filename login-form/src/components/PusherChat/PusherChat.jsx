@@ -188,12 +188,22 @@ const App = () => {
     setMessage(e.target.value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      sendTypingStatus(false);
+      // Send typing status based on the active modal
+      if (showModal) {
+        sendTypingStatus(false, 'modal');
+      } else if (showCaptureModal) {
+        sendTypingStatus(false, 'captureModal');
+      }
     }, 500);
-    sendTypingStatus(true);
+    // Send typing status immediately when typing
+    if (showModal) {
+      sendTypingStatus(true, 'modal');
+    } else if (showCaptureModal) {
+      sendTypingStatus(true, 'captureModal');
+    }
   };
 
-  const sendTypingStatus = async (isTyping) => {
+  const sendTypingStatus = async (isTyping, modalType) => {
     await Axios.post(`${API_BASE_URL}/api/chat/typing`, { username, isTyping }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     }).catch((error) => console.error('Error sending typing status', error));
