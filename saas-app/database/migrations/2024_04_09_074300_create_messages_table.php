@@ -17,6 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('username'); // Column for the user's name
             $table->text('message'); // Column for the message text
+            $table->unsignedBigInteger('user_id')->default(0);
+            $table->string('domain')->default(env('APP_DOMAIN_ADMIN'));
             $table->timestamps(); // Creates created_at and updated_at columns
         });
     }

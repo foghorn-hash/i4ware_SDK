@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Message as MessageModel;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -22,11 +21,6 @@ class Message implements ShouldBroadcast
     {
         $this->username = $username;
         $this->message = $message;
-
-        MessageModel::create([
-            'username' => $this->username,
-            'message' => $this->message,
-        ]);
     }
 
     public function broadcastOn()

@@ -289,7 +289,7 @@ function RegistrationForm(props) {
                     <br />
                     <Field className="select-gender" as="select" name="gender">
                       <option value="male">{strings.male}</option>
-                      <option value="female">{strings.account.female}</option>
+                      <option value="female">{strings.female}</option>
                     </Field>
                     <br />
                     <small id="domainHelp" className="form-text text-muted">

@@ -82,6 +82,12 @@ Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router)
 	Route::post('/upload-media', [GalleryController::class, 'uploadMedia'])->name('gallery.upload-media');
 });
 
-Route::post('messages', [ChatController::class, 'message']);
-Route::get('/messages', [ChatController::class, 'getMessages']);
-Route::post('/typing', [ChatController::class, 'userTyping']);
+Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
+	Route::post('/messages', [ChatController::class, 'message']);
+	Route::get('/messages', [ChatController::class, 'getMessages']);
+	Route::post('/typing', [ChatController::class, 'userTyping']);
+	Route::post('/upload', [ChatController::class, 'uploadMessage']);
+	Route::post('/capture-upload', [ChatController::class, 'captureUpload']);
+	Route::post('/upload-video', [ChatController::class, 'uploadVideo']);
+	Route::post('/generate-response', [ChatController::class, 'generateResponse']);
+});
