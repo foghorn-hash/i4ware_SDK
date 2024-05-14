@@ -156,6 +156,7 @@ function ResetPasswordForm(props) {
   };
 
   return (
+    <>
     <div className="d-flex justify-content-center">
       <div className="animated-card">
         <div className="card col-12 col-lg-4 login-card mt-2 hv-center">
@@ -232,8 +233,12 @@ function ResetPasswordForm(props) {
             </span>
           </div>
         </div>
+        <div className="Reset-form-spacer"></div>
       </div>
     </div>
+    <div className="Reset-form-spacer"></div>
+    <div className="Reset-form-spacer"></div>
+    </>
   );
 }
 

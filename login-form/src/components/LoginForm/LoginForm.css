@@ -1,7 +1,7 @@
 .login-card {
     position: relative;
     z-index: 2;
-    min-height: 60vh;
+    height: 60vh;
     width: 80vh;
     margin: auto;
     display: flex;
@@ -18,4 +18,8 @@
 
 .registerMessage {
     color: black !important;
+}
+
+.login-form-spacer {
+    height: 10px;
 }

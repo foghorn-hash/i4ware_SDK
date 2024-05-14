@@ -384,8 +384,8 @@ function RegistrationForm(props) {
                     }} />
                     <label className="form-check-label" for="term">
                       {strings.agreedOn}{" "}
-                      <a href="https://www.i4ware.fi/#privacy" target="_blank">{strings.privacyPolicy}</a>{" "}
-                      {strings.and} <a href="https://www.i4ware.fi/#data" target="_blank"> {strings.dataProcessingAgreement} </a>
+                      <a href="https://www.i4ware.fi/privacy-policy/" target="_blank">{strings.privacyPolicy}</a>{" "}
+                      {strings.and} <a href="https://www.i4ware.fi/data-processing-agreement/" target="_blank"> {strings.dataProcessingAgreement} </a>
                     </label>
                   </div>
 
