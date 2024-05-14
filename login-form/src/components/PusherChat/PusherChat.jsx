@@ -17,21 +17,72 @@ let strings = new LocalizedStrings({
     typing: "is typing...",
     box: "Write a message...",
     browse: "Browse",
-    capturePhoto: "Take a Photo"
+    capturePhoto: "Take a Photo",
+    upload_image_with_message: "Upload Image with Message",
+    capture_image_with_message: "Capture Image with Message",
+    capture_video_with_message: "Capture Video with Message",
+    ask_from_ai: "Ask from AI",
+    close: "Close",
+    enter_your_message: "Enter your message here...",
+    start_video: "Start Video",
+    stop_video: "Stop Video",
+    upload: "Upload",
+    duration: "Duration",
+    upload_successful: "Upload Successful",
+    image_upload_successful: "Image upload success",
+    capture_successful: "Image capture success",
+    video_capture_successful: "Video capture success",
+    please_select_file: "Please select a file to upload.",
+    failed_to_upload_file: "Failed to upload file. Please try again.",
+    your_browser_not_support_video_tag: "Your browser does not support the video tag.",
   },
   fi: {
     send: "Lähetä",
     typing: "kirjoittaa...",
     box: "Kirjoita viesti...",
     browse: "Selaa",
-    capturePhoto: "Ota Kuva"
+    capturePhoto: "Ota Kuva",
+    upload_image_with_message: "Lataa kuva viestin kassa",
+    capture_image_with_message: "Kaappaa kuva viestin kanssa",
+    capture_video_with_message: "Kaappaa video viestin kanssa",
+    ask_from_ai: "Kysy tekoälyltä",
+    close: "Sulje",
+    enter_your_message: "Kirjoita viestisi tähän...",
+    start_video: "Aloita Video",
+    stop_video: "Lopeta Video",
+    upload: "Lataa",
+    duration: "Kesto",
+    upload_successful: "Lataus onnistui",
+    image_upload_successful: "Kuvan lataus onnistui",
+    capture_successful: "Kuvan kaappaus onnistui",
+    video_capture_successful: "Videon kaappaus onnistui",
+    please_select_file: "Olehyvä ja valitse tiedosto minkä haluat ladata.",
+    failed_to_upload_file: "Tiedoston lataus epäonnistui. Olehyvä ja yritä uudestaan.",
+    your_browser_not_support_video_tag: "Selaimesi ei tue video tagia.",
   },
   se: {
     send: "Skicka",
     typing: "skriver...",
     box: "Skriv meddelande...",
     browse: "Bläddra",
-    capturePhoto: "Ta en bild"
+    capturePhoto: "Ta en bild",
+    upload_image_with_message: "Ladda upp bild med meddelande",
+    capture_image_with_message: "Fånga bild med meddelande",
+    capture_video_with_message: "Fånga video med meddelande",
+    ask_from_ai: "Fråga en AI",
+    close: "Stäng",
+    enter_your_message: "Skriv ditt meddelande här...",
+    start_video: "Starta video",
+    stop_video: "Stoppa video",
+    upload: "Ladda upp",
+    duration: "Varaktighet",
+    upload_successful: "Uppladdning lyckades",
+    image_upload_successful: "Bilduppladdning lyckades",
+    capture_successful: "Bildupptagning lyckades",
+    video_capture_successful: "Videoupptagning lyckades",
+    please_select_file: "Vänligen välj en fil att ladda upp.",
+    failed_to_upload_file: "Misslyckades med att ladda upp filen. Försök igen.",
+    your_browser_not_support_video_tag: "Din webbläsare stöder inte videomarkeringen.",
   }
 });
 
@@ -54,6 +105,16 @@ const App = () => {
   const [isCapturingVideo, setIsCapturingVideo] = useState(false);
   const [videoUploading, setvideoUploading] = useState(false);
   const [videoDuration, setVideoDuration] = useState(0);
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
@@ -230,7 +291,7 @@ const App = () => {
     e.preventDefault();
 
     if (!selectedFile) {
-      alert('Please select a file to upload.');
+      alert(strings.please_select_file);
       return;
     }
 
@@ -251,8 +312,8 @@ const App = () => {
       handleCloseModal();
       Swal.fire({
         icon: 'success',
-        title: 'Upload Successful', 
-        text: response.data.message,  
+        title: strings.upload_successful, 
+        text: strings.image_upload_successful,  
       }).then((result) => {
         if (result.isConfirmed) {
           fetchMessages();
@@ -260,7 +321,7 @@ const App = () => {
       });
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Failed to upload file. Please try again.');
+      alert(strings.failed_to_upload_file);
     }
   };
 
@@ -278,7 +339,7 @@ const App = () => {
                     src={imageUrl}
                     type="video/mp4"
                   />
-                  Your browser does not support the video tag.
+                  {strings.your_browser_not_support_video_tag}
                 </video></>);
       }
     }
@@ -309,8 +370,8 @@ const App = () => {
       handleCaptureCloseModal();
       Swal.fire({
         icon: 'success',
-        title: 'Upload Successful', 
-        text: response.data.message,  
+        title: strings.upload_successful, 
+        text: strings.capture_successful,  
       }).then((result) => {
         if (result.isConfirmed) {
           fetchMessages();
@@ -346,8 +407,8 @@ const App = () => {
           console.log("Video uploaded successfully");
           Swal.fire({
             icon: 'success',
-            title: 'Upload Successful', 
-            text: response.data.message,  
+            title: strings.upload_successful, 
+            text: strings.video_capture_successful,  
           }).then((result) => {
             if (result.isConfirmed) {
               fetchMessages();
@@ -390,13 +451,13 @@ const App = () => {
     <>
     <div className="chat-container">
       <Button variant="primary" className='message-upload-button' onClick={handleShowModal}>
-        Upload Image with Message
+        {strings.upload_image_with_message}
       </Button>
       <Button variant="primary" className='message-capture-button' onClick={handleCaptureShowModal}>
-        Capture Image with Message
+        {strings.capture_image_with_message}
       </Button>
       <Button variant="primary" className='message-capture-video-button' onClick={handleCaptureVideoShowModal}>
-        Capture Video with Message
+        {strings.capture_video_with_message}
       </Button>
       <div className="messages-list">
         {[...messages].reverse().map((msg, index) => {
@@ -425,7 +486,7 @@ const App = () => {
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
       <form className="message-form">
         <div>
-          Ask from AI
+          {strings.ask_from_ai}
           <input
             type="checkbox"
             className="message-ai"
@@ -445,7 +506,7 @@ const App = () => {
     </div>
     <Modal show={showModal} onHide={handleCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-opload-title'>Upload Images with Message</Modal.Title>
+        <Modal.Title className='massage-opload-title'>{strings.upload_image_with_message}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         {/* Add your content for image upload and message input here */}
@@ -453,20 +514,20 @@ const App = () => {
         <form className='upload-form'>
           <input type="file" id="upload-input" className='message-file-selector' onChange={(e) => setSelectedFile(e.target.files[0])} /> {/* Input for image upload */}
           <label htmlFor="upload-input" className='message-file-button'>{strings.browse}</label>
-          <input name="message" value={message} placeholder="Enter your message here..." className='message-textarea' onChange={handleTyping} />
+          <input name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
           <br />
-          <button className='message-upload-button' onClick={handleUpload}>Upload</button>
+          <button className='message-upload-button' onClick={handleUpload}>{strings.upload}</button>
         </form>
       </Modal.Body>
       <Modal.Footer className='message-upload-modal'>
         <Button variant="secondary" onClick={handleCloseModal}>
-          Close
+        {strings.close}
         </Button>
       </Modal.Footer>
     </Modal>
     <Modal show={showCaptureModal} onHide={handleCaptureCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-opload-title'>Captrue Image with Message</Modal.Title>
+        <Modal.Title className='massage-opload-title'>{strings.capture_image_with_message}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         {/* Add your content for image upload and message input here */}
@@ -483,20 +544,20 @@ const App = () => {
           {strings.capturePhoto}
         </button>
         <form className='upload-form'>
-          <input name="message" value={message} placeholder="Enter your message here..." className='message-textarea' onChange={handleTyping} />
+          <input name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
           <br />
-          <button className='message-upload-button' onClick={uploadCapture}>Upload</button>
+          <button className='message-upload-button' onClick={uploadCapture}>{strings.upload}</button>
         </form>
       </Modal.Body>
       <Modal.Footer className='message-upload-modal'>
         <Button variant="secondary" onClick={handleCaptureCloseModal}>
-          Close
+        {strings.close}
         </Button>
       </Modal.Footer>
     </Modal>
     <Modal show={showCaptureVideoModal} onHide={handleCaptureVideoCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-opload-title'>Captrue Video with Message</Modal.Title>
+        <Modal.Title className='massage-opload-title'>{strings.capture_video_with_message}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         {/* Add your content for image upload and message input here */}
@@ -510,20 +571,20 @@ const App = () => {
           videoConstraints={{ width: 1920, height:1080 }}
         />
         {!isCapturingVideo ? (
-          <button className="Webcam-button startVideo" onClick={startVideoCapture}>Start Video</button>
+          <button className="Webcam-button startVideo" onClick={startVideoCapture}>{strings.start_video}</button>
         ) : (
-          <button className="Webcam-button stopVideo" onClick={stopVideoCapture}>Stop Video</button>
+          <button className="Webcam-button stopVideo" onClick={stopVideoCapture}>{strings.stop_video}</button>
         )}
-        <div>Duration: {formatDuration(videoDuration)}</div>
+        <div>{strings.duration}: {formatDuration(videoDuration)}</div>
         <form className='upload-form'>
-          <input name="message" value={message} placeholder="Enter your message here..." className='message-textarea' onChange={handleTyping} />
+          <input name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
           <br />
-          <button className='message-upload-button' onClick={uploadVideo}>Upload</button>
+          <button className='message-upload-button' onClick={uploadVideo}>{strings.upload}</button>
         </form>
       </Modal.Body>
       <Modal.Footer className='message-upload-modal'>
         <Button variant="secondary" onClick={handleCaptureVideoCloseModal}>
-          Close
+          {strings.close}
         </Button>
       </Modal.Footer>
     </Modal>

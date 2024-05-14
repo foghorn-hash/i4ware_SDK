@@ -29,7 +29,7 @@
   /* Styles for the table header */
   .table-header, .table-row {
 	display: grid;
-	grid-template-columns: 50px 50px 80px 160px 80px 400px 1fr 1fr 60px 100px; /* adjust as needed */
+	grid-template-columns: 50px 50px 80px 140px 100px 400px 1fr 1fr 60px 100px; /* adjust as needed */
 	border-bottom: 1px solid #eee;
 	padding: 8px;
 	line-height: 30px; /* height of the div */;

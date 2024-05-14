@@ -35,9 +35,9 @@ let strings = new LocalizedStrings({
     logout: "Kirjaudu ulos",
     myProfile: "Oma Profiili",
     stlViewer: "3D-katseluohjelma",
-    manageUsers: "Käyttäjien hallinta",
-    manageDomains: "Domainien hallinta",
-    manageRoles: "Roolien hallinta",
+    manageUsers: "Käyttäjät",
+    manageDomains: "Domainit",
+    manageRoles: "Roolit",
     settings: "Asetukset",
     welcome: "Tervetuloa",
     videoPhoto: "Video/Kuva",
@@ -144,7 +144,7 @@ function Header(props) {
         <select id="language-selector" className="language-selector" onChange={handleLocalization}>
           <option value="fi" selected={language === 'fi'}>Finnish</option>
           <option value="en" selected={language === 'en'}>English</option>
-          <option value="se" selected={language === 'se'}>Swidish</option>
+          <option value="se" selected={language === 'se'}>Swedish</option>
         </select>
   
         {authState.isLogged ? (

@@ -45,6 +45,7 @@ let strings = new LocalizedStrings({
     verifyUser: "Verify User",
     deactivateUser: "Deactivate User",
     activateUser: "Activate User",
+    avatar: "Avatar",
     submit: "Submit",
     addUser: "Add",
     fullName: "Fullname",
@@ -83,6 +84,7 @@ let strings = new LocalizedStrings({
     verifyUser: "Vahvista käyttäjä",
     deactivateUser: "Poista käyttäjä käytöstä",
     activateUser: "Aktivoi käyttäjä",
+    avatar: "Avatari",
     submit: "Lähetä",
     addUser: "Lisää",
     fullName: "Koko nimi",
@@ -121,6 +123,7 @@ let strings = new LocalizedStrings({
     verifyUser: "Verifiera användare",
     deactivateUser: "Inaktivera användare",
     activateUser: "Aktivera användare",
+    avatar: "Profilbild",
     submit: "Skicka",
     addUser: "Lägg till",
     fullName: "Fullständigt namn",
@@ -503,7 +506,7 @@ function ManageAdmin() {
           <div className="table-header">
             <div className="column-number">#</div>
             <div className="column-id">ID</div>
-            <div className="column-avatar">avatar</div>
+            <div className="column-avatar">{strings.avatar}</div>
             <div>{strings.columnName}</div>
             <div>{strings.columnVerified}</div>
             <div>{strings.email}</div>

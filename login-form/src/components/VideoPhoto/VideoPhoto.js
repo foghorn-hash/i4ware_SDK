@@ -29,6 +29,13 @@ let strings = new LocalizedStrings({
         capturePhoto: "Ota kuva",
         uploadVideo: "Lataa video",
         captureVideo: "Ota video",
+    },
+    se: {
+        videoPhoto: "Video/Foto",
+        uploadPhoto: "Ladda upp foto",
+        capturePhoto: "Ta foto",
+        uploadVideo: "Ladda upp video",
+        captureVideo: "Spela in video",
     }
 });
 
