@@ -28,7 +28,7 @@ class OpenAIService
         $messages = [
             [
                 "role" => "system",
-                "content" => "You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the following text and summarize it into a concise abstract paragraph. Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points."
+                "content" => "You are a helpful assistant."
             ],
             [
                 "role" => "user",
@@ -38,7 +38,7 @@ class OpenAIService
 
         $response = $this->client->post('/v1/chat/completions', [
             'json' => [
-                'model' => 'gpt-3.5-turbo',
+                'model' => 'gpt-4o',
                 'messages' => $messages,
                 'max_tokens' => 1000,
             ],

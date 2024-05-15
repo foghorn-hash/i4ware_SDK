@@ -10,18 +10,23 @@ use App\Models\User;
 use Auth;
 use Storage;
 use App\Services\OpenAIService;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Str;
+use App\Services\MarkdownService;
 
 class ChatController extends Controller
 {
     protected $user;
     protected $openaiService;
+    protected $markdownService;
 
-    public function __construct(OpenAIService $openaiService)
+    public function __construct(OpenAIService $openaiService, MarkdownService $markdownService)
     {
         //$this->apiToken = uniqid(base64_encode(Str::random(40)));
         $this->middleware('auth:api');
         $this->user = new User;
         $this->openaiService = $openaiService;
+        $this->markdownService = $markdownService;
     }
 
     /**
@@ -72,6 +77,7 @@ class ChatController extends Controller
         ->map(function ($message) {
             // Format the created_at datetime field to a custom format
             $message->formatted_created_at = $message->created_at->format('Y-m-d H:i:s'); // Customize this format as needed
+            $message->message = $parsedContent = htmlspecialchars_decode($this->markdownService->parse($message->message));
             return $message;
         });
 
@@ -176,18 +182,23 @@ class ChatController extends Controller
         $prompt = $request->input('prompt');
         $response = $this->openaiService->generateText($prompt);
 
+        return response()->json(['response' => $response]);
+    }
+
+    public function saveMessageToDatabase(Request $request)
+    {       
+        $user = Auth::user();
         // Create new message
+        $prompt = $request->input('message');
         $message = new MessageModel();
         $message->username = "AI";
         $message->user_id = 0;
         $message->domain = $user->domain;
-        $message->message = $response ?? '';
+        $message->message = $prompt ?? '';
         $message->save();
 
         // Trigger an event for the new message
         event(new Message($user->name, $prompt));
-
-        return response()->json(['response' => $response]);
     }
 
 

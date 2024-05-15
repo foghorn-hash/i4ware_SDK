@@ -8,6 +8,12 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Webcam from 'react-webcam';
 import Swal from 'sweetalert2';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css'; // Choose a theme that you like
+import 'highlight.js/lib/languages/javascript';
+import 'highlight.js/lib/languages/python';
+import HighlightedResponse from './HighlightedResponse';
+import MessageList from './MessageList';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
 
@@ -86,14 +92,13 @@ let strings = new LocalizedStrings({
   }
 });
 
-const App = () => {
+const PusherChat = () => {
   const [username, setUsername] = useState(localStorage.getItem(ACCESS_USER_DATA) || 'Guest');
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [typingIndicator, setTypingIndicator] = useState('');
   const [isAiEnabled, setIsAiEnabled] = useState(false); // State to track AI checkbox
   const typingTimeoutRef = useRef(null);
-  const messagesEndRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [showCaptureModal, setCaptureShowModal] = useState(false);
   const [showCaptureVideoModal, setCaptureVideoShowModal] = useState(false);
@@ -187,10 +192,6 @@ const App = () => {
     return cleanup;
   }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const initializePusher = () => {
     const pusher = new Pusher(API_PUSHER_KEY, { cluster: API_PUSHER_CLUSTER });
     const channel = pusher.subscribe('chat');
@@ -214,10 +215,6 @@ const App = () => {
       channel.unsubscribe();
       clearTimeout(typingTimeoutRef.current);
     };
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const fetchUsername = async () => {
@@ -325,27 +322,6 @@ const App = () => {
     }
   };
 
-  const renderMessageImageOrVideo = (msg) => {
-    if (msg.image_path) {
-      const imageUrl = API_BASE_URL + '/' + msg.image_path;
-      if (msg.type === 'image') {
-        return (<><br /><br /><img src={imageUrl} className="message-image" alt="Uploaded" /></>);
-      } else {
-        return  (<><br /><br /><video
-                  controls
-                  className='Webcam-video'
-                >
-                  <source
-                    src={imageUrl}
-                    type="video/mp4"
-                  />
-                  {strings.your_browser_not_support_video_tag}
-                </video></>);
-      }
-    }
-    return null;
-  };
-
   const capture = () => {
     const imageSrc = webcamRef.current.getScreenshot();
     // Update the state with the captured image source
@@ -422,30 +398,59 @@ const App = () => {
     }
 };
 
-  const generateResponse = async () => {
-    try {
-      const token = localStorage.getItem(ACCESS_TOKEN_NAME);
-      const response = await Axios.post(API_BASE_URL + '/api/chat/generate-response', { prompt: message },
+const generateResponse = async () => {
+  try {
+    const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+    const response = await Axios.post(
+      `${API_BASE_URL}/api/chat/generate-response`,
+      { prompt: message },
       {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-      });
-  
-      console.log(response.data.response);
-      // Handle the response from OpenAI
-      const aiResponseMessage = {
-        username: 'AI',
-        message: response.data.response,
-        created_at: new Date().toISOString()
-      };
-      setMessages((prevMessages) => [aiResponseMessage, ...prevMessages]);
-      fetchMessages();
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+      }
+    );
+
+    console.log(response.data.response);
+
+    // Apply syntax highlighting to the response message
+    const highlightedResponse = hljs.highlightAuto(response.data.response).value;
+
+    // Create the AI response message object with highlighted message
+    const aiResponseMessage = {
+      username: 'AI',
+      message: highlightedResponse, // Use the highlighted response
+      created_at: new Date().toISOString(),
+    };
+
+    // Save the AI response message to the database
+    await saveMessageToDatabase(aiResponseMessage);
+
+    // Update the messages state
+    setMessages((prevMessages) => [aiResponseMessage, ...prevMessages]);
+
+    // Fetch updated messages
+    fetchMessages();
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+const saveMessageToDatabase = async (message) => {
+  try {
+    const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+    await Axios.post(`${API_BASE_URL}/api/chat/save-message`, message, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('Message saved to database successfully:', message);
+  } catch (error) {
+    console.error('Error saving message to database:', error);
+  }
+};
 
   return (
     <>
@@ -459,30 +464,7 @@ const App = () => {
       <Button variant="primary" className='message-capture-video-button' onClick={handleCaptureVideoShowModal}>
         {strings.capture_video_with_message}
       </Button>
-      <div className="messages-list">
-        {[...messages].reverse().map((msg, index) => {
-          const profilePicUrl = msg.profile_picture_path
-            ? `${API_BASE_URL}${msg.profile_picture_path.replace('public/uploads', '/storage/uploads')}`
-            : null;
-          const defaultImg = msg.gender === 'male' ? DefaultMaleImage : DefaultFemaleImage;
-
-          return (
-            <div key={index} className="message">
-              <div className='message-date'>
-                <strong>{msg.username}: </strong>
-                <i>{msg.formatted_created_at}</i>
-              </div>
-              <div className='massage-container'>
-                <img src={profilePicUrl || defaultImg} className='message-avatar' alt={`Profile of ${msg.username}`} />
-                <span>{msg.message}</span>
-                {renderMessageImageOrVideo(msg)} {/* Render image if image_path is not null */}
-                <div className='message-clear' />
-              </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
+      <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
       <form className="message-form">
         <div>
@@ -592,4 +574,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default PusherChat;
