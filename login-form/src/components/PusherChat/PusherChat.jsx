@@ -8,11 +8,8 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Webcam from 'react-webcam';
 import Swal from 'sweetalert2';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css'; // Choose a theme that you like
-import 'highlight.js/lib/languages/javascript';
-import 'highlight.js/lib/languages/python';
-import HighlightedResponse from './HighlightedResponse';
+import hljs from 'highlight.js/lib/core';
+import 'highlight.js/styles/default.css';
 import MessageList from './MessageList';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
@@ -414,13 +411,15 @@ const generateResponse = async () => {
 
     console.log(response.data.response);
 
-    // Apply syntax highlighting to the response message
-    const highlightedResponse = hljs.highlightAuto(response.data.response).value;
+    const messgeForHighliht = response.data.response;
+
+    const highlightedHTML = hljs.highlightAuto(messgeForHighliht).value;
 
     // Create the AI response message object with highlighted message
     const aiResponseMessage = {
       username: 'AI',
-      message: highlightedResponse, // Use the highlighted response
+      message: highlightedHTML, // Use the highlighted response
+      messagePlain: response.data.response,
       created_at: new Date().toISOString(),
     };
 

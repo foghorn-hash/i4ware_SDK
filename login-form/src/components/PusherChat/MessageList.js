@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Parser } from 'html-to-react'; // Assuming you're using this library
-import { API_BASE_URL } from "../../constants/apiConstants";
+import { API_BASE_URL, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import HighlightedResponse from './HighlightedResponse';
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
@@ -18,6 +19,16 @@ let strings = new LocalizedStrings({
 const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
   const parser = new Parser(); // Create the HTML parser instance
   const messagesEndRef = useRef(null);
+
+  var query = window.location.search.substring(1);
+  var urlParams = new URLSearchParams(query);
+  var localization = urlParams.get('lang');
+
+  if (localization == null) {
+    strings.setLanguage(API_DEFAULT_LANGUAGE);
+  } else {
+    strings.setLanguage(localization);
+  }
 
   const processedMessages = Array.isArray(messages)
   ? [...messages].map((msg) => { 

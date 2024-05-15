@@ -13,6 +13,7 @@ use App\Services\OpenAIService;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
 use App\Services\MarkdownService;
+use Illuminate\Support\Facades\Validator;
 
 class ChatController extends Controller
 {
@@ -77,7 +78,7 @@ class ChatController extends Controller
         ->map(function ($message) {
             // Format the created_at datetime field to a custom format
             $message->formatted_created_at = $message->created_at->format('Y-m-d H:i:s'); // Customize this format as needed
-            $message->message = $parsedContent = htmlspecialchars_decode($this->markdownService->parse($message->message));
+            
             return $message;
         });
 
@@ -188,17 +189,61 @@ class ChatController extends Controller
     public function saveMessageToDatabase(Request $request)
     {       
         $user = Auth::user();
-        // Create new message
+
+        // Validate incoming request data
+        $validator = Validator::make($request->all(), [
+            'messagePlain' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
         $prompt = $request->input('message');
+
+        // Extract message content from request
+        $promptPlain = $request->input('messagePlain');
+
+        // Check if the message contains code
+        $containsCode = $this->containsCode($promptPlain);
+
+        // Apply syntax highlighting if message contains code
+        if ($containsCode) {
+            $highlightedMessage = $this->applySyntaxHighlighting($this->markdownService->parse(highlight_string($prompt)));
+        } else {
+            $highlightedMessage = $this->markdownService->parse($promptPlain); // No syntax highlighting needed
+        }
+
+        // Create new message
         $message = new MessageModel();
         $message->username = "AI";
         $message->user_id = 0;
         $message->domain = $user->domain;
-        $message->message = $prompt ?? '';
+        $message->message = $highlightedMessage;
         $message->save();
 
         // Trigger an event for the new message
-        event(new Message($user->name, $prompt));
+        event(new Message($user->name, $promptPlain));
+
+        return response()->json(['success' => 'Message saved successfully'], 200);
+    }
+
+    // Function to detect if message contains code
+    private function containsCode($message)
+    {
+        // Implement your code detection logic here
+        // For example, you can use regular expressions to detect code snippets
+        // Modify this according to your specific needs
+        return preg_match('/<code>(.*?)<\/code>/', $message);
+    }
+
+    // Function to apply syntax highlighting to code within the message
+    private function applySyntaxHighlighting($message)
+    {
+        // Implement syntax highlighting logic using a library like `highlight.js` or `Prism.js`
+        // For demonstration, you can use a placeholder method
+        return $message; // Placeholder: return the original message (no syntax highlighting)
     }
 
 
