@@ -420,6 +420,7 @@ class ProfileController extends Controller
         
         return response()->json($roles, 200);
     }
+
     // add roles
     public function roleAdd(Request $request)
     {

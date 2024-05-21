@@ -359,6 +359,12 @@ class AuthController extends Controller
 					['name' => $request->name, 'gender' => $request->gender, 'email' => $request->email, 'password' => Hash::make($request->password), 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'), 'domain' => $request->domain, 'role' => 'user', 'role_id' => 2]
 				]);
 
+				$role = Role::updateOrCreate([
+					"name" => "user",
+					"isActive" => true,
+					"domain" => $request->domain,
+				]);
+
 				DB::commit();
 
 				try {
