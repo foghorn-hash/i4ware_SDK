@@ -66,21 +66,24 @@ class ChatController extends Controller
         // Get the authenticated user's ID
         $user = Auth::user();
 
-        // Select messages including those with user_id = 0
+        // Select messages including those with user_id = 0 but only if the domain matches
         $messages = MessageModel::select('messages.*', 'users.profile_picture_path', 'users.gender')
-        ->leftJoin('users', 'messages.user_id', '=', 'users.id') // Left join with 'users' table
-        ->where(function ($query) use ($user) {
-            $query->where('messages.domain', '=', $user->domain)
-                ->orWhere('messages.user_id', '=', 0); // Include messages with user_id = 0
-        })
-        ->orderBy('messages.created_at', 'desc')
-        ->get()
-        ->map(function ($message) {
-            // Format the created_at datetime field to a custom format
-            $message->formatted_created_at = $message->created_at->format('Y-m-d H:i:s'); // Customize this format as needed
-            
-            return $message;
-        });
+            ->leftJoin('users', 'messages.user_id', '=', 'users.id') // Left join with 'users' table
+            ->where(function ($query) use ($user) {
+                $query->where('messages.domain', '=', $user->domain)
+                    ->orWhere(function ($query) use ($user) {
+                        $query->where('messages.user_id', '=', 0)
+                                ->where('messages.domain', '=', $user->domain);
+                    }); // Include messages with user_id = 0 only if domain matches
+            })
+            ->orderBy('messages.created_at', 'desc')
+            ->get()
+            ->map(function ($message) {
+                // Format the created_at datetime field to a custom format
+                $message->formatted_created_at = $message->created_at->format('Y-m-d H:i:s'); // Customize this format as needed
+
+                return $message;
+            });
 
         return response()->json($messages);
     }
