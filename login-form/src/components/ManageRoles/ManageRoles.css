@@ -1,0 +1,19 @@
+/* Styles for the container */
+.mt-3 {
+	margin-top: 3rem;
+  }
+  
+  /* Styles for the table header */
+  .table-header-roles, .table-row-roles {
+    display: grid;
+    grid-template-columns: 50px 200px 1fr; /* adjust as needed */
+    border-bottom: 1px solid #eee;
+    padding: 8px;
+    line-height: 30px; /* height of the div */;
+  }
+
+  .column-actions-roles {
+	display: flex;
+	align-items: center;
+    justify-content: center;
+  }

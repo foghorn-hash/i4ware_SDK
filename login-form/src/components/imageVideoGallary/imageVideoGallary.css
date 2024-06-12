@@ -1,0 +1,83 @@
+.image-video-gallary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 10px;
+    position: relative;
+  }
+  
+  .image-video-item {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .image-video-item img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .image-video-item video{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-video-item:has(video)::after {
+    content: "";
+    position: absolute;
+    background-image: url("../../play-button.png");
+    width: 50px;
+    height: 50px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-size: cover;
+    margin: auto;
+}
+.modal.mediapopup{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8); /* Overlay background color with transparency */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* Ensure it appears on top of other content */
+}
+.mediapopup .modal-container {
+  /* Styles for the webcam container (your existing styles) */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: black !important;
+  box-shadow: 0px 10px 100px 0px rgba(0, 0, 0, 0.30);
+  border-radius: 15px;
+  opacity: 1.8;
+}
+.mediapopup .modal-content{
+    width: 50%;
+ 
+}
+.close-button-container {
+  display: flex;
+  flex-direction: row;
+  text-align: right;
+  justify-content: right;
+  width: 100%;
+  padding: 20px;
+}
+.close-button{
+  margin-top: 10px;
+  color: #fff; /* Button text color */
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  border-radius: 10px;
+  background: blue;
+}

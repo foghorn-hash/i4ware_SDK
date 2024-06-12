@@ -1,0 +1,58 @@
+.registeration {
+    margin-bottom: 20px;  
+}
+
+.register-card {
+    position: relative;
+    z-index: 2;
+    min-height: 60vh;
+    width: 80vh;
+    min-height: 60vh;
+    margin: auto;
+    display: flex;
+	flex-direction: column;
+	padding: 20px;
+    margin-bottom: 1vh;
+}
+
+.loginText {
+    color: #007bff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.successMessage {
+    color: green;
+    font-weight: bold;
+}
+
+.Register-form {
+    color: black !important;
+}
+
+.loading-view {
+    position: absolute;
+    min-height: 120%;
+    z-index: 10000;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    opacity: 0.9;
+}
+
+.select-gender-label {
+    margin-top: 5px;
+}
+
+.select-gender {
+	border: 1px #ced4da solid;
+	border-radius: 4px;
+	padding: 8px;
+	background-color: white;
+	color: #747373;
+	width: 50%;
+    margin-top: 6px;
+    margin-bottom: 5px;
+}

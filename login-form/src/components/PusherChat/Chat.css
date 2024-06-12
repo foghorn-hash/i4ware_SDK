@@ -1,0 +1,182 @@
+
+.chat-container {
+	background-color: #1a1a1a;
+	color: #f2f2f2;
+	border-radius: 8px;
+	padding: 10px;
+	width: 100%;
+	margin: 0;
+	margin-left: 0%;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  }
+
+  .message-upload-modal {
+	border: 0;
+  }
+
+  .massage-opload-title {
+	color: b;
+  }
+
+  .message-upload-button {
+	margin-top: 10px;
+	margin-bottom: 10px;
+  }
+
+  .message-textarea {
+	width: 100%;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	border: 1px #0d6efd solid;
+	flex-grow: 1;
+	padding: 10px;
+	margin-right: 10px;
+	border-radius: 8px;
+	border: 2px solid #be1212;
+	background-color: #262626; 
+	color: #f2f2f2;
+  }
+
+  .message-file-button {
+	padding: 10px;
+	border-radius: 8px;
+	border: none;
+	background-color: #0d6efd;
+	color: #ffffff;
+	cursor: pointer;
+  }
+
+  .message-file-selector {
+	display: none;
+  }
+
+  .message-image {
+	width: 25%;
+  }
+
+  .Webcam-video {
+	width: 25%;
+  }
+  
+.message-upload-button {
+	padding: 10px;
+	border-radius: 8px;
+	border: none;
+	background-color: #0d6efd;
+	color: #ffffff;
+	cursor: pointer;
+	margin-right: 10px;
+}
+
+.Webcam-message {
+	width: 100%;
+}
+
+.message-capture-button {
+	padding: 10px;
+	border-radius: 8px;
+	border: none;
+	background-color: #0d6efd;
+	color: #ffffff;
+	cursor: pointer;
+	margin-right: 10px;
+}
+
+.message-capture-video-button {
+	padding: 10px;
+	border-radius: 8px;
+	border: none;
+	background-color: #0d6efd;
+	color: #ffffff;
+	cursor: pointer;
+	margin-right: 10px;
+}
+
+  .messages-list {
+	max-height: 500px;
+	overflow-y: auto;
+	border: 1px solid #333333;
+	padding: 10px;
+	margin-bottom: 10px;
+	border-radius: 8px;
+	background-color: #121212;
+	color: #f2f2f2;
+  }
+  
+  .message {
+	margin-bottom: 10px;
+	line-height: 1.5;
+	text-align: left;
+	border-bottom: 1px #ff0000 solid;
+  }
+
+  .massage-container {
+	padding-bottom: 20px;
+	padding-top: 20px;
+  }
+  
+  .typing-indicator {
+	font-style: italic;
+	color: #f2f2f2;
+	margin-bottom: 10px;
+  }
+  
+  .message-form {
+	display: flex;
+	border-top: 1px solid #333333;
+	padding-top: 10px;
+	background-color: #1a1a1a;
+  }
+
+  .upload-form {
+	padding-top: 10px;
+  }
+  
+  .message-input {
+	flex-grow: 1;
+	padding: 10px;
+	margin-right: 10px;
+	border-radius: 8px;
+	border: 1px solid #333333;
+	background-color: #262626; 
+	color: #f2f2f2;
+  }
+  
+  .send-button {
+	padding: 10px 20px;
+	border-radius: 8px;
+	border: none;
+	background-color: #0d6efd;
+	color: #ffffff;
+	cursor: pointer;
+  }
+
+  .message-date {
+	padding-bottom: 10px;
+	border-bottom: 2px #2600ff96 solid;
+  }
+
+.message-avatar {
+	width: 100px;
+	height: 100px;
+	margin-right: 20px;
+	border-radius: 50%; /* To make it round */
+	float: left;
+}
+
+.message-clear {
+	clear: both;
+}
+
+.message-ai {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	padding: 0.5em;
+	color: #333;
+	background: #f8f8f8;
+  }

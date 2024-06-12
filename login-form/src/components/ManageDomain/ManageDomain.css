@@ -1,0 +1,31 @@
+/* Styles for the container */
+.mt-3 {
+	margin-top: 3rem;
+  }
+  
+  /* Styles for the table header */
+  .table-header-domains, .table-row-domains {
+    display: grid;
+    grid-template-columns: 50px 200px 160px 100px 160px 150px 1fr 1fr; /* adjust as needed */
+    border-bottom: 1px solid #eee;
+    padding: 8px;
+    line-height: 30px; /* height of the div */;
+  }
+
+  .column-number-domains {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .column-edit-domains {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .column-actions-domains {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }

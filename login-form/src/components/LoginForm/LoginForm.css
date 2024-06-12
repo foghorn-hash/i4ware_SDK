@@ -1,0 +1,25 @@
+.login-card {
+    position: relative;
+    z-index: 2;
+    height: 60vh;
+    width: 80vh;
+    margin: auto;
+    display: flex;
+	flex-direction: column;
+}
+
+.registerMessage {
+    margin-top: 10vh;
+}
+
+.Login-form {
+    color: black !important;
+}
+
+.registerMessage {
+    color: black !important;
+}
+
+.login-form-spacer {
+    height: 10px;
+}
