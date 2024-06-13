@@ -5,11 +5,31 @@
 
 .Header-nav-link {
 	color: white !important;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	height: 100%;
+	padding: 10px !important;
+	height: auto;
+}
+
+a {
+	text-decoration: none;
+}
+
+a.active {
+	color: rgb(248, 243, 243);
+	border-bottom: 1px solid coral;
+}
+
+.Header-nav-link:hover {
+	border-bottom: 1px solid white;
 }
 
 .Header-login-button {
-	color: black !important;
-	background-color: white !important;
+	color: black;
+	background-color: white;
 }
 
 .language-selector {
@@ -18,4 +38,28 @@
 	margin-right: 20px;
 	margin-left: 20px;
 	height: 38px;
+	border-radius: 5px;
+}
+
+.menu-icon {
+	display: none;
+	cursor: pointer;
+  }
+  
+@media (max-width: 1100px) {
+	.menu {
+	  display: none;
+	}
+	.menu-icon {
+	  display: block;
+	}
+}
+  
+.mobile-menu {
+	display: none;
+	flex-direction: column;
+}
+  
+.mobile-menu.open {
+	display: flex;
 }
