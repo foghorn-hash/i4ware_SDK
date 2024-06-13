@@ -294,6 +294,7 @@ function Header(props) {
               )}
             </Nav>
             {renderLogout(localization)}
+            
           </>
         )}
         </Container>
