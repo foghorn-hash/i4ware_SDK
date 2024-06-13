@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import { Link, NavLink, Redirect, withRouter } from "react-router-dom";
+import React, { useState, useContext, useEffect } from "react";
+import { NavLink, withRouter } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
 import Button from "react-bootstrap/Button";
@@ -8,13 +8,14 @@ import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
+import Offcanvas from "react-bootstrap/Offcanvas";
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
-import { useContext } from "react";
-import { useEffect } from "react";
 import "./Header.css";
 import PermissionGate from "../../contexts/PermissionGate";
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
+import icon_menu from "../../icon_menu.png";
+import { Link, useHistory, useLocation } from "react-router-dom";
 
 let strings = new LocalizedStrings({
   en: {
@@ -61,6 +62,11 @@ let strings = new LocalizedStrings({
 function Header(props) {
   const { authState, authActions } = useContext(AuthContext);
   const [lang, setLang] = useState(API_DEFAULT_LANGUAGE);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  const history = useHistory();
+  const location = useLocation();
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -148,7 +154,9 @@ function Header(props) {
         </select>
   
         {authState.isLogged ? (
-          <button className="btn btn-danger" onClick={handleLogout}>
+          <button className="btn btn-danger" style={{
+          margin: "10px", marginLeft: "20px"
+          }} onClick={handleLogout}>
             {strings.logout}
           </button>
         ) : (
@@ -165,52 +173,129 @@ function Header(props) {
     );
   }
 
+  const handleDrawerOpen = () => {
+    setMobileMenuOpen(true); 
+  };
+  
+  const handleDrawerClose = () => {
+    setMobileMenuOpen(false); 
+  };
+
+  const drawerContent = (
+    <Nav className="flex-column">
+      {[
+        { text: "My Profile", link: "/my-profile" },
+        { text: "3D Viewer", link: "/stl-viewer" },
+        { text: "Video/Photo", link: "/video-photo" },
+        { text: "Chat", link: "/pusher-chat" },
+        { text: "Manage Users", link: "/manage-users", permission: "users.view" },
+        { text: "Manage Domains", link: "/manage-domains", permission: "domain.view" },
+        { text: "Manage Roles", link: "/manage-roles", permission: "roles.view" },
+        { text: "Settings", link: "/settings", permission: "settings.manage" },
+      ].map((item, index) => (
+        item.permission ? (
+          <PermissionGate permission={item.permission} key={index}>
+            <Nav.Link as={NavLink} to={item.link} onClick={handleDrawerClose}>
+              {strings[item.text.toLowerCase().replace(" ", "")]}
+            </Nav.Link>
+          </PermissionGate>
+        ) : (
+          <Nav.Link as={NavLink} to={item.link} key={index} onClick={handleDrawerClose}>
+            {strings[item.text.toLowerCase().replace(" ", "")]}
+          </Nav.Link>
+        )
+      ))}
+    </Nav>
+  );
+
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobileView(window.innerWidth <= 1000);
+    };
+
+    checkMobileView();
+    window.addEventListener("resize", checkMobileView);
+
+    return () => {
+      window.removeEventListener("resize", checkMobileView);
+    };
+  }, []);
+
+  
   return (
     <div className="Header">
       <Navbar bg="transparent" expand="lg">
-        <Container fluid>
-          <Navbar.Toggle aria-controls="navbarScroll" />
-          <Navbar.Collapse id="navbarScroll">
+        <Container fluid> 
+        {isMobileView ? (
+          <div className="grow leftAlign">
+             <>
+                <Button
+                  variant="outline-secondary"
+                  onClick={handleDrawerOpen}
+                  style={{ marginRight: "10px" }}
+                >
+                  <img src={icon_menu} style={{width: '50px'}} alt="menu icon" />
+                </Button>
+                <Offcanvas show={mobileMenuOpen} onHide={handleDrawerClose}>
+                  <Offcanvas.Header closeButton>
+                    <Offcanvas.Title>{strings.welcome}</Offcanvas.Title>
+                  </Offcanvas.Header>
+                  <Offcanvas.Body>{drawerContent}</Offcanvas.Body>
+                </Offcanvas>
+              </>
+              </div>
+        ) : (
+         <>
+       
             <Nav
-              className="me-auto my-2 my-lg-0 menu"
-              style={{ maxHeight: "100px" }}
+             className={`me-auto my-2 my-lg-0 menu ${mobileMenuOpen ? 'mobile-menu open' : 'menu'}`}
+              style={{ maxHeight: "100px"}}
               navbarScroll
             >
               {authState.isLogged && (
-                <NavLink className="Header-nav-link" to="/my-profile">{strings.myProfile}</NavLink>
+                <NavLink className="Header-nav-link" to="/my-profile"
+                onClick={() => setMobileMenuOpen(false)}>{strings.myProfile}</NavLink>
               )}
               {authState.isLogged && (
-                <NavLink className="Header-nav-link" to="/stl-viewer">{strings.stlViewer}</NavLink>
+                <NavLink className="Header-nav-link" to="/stl-viewer"  
+                onClick={() => setMobileMenuOpen(false)}>{strings.stlViewer}</NavLink>
               )}
               {authState.isLogged && (
-                <NavLink className="Header-nav-link" to="/video-photo">{strings.videoPhoto}</NavLink>
+                <NavLink className="Header-nav-link" to="/video-photo"
+                onClick={() => setMobileMenuOpen(false)}>{strings.videoPhoto}</NavLink>
               )}
               {authState.isLogged && (
-                <NavLink className="Header-nav-link" to="/pusher-chat">{strings.chat}</NavLink>
+                <NavLink className="Header-nav-link" 
+                onClick={() => setMobileMenuOpen(false)} to="/pusher-chat">{strings.chat}</NavLink>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"users.view"}>
-                  <NavLink className="Header-nav-link" to="/manage-users">{strings.manageUsers}</NavLink>
+                  <NavLink className="Header-nav-link" 
+                   onClick={() => setMobileMenuOpen(false)}to="/manage-users">{strings.manageUsers}</NavLink>
                 </PermissionGate>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"domain.view"}>
-                  <NavLink className="Header-nav-link" to="/manage-domains">{strings.manageDomains}</NavLink>
+                  <NavLink className="Header-nav-link" 
+                   onClick={() => setMobileMenuOpen(false)}to="/manage-domains">{strings.manageDomains}</NavLink>
                 </PermissionGate>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"roles.view"}>
-                  <NavLink className="Header-nav-link" to="/manage-roles">{strings.manageRoles}</NavLink>
+                  <NavLink className="Header-nav-link" 
+                   onClick={() => setMobileMenuOpen(false)}to="/manage-roles">{strings.manageRoles}</NavLink>
                 </PermissionGate>
               )}
               {authState.isLogged && (
                 <PermissionGate permission={"settings.manage"}>
-                  <NavLink className="Header-nav-link" to="/settings">{strings.settings}</NavLink>
+                  <NavLink className="Header-nav-link" 
+                   onClick={() => setMobileMenuOpen(false)}to="/settings">{strings.settings}</NavLink>
                 </PermissionGate>
               )}
             </Nav>
             {renderLogout(localization)}
-          </Navbar.Collapse>
+          </>
+        )}
         </Container>
       </Navbar>
     </div>
