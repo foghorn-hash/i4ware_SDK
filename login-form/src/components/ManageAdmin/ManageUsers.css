@@ -2,17 +2,13 @@
 	padding-top: 20px;
 }
 
-.spacer {
-	padding-bottom: 20px;
-}
-
 .select-role {
 	border: 1px #ced4da solid;
 	border-radius: 4px;
 	padding: 8px;
 	background-color: white;
 	color: #747373;
-	width: 50%;
+	width: 40%;
 }
 
 .max-height-profile-pic-manage-users {
@@ -21,68 +17,21 @@
     width: auto;
 }
 
-/* Styles for the container */
-.mt-3 {
-	margin-top: 3rem;
-  }
-  
   /* Styles for the table header */
   .table-header, .table-row {
 	display: grid;
-	grid-template-columns: 50px 50px 80px 140px 100px 400px 1fr 1fr 60px 100px; /* adjust as needed */
-	border-bottom: 1px solid #eee;
+	grid-template-columns: 50px 50px 80px 140px 100px 200px 120px 130px 80px 150px; /* adjust as needed */
 	padding: 8px;
 	line-height: 30px; /* height of the div */;
   }
 
-  .column-number,
-  .column-id {
+  .column {
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	align-items: center;;
+	border-bottom: 1px solid #eee;
+	padding-bottom: 20px;
   }
 
-  .column-verified {
-	display: flex;
-	align-items: center !important;
-  }
-
-  .column-name {
-	display: flex;
-	align-items: center !important;
-  }
-
-  .column-role {
-	display: flex;
-	align-items: center !important;
-  }
-
-  .column-avatar {
-	display: flex !important;
-	justify-content: center !important;
-	align-items: center !important;
-  }
-
-  .column-email {
-	display: flex;
-	align-items: center;
-  }
-
-  .column-domain {
-	display: flex;
-	align-items: center;
-  }
-
-  .column-status {
-	display: flex;
-	align-items: center;
-  }
-
-  .column-actions {
-	display: flex;
-	align-items: center;
-  }
-  
   /* Style for the profile picture */
   .max-height-profile-pic-manage-users {
 	max-height: 50px; /* Adjust the max height as needed */
@@ -101,3 +50,48 @@
   .spacer {
 	padding-bottom: 40px;
   }
+
+@media (max-width: 768px) {
+	.mt-3 {
+		display: grid;
+		grid-template-columns: 1fr 2fr;
+		padding: 0;
+    }
+
+    .column {
+	    height: 60px;
+    }
+  
+    .table-header, .table-row {
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-template-rows: repeat(10, auto);
+		width: 100%;
+		align-items: center;
+    }
+
+    .table-header div, .table-row div {
+		padding: 8px 0;
+		line-height: 30px;
+		display: flex;
+		align-items: center;
+    }
+
+    .table-header {
+		border-bottom: 0;
+	}
+
+	.row {
+		width: 90%;
+	}
+
+	.mobile-dropdown {
+		display: none !important;
+
+	}
+
+	.mobile-dropdown.visible {
+        display: block !important; 
+    }
+	
+}

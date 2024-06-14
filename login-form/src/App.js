@@ -93,7 +93,8 @@ function App() {
     >
       <div className="App-background"></div>
       <div className="App-logo-header">
-        <a href="#/public"><img src={LOGO} alt="logo" className="App-logo" /></a>
+        <a href="#/public"><img src={LOGO} alt="logo" className="App-logo" style={{width: '380px', height: '100%'
+        }}/></a>
       </div>
       <div className="App">
         <AuthProvider>
@@ -152,8 +153,9 @@ function App() {
             </Switch>
           </Container>
         </AuthProvider>
-        <Offcanvas show={show} onHide={handleClose}>
-          <Offcanvas.Header closeButton>
+        <Offcanvas style={{ width: "350px"}} show={show} onHide={handleClose} placement="end">
+          <Offcanvas.Header>
+            <Button variant="close" aria-label="Close" onClick={handleClose}></Button>
             <Offcanvas.Title>{strings.license}</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>

@@ -146,7 +146,7 @@ function Header(props) {
     }
   
     return (
-      <div className="ml-auto">
+      <div className="ml-auto" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
         <select id="language-selector" className="language-selector" onChange={handleLocalization}>
           <option value="fi" selected={language === 'fi'}>Finnish</option>
           <option value="en" selected={language === 'en'}>English</option>
@@ -154,14 +154,12 @@ function Header(props) {
         </select>
   
         {authState.isLogged ? (
-          <button className="btn btn-danger" style={{
-          margin: "10px", marginLeft: "20px"
-          }} onClick={handleLogout}>
+          <button className="btn btn-danger"  onClick={handleLogout}>
             {strings.logout}
           </button>
         ) : (
           <button
-            className="Header-login-button btn btn-info"
+            className="Header-login-button btn btn-info" 
             onClick={() => {
               props.history.push("/login");
             }}
@@ -184,27 +182,28 @@ function Header(props) {
   const drawerContent = (
     <Nav className="flex-column">
       {[
-        { text: "My Profile", link: "/my-profile" },
-        { text: "3D Viewer", link: "/stl-viewer" },
-        { text: "Video/Photo", link: "/video-photo" },
-        { text: "Chat", link: "/pusher-chat" },
-        { text: "Manage Users", link: "/manage-users", permission: "users.view" },
-        { text: "Manage Domains", link: "/manage-domains", permission: "domain.view" },
-        { text: "Manage Roles", link: "/manage-roles", permission: "roles.view" },
-        { text: "Settings", link: "/settings", permission: "settings.manage" },
-      ].map((item, index) => (
-        item.permission ? (
+        { text: "myProfile", link: "/my-profile" },
+        { text: "stlViewer", link: "/stl-viewer" },
+        { text: "videoPhoto", link: "/video-photo" },
+        { text: "chat", link: "/pusher-chat" },
+        { text: "manageUsers", link: "/manage-users", permission: "users.view" },
+        { text: "manageDomains", link: "/manage-domains", permission: "domain.view" },
+        { text: "manageRoles", link: "/manage-roles", permission: "roles.view" },
+        { text: "settings", link: "/settings", permission: "settings.manage" },
+      ].map((item, index) => {
+        // console.log(item.text, strings[item.text]);
+        return item.permission ? (
           <PermissionGate permission={item.permission} key={index}>
             <Nav.Link as={NavLink} to={item.link} onClick={handleDrawerClose}>
-              {strings[item.text.toLowerCase().replace(" ", "")]}
+              {strings[item.text]}
             </Nav.Link>
           </PermissionGate>
         ) : (
           <Nav.Link as={NavLink} to={item.link} key={index} onClick={handleDrawerClose}>
-            {strings[item.text.toLowerCase().replace(" ", "")]}
+              {strings[item.text]}
           </Nav.Link>
-        )
-      ))}
+        );
+        })}
     </Nav>
   );
 
@@ -228,25 +227,26 @@ function Header(props) {
         <Container fluid> 
         {isMobileView ? (
           <div className="grow leftAlign">
-             <>
+             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
                 <Button
                   variant="outline-secondary"
                   onClick={handleDrawerOpen}
-                  style={{ marginRight: "10px" }}
+                  style={{ marginRight: "40px" }}
                 >
-                  <img src={icon_menu} style={{width: '50px'}} alt="menu icon" />
+                  <img src={icon_menu} style={{width: '30px'}} alt="menu icon" />
                 </Button>
-                <Offcanvas show={mobileMenuOpen} onHide={handleDrawerClose}>
+                {renderLogout(localization)}  
+              </div>
+                <Offcanvas style={{ width: "220px"}} show={mobileMenuOpen} onHide={handleDrawerClose}>
                   <Offcanvas.Header closeButton>
                     <Offcanvas.Title>{strings.welcome}</Offcanvas.Title>
                   </Offcanvas.Header>
                   <Offcanvas.Body>{drawerContent}</Offcanvas.Body>
                 </Offcanvas>
-              </>
+            
               </div>
         ) : (
          <>
-       
             <Nav
              className={`me-auto my-2 my-lg-0 menu ${mobileMenuOpen ? 'mobile-menu open' : 'menu'}`}
               style={{ maxHeight: "100px"}}
@@ -294,7 +294,6 @@ function Header(props) {
               )}
             </Nav>
             {renderLogout(localization)}
-            
           </>
         )}
         </Container>

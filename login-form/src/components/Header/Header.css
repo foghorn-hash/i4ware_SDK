@@ -16,6 +16,7 @@
 
 a {
 	text-decoration: none;
+	border-bottom: 1px transparent;
 }
 
 a.active {
@@ -25,6 +26,8 @@ a.active {
 
 .Header-nav-link:hover {
 	border-bottom: 1px solid white;
+	background-color: rgb(79, 78, 77);
+	border-radius: 5px;
 }
 
 .Header-login-button {
@@ -34,7 +37,6 @@ a.active {
 
 .language-selector {
 	position: relative;
-	top: 3px;
 	margin-right: 20px;
 	margin-left: 20px;
 	height: 38px;
@@ -46,7 +48,7 @@ a.active {
 	cursor: pointer;
   }
   
-@media (max-width: 1100px) {
+@media (max-width: 1000px) {
 	.menu {
 	  display: none;
 	}
@@ -54,12 +56,12 @@ a.active {
 	  display: block;
 	}
 }
-  
+
 .mobile-menu {
 	display: none;
 	flex-direction: column;
 }
-  
+
 .mobile-menu.open {
 	display: flex;
 }

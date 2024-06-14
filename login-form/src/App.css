@@ -16,11 +16,7 @@ body {
 
 .App-logo-header {
   background-color: transparent;
-  padding-top: 50px;
-}
-
-.App-logo {
-	height: 200px;
+  padding-top: 20px;
 }
 
 .App {
@@ -128,5 +124,10 @@ body {
 .App-license-button {
   position: fixed;
   bottom: 20px;
-  left: 20px;
+  right: 20px;
+  padding: 10px;
+  background-color: #1c1c1c;
+  color: white;
+  font-size: 15px;
+  z-index: 1000;
 }

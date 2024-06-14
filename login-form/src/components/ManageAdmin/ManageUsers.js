@@ -191,6 +191,12 @@ function ManageAdmin() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleToggle = () => {
+    setMenuOpen(!menuOpen);
+};
   
   useEffect(() => {
   
@@ -318,7 +324,7 @@ function ManageAdmin() {
 
   return (
     <>
-      <Modal show={modalState}>
+      <Modal show={modalState} style={{ }}>
         {
           <div>
             <h1>{strings.addUser}</h1>
@@ -504,16 +510,16 @@ function ManageAdmin() {
       
         <div className="mt-3">
           <div className="table-header">
-            <div className="column-number">#</div>
-            <div className="column-id">ID</div>
-            <div className="column-avatar">{strings.avatar}</div>
-            <div>{strings.columnName}</div>
-            <div>{strings.columnVerified}</div>
-            <div>{strings.email}</div>
-            <div>{strings.role}</div>
-            <div>{strings.columnDomain}</div>
-            <div>{strings.columnStatus}</div>
-            <div>{strings.columnActions}</div>
+            <div className="column">#</div>
+            <div className="column">ID</div>
+            <div className="column">{strings.avatar}</div>
+            <div className="column">{strings.columnName}</div>
+            <div className="column">{strings.columnVerified}</div>
+            <div className="column">{strings.email}</div>
+            <div className="column">{strings.role}</div>
+            <div className="column">{strings.columnDomain}</div>
+            <div className="column">{strings.columnStatus}</div>
+            <div className="column">{strings.columnActions}</div>
           </div>
 
           <div className="table-body">
@@ -532,24 +538,24 @@ function ManageAdmin() {
 
                 return (
                   <div key={index + 1} className="table-row">
-                    <div className="column-number">{index + 1}</div>
-                    <div className="column-id">{item.id}</div>
-                    <div className="column-avatar">
+                    <div className="column">{index + 1}</div>
+                    <div className="column">{item.id}</div>
+                    <div className="column">
                       <img
                         className="max-height-profile-pic-manage-users"
                         src={profilePicUrl || defaultImg}
                         alt={`Profile of ${item.name}`}
                       />
                     </div>
-                    <div className="column-name">{item.name}</div>
-                    <div className="column-verified">
+                    <div className="column">{item.name}</div>
+                    <div className="column">
                       {item.email_verified_at != null && 'true'}{' '}
                       {item.email_verified_at == null && 'false'}
                     </div>
-                    <div className="column-email">{item.email}</div>
-                    <div className="column-role">{item.roles ? item.roles : 'not-assigned'}</div>
-                    <div className="column-domain">{item.domain}</div>
-                    <div className="column-status">
+                    <div className="column">{item.email}</div>
+                    <div className="column">{item.roles ? item.roles : 'not-assigned'}</div>
+                    <div className="column">{item.domain}</div>
+                    <div className="column">
                       <FormCheck
                         type="switch"
                         disabled
@@ -558,15 +564,19 @@ function ManageAdmin() {
                         onClick={() => {
                           console.log(item.id);
                         }}
+                        style={{ display: 'flex',
+                          alignItems: 'center', justifyContent: 'right'}}
                       />
                     </div>
-                    <div className="column-actions">
-                    <Dropdown>
+                    <div className="column">
+                    <Dropdown onClick={handleToggle}>
                       <Dropdown.Toggle variant="success" id="dropdown-basic">
                         {strings.actions}
                       </Dropdown.Toggle>
 
-                      <Dropdown.Menu>
+                      <Dropdown.Menu 
+                        className={`mobile-dropdown ${menuOpen ? 'visible' : ''}`}
+                      >
                         <PermissionGate permission={'users.changePassword'}>
                           <Dropdown.Item
                             onClick={() => {

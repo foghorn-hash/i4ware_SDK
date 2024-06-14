@@ -302,6 +302,7 @@ function MyProfile(props) {
                   onClick={submitForm}
                   className="btn btn-primary"
                   disabled={isSubmitting}
+                  style={{ marginBottom: "40px" }}
                 >
                   {isSubmitting === true ? strings.saving : strings.save}
                 </button>
