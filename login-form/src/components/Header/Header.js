@@ -225,7 +225,7 @@ function Header(props) {
     <div className="Header">
       <Navbar bg="transparent" expand="lg">
         <Container fluid> 
-        {isMobileView ? (
+        {isMobileView && authState.isLogged ? (
           <div className="grow leftAlign">
              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
                 <Button

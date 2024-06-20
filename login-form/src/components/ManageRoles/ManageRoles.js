@@ -106,9 +106,9 @@ function ManageRoles(props) {
       </div>
       <div className="mt-3">
           <div className="table-header-roles">
-            <div className="column-number-roles">#</div>
-            <div>{strings.name}</div>
-            <div></div>
+            <div className=".column-actions-roles">#</div>
+            <div className=".column-actions-roles">{strings.name}</div>
+            <div className=".column-actions-roles"></div>
           </div>
           <div className='table-body-roles'>
           <InfiniteScroll
@@ -119,8 +119,8 @@ function ManageRoles(props) {
         >
           {roles.map((role, index) => (
             <div key={role.id} className="table-row-roles">
-              <div className="column-number-roles">{index + 1}</div>
-              <div>{role.name}</div>
+              <div className="column-actions-roles">{index + 1}</div>
+              <div className='column-actions-roles'>{role.name}</div>
               <div className='column-actions-roles'>
                 <Button 
                   className="btn-info" 

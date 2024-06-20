@@ -140,7 +140,13 @@ function RoleForm(props) {
                 />
               </div>
               </div>
-              <div class="w-50 col-12 row mt-3">
+              <div class="w-50 col-12 row" style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gridGap: '10px',
+                marginTop: '20px',
+                width: '100%'
+              }}>
                 <h5>{strings.permission}</h5>
                 {
                   permissions.map((permission)=>{
@@ -165,11 +171,17 @@ function RoleForm(props) {
                   })
                 }
               </div>
-              <div class="col-12">
+              <div class="col-12" style={{ marginBottom: '50px'}}>
                 <button type="button" onClick={()=>{
                   submitForm();
                 }} class="btn btn-primary">
                   {strings.save}
+                </button>
+                <button style={{ marginLeft: '100px' }}
+                type="button" onClick={()=>{
+                  props.history.push('/manage-roles') }}
+                 class="btn btn-primary">
+                  Back
                 </button>
               </div>
             </form>

@@ -23,3 +23,14 @@
 .login-form-spacer {
     height: 10px;
 }
+
+@media screen and (max-width: 800px) {
+    .login-card {
+        width: 100%;
+    }
+
+    .form-control, .registerMessage {
+        width: 90% !important;
+    }
+
+}

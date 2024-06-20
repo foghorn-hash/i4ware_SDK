@@ -192,11 +192,15 @@ function ManageAdmin() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState([]);
 
-  const handleToggle = () => {
-    setMenuOpen(!menuOpen);
-};
+  const handleToggle = (index) => {
+    setMenuOpen(prevState => {
+      const newState = [...prevState];
+      newState[index] = !newState[index];
+      return newState;
+    });
+  };
   
   useEffect(() => {
   
@@ -324,11 +328,11 @@ function ManageAdmin() {
 
   return (
     <>
-      <Modal show={modalState} style={{ }}>
+      <Modal show={modalState}>
         {
           <div>
             <h1>{strings.addUser}</h1>
-            <Formik
+            <Formik 
               initialValues={{
                 name: "",
                 email: "",
@@ -354,7 +358,7 @@ function ManageAdmin() {
               }}
             >
              {({ errors,submitForm })=>(
-               <form className="row">
+               <form className="row" >
                <div className="col-12">
                  <TextInput
                    placeholder={strings.fullName}
@@ -569,13 +573,13 @@ function ManageAdmin() {
                       />
                     </div>
                     <div className="column">
-                    <Dropdown onClick={handleToggle}>
+                    <Dropdown show={menuOpen[index]} onToggle={() => handleToggle(index)}>
                       <Dropdown.Toggle variant="success" id="dropdown-basic">
                         {strings.actions}
                       </Dropdown.Toggle>
 
                       <Dropdown.Menu 
-                        className={`mobile-dropdown ${menuOpen ? 'visible' : ''}`}
+                        className={`mobile-dropdown ${menuOpen[index] ? 'visible' : ''}`}
                       >
                         <PermissionGate permission={'users.changePassword'}>
                           <Dropdown.Item

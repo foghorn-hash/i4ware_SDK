@@ -35,3 +35,9 @@
 .float-right {
 	float: right;
 }
+
+@media screen and (max-width: 600px) {
+  .modal-main {
+    width: 80%;
+  }
+}

@@ -51,10 +51,11 @@
 	padding-bottom: 40px;
   }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
 	.mt-3 {
 		display: grid;
 		grid-template-columns: 1fr 2fr;
+		grid-template-rows: 600px auto !important;
 		padding: 0;
     }
 
@@ -70,6 +71,10 @@
 		align-items: center;
     }
 
+	.table-row {	
+		margin-bottom: 50px;
+	  }
+
     .table-header div, .table-row div {
 		padding: 8px 0;
 		line-height: 30px;
@@ -81,10 +86,6 @@
 		border-bottom: 0;
 	}
 
-	.row {
-		width: 90%;
-	}
-
 	.mobile-dropdown {
 		display: none !important;
 
@@ -93,5 +94,5 @@
 	.mobile-dropdown.visible {
         display: block !important; 
     }
-	
+
 }

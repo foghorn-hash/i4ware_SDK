@@ -78,14 +78,24 @@ let strings = new LocalizedStrings({
   }
 });
 
-function Menu({id, domainActionApi}) {
+function Menu({id, domainActionApi, index}) {
+  const [menuOpen, setMenuOpen] = useState([]);
+
+  const handleToggle = (index) => {
+    setMenuOpen(prevState => {
+      const newState = [...prevState];
+      newState[index] = !newState[index];
+      return newState;
+    });
+  };
+
   return (
-    <Dropdown>
+    <Dropdown drop="up" align={window.innerWidth > 900 ? "end" : "start"} show={menuOpen[index]} onToggle={() => handleToggle(index)}>
       <Dropdown.Toggle variant="success" id="dropdown-basic">
         {strings.actions}
       </Dropdown.Toggle>
 
-      <Dropdown.Menu>
+      <Dropdown.Menu className={`mobile-dropdown ${menuOpen[index] ? 'visible' : ''}`}>
         <Dropdown.Item
           onClick={() => {
             domainActionApi(id, "extend-trial");
@@ -180,14 +190,14 @@ function ManageDomain(props) {
     <>
       <div className="mt-3">
           <div className="table-header-domains">
-            <div className="column-number-domains">#</div>
-            <div>{strings.domain}</div>
-            <div>{strings.validBeforeAt}</div>
-            <div>{strings.type}</div>
-            <div>{strings.company}</div>
-            <div>{strings.vatId}</div>
-            <div></div>
-            <div></div>
+            <div className="column_domains">#</div>
+            <div className="column_domains">{strings.domain}</div>
+            <div className="column_domains">{strings.validBeforeAt}</div>
+            <div className="column_domains">{strings.type}</div>
+            <div className="column_domains">{strings.company}</div>
+            <div className="column_domains">{strings.vatId}</div>
+            <div className="column_domains"></div>
+            <div className="column_domains"></div>
           </div>
           <div className="table-body-domains">
             <InfiniteScroll
@@ -198,16 +208,16 @@ function ManageDomain(props) {
             >
               {domains.map((item, index) => (
                 <div key={item.id || index} className="table-row-domains">
-                  <div className="column-number-domains">{index + 1}</div>
-                  <div>{item.domain}</div>
-                  <div>{item.valid_before_at}</div>
-                  <div>
+                  <div className="column_domains">{index + 1}</div>
+                  <div className="column_domains">{item.domain}</div>
+                  <div className="column_domains">{item.valid_before_at}</div>
+                  <div className="column_domains">
                     {item.type === "paid" && <li className="badge bg-success">{strings.paid}</li>}
                     {item.type === "trial" && <li className="badge bg-primary">{strings.trial}</li>}
                   </div>
-                  <div>{item.company_name}</div>
-                  <div>{item.vat_id}</div>
-                  <div className="column-edit-domains">
+                  <div className="column_domains">{item.company_name}</div>
+                  <div className="column_domains">{item.vat_id}</div>
+                  <div className="column_domains">
                     <PermissionGate permission={"domain.edit"}>
                       <Button
                         className="btn-info" size="sm"
@@ -225,10 +235,11 @@ function ManageDomain(props) {
                       </Button>
                     </PermissionGate>
                   </div>
-                  <div className="column-actions-domains">
+                  <div className="column_domains">
                     <PermissionGate permission={"domain.actions"}>
                       <Menu
                         id={item.id}
+                        index={index}
                         domainActionApi={(id, action) => {
                           domainUpdateApi({
                             id: id,
