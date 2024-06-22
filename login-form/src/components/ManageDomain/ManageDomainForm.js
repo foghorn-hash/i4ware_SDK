@@ -116,7 +116,7 @@ function ManageDomainForm(props) {
   }
 
   return (
-    <div style={{marginTop: "2em"}}>
+    <div style={{marginTop: "2em", marginBottom: "2em" }}>
       <h3 className="my-2">{strings.manageDomain}</h3>
       <div className="my-2">
         <Formik
@@ -170,13 +170,13 @@ function ManageDomainForm(props) {
               <div class="col-12">
                 <TextInput label={strings.addressLine2} name="address_line_2" />
               </div>
-              <div class="col-4">
+              <div class="col-md-4">
                 <TextInput label={strings.city} name="city" />
               </div>
-              <div class="col-4">
+              <div class="col-md-4">
                 <TextInput label={strings.country} name="country" />
               </div>
-              <div class="col-4">
+              <div class="col-md-4">
                 <TextInput label={strings.zip} name="zip" />
               </div>
               <div class="col-12">
@@ -184,6 +184,11 @@ function ManageDomainForm(props) {
                   submitForm();
                 }} class="btn btn-primary">
                   {strings.save}
+                </button>
+                <button style={{ marginLeft: "100px" }} type="button" onClick={()=>{
+                  props.history.push('/manage-domains')
+                }} class="btn btn-primary" >
+                  Back
                 </button>
               </div>
             </form>

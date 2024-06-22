@@ -29,3 +29,10 @@
     color: whitesmoke;
     padding: 5px;
 }
+
+@media screen and (max-width: 600px){
+    .select-gender-myprofile {
+        width: 90%;
+    }
+ 
+}

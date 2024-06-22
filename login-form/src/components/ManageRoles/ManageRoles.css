@@ -7,13 +7,42 @@
   .table-header-roles, .table-row-roles {
     display: grid;
     grid-template-columns: 50px 200px 1fr; /* adjust as needed */
-    border-bottom: 1px solid #eee;
     padding: 8px;
     line-height: 30px; /* height of the div */;
   }
 
   .column-actions-roles {
-	display: flex;
-	align-items: center;
-    justify-content: center;
+    display: flex;
+    align-items: center;;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
   }
+
+@media (max-width: 900px) {
+    .mt-3 {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      grid-template-rows: 100px auto;
+      padding: 0;
+      }
+    
+      .table-header-roles, .table-row-roles  {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(3, 60px);
+      width: 100%;
+      align-items: center;
+      }
+  
+    .table-row-roles {	
+      margin-bottom: 50px;
+      }
+  
+    .table-header-roles div, .table-row-roles div {
+      padding: 8px 0;
+      line-height: 30px;
+      display: flex;
+      align-items: center;
+      }
+    
+}

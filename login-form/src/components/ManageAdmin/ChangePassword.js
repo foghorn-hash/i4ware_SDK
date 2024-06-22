@@ -64,7 +64,7 @@ function ChangePassword({ closeModel, userId, onSubmit }) {
             <div>
             <h1>{strings.passwordChange}</h1>
   
-            <div className="form-group text-left">
+            <div className="form-group text-left"    style={{width: "80%"}}>
               <label for="validationCustom05" className={"form-label"}>
                 {"Password"}
               </label>

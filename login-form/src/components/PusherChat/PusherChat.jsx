@@ -476,11 +476,12 @@ const saveMessageToDatabase = async (message) => {
             onChange={handleAiCheckboxChange}
           />
         </div>
-        <input
+        <textarea
           className="message-input"
           placeholder={strings.box}
           value={message}
           onChange={handleTyping}
+          style={{ height: 'auto', minHeight: '50px' }}
         />
         <button className="send-button" onClick={submitMessage}>{strings.send}</button>
       </form>
@@ -495,7 +496,7 @@ const saveMessageToDatabase = async (message) => {
         <form className='upload-form'>
           <input type="file" id="upload-input" className='message-file-selector' onChange={(e) => setSelectedFile(e.target.files[0])} /> {/* Input for image upload */}
           <label htmlFor="upload-input" className='message-file-button'>{strings.browse}</label>
-          <input name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
+          <textarea name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
           <br />
           <button className='message-upload-button' onClick={handleUpload}>{strings.upload}</button>
         </form>
@@ -525,7 +526,7 @@ const saveMessageToDatabase = async (message) => {
           {strings.capturePhoto}
         </button>
         <form className='upload-form'>
-          <input name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
+          <textarea name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
           <br />
           <button className='message-upload-button' onClick={uploadCapture}>{strings.upload}</button>
         </form>
@@ -558,7 +559,7 @@ const saveMessageToDatabase = async (message) => {
         )}
         <div>{strings.duration}: {formatDuration(videoDuration)}</div>
         <form className='upload-form'>
-          <input name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
+          <textarea name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
           <br />
           <button className='message-upload-button' onClick={uploadVideo}>{strings.upload}</button>
         </form>

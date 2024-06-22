@@ -126,6 +126,7 @@
 	border-top: 1px solid #333333;
 	padding-top: 10px;
 	background-color: #1a1a1a;
+	margin-bottom: 80px;
   }
 
   .upload-form {
@@ -180,3 +181,9 @@
 	color: #333;
 	background: #f8f8f8;
   }
+
+@media screen and (max-width: 600px) {
+	.message-capture-video-button {
+		margin-top: 10px;
+	}
+}
