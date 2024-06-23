@@ -16,10 +16,14 @@ return new class extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->string('username'); // Column for the user's name
-            $table->text('message'); // Column for the message text
-            $table->unsignedBigInteger('user_id')->default(0);
+            $table->longText('message'); // Column for the message text
+            $table->unsignedBigInteger('user_id'); // Column for the user ID
             $table->string('domain')->default(env('APP_DOMAIN_ADMIN'));
             $table->timestamps(); // Creates created_at and updated_at columns
+            $table->softDeletes(); // Adds deleted_at column for soft deletes
+
+            // Add foreign key constraint
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -30,6 +34,11 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::table('messages', function (Blueprint $table) {
+            // Drop foreign key constraint first
+            $table->dropForeign(['user_id']);
+        });
+
         Schema::dropIfExists('messages');
     }
 };

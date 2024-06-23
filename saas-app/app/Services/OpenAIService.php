@@ -40,7 +40,7 @@ class OpenAIService
             'json' => [
                 'model' => 'gpt-4o',
                 'messages' => $messages,
-                'max_tokens' => 1000,
+                'max_tokens' => env('OPENAI_MAX_TOKENS'),
             ],
         ]);
 
