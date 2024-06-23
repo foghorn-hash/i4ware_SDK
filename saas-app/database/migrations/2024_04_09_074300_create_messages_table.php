@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('username'); // Column for the user's name
             $table->longText('message'); // Column for the message text
-            $table->unsignedBigInteger('user_id'); // Column for the user ID
+            $table->unsignedBigInteger('user_id')->nullable(); // Allow NULL for user_id
             $table->string('domain')->default(env('APP_DOMAIN_ADMIN'));
             $table->timestamps(); // Creates created_at and updated_at columns
             $table->softDeletes(); // Adds deleted_at column for soft deletes
