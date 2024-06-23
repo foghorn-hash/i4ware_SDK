@@ -73,7 +73,7 @@ class ChatController extends Controller
             ->where(function ($query) use ($user) {
                 $query->where('messages.domain', '=', $user->domain)
                     ->orWhere(function ($query) use ($user) {
-                        $query->where('messages.user_id', '=', 0)
+                        $query->where('messages.user_id', '=', null)
                                 ->where('messages.domain', '=', $user->domain);
                     }); // Include messages with user_id = 0 only if domain matches
             })
@@ -222,7 +222,7 @@ class ChatController extends Controller
         // Create new message
         $message = new MessageModel();
         $message->username = "AI";
-        $message->user_id = 0;
+        $message->user_id = null; // No associated user
         $message->domain = $user->domain;
         $message->message = $highlightedMessage;
         $message->save();
