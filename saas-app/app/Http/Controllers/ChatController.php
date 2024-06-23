@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\Message;
 use App\Events\UserTyping;
 use App\Models\Message as MessageModel;
+use App\Events\AiThinking;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Auth;
@@ -249,6 +250,15 @@ class ChatController extends Controller
         return $message; // Placeholder: return the original message (no syntax highlighting)
     }
 
+    public function thinking(Request $request)
+    {
+        $user = "AI";
+        $isThinking = $request->isThinking;
+
+        broadcast(new AiThinking($user, $isThinking))->toOthers();
+
+        return response()->json(['status' => 'Thinking Message Sent!', 'message' => $isThinking]);
+    }
 
     public function uploadVideo(Request $request)
     {
