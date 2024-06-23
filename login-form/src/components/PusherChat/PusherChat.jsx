@@ -38,6 +38,7 @@ let strings = new LocalizedStrings({
     please_select_file: "Please select a file to upload.",
     failed_to_upload_file: "Failed to upload file. Please try again.",
     your_browser_not_support_video_tag: "Your browser does not support the video tag.",
+    aiTypingIndicator: "AI is thinking...",
   },
   fi: {
     send: "Lähetä",
@@ -62,6 +63,7 @@ let strings = new LocalizedStrings({
     please_select_file: "Olehyvä ja valitse tiedosto minkä haluat ladata.",
     failed_to_upload_file: "Tiedoston lataus epäonnistui. Olehyvä ja yritä uudestaan.",
     your_browser_not_support_video_tag: "Selaimesi ei tue video tagia.",
+    aiTypingIndicator: "Tekoäly miettii ...",
   },
   se: {
     send: "Skicka",
@@ -86,6 +88,7 @@ let strings = new LocalizedStrings({
     please_select_file: "Vänligen välj en fil att ladda upp.",
     failed_to_upload_file: "Misslyckades med att ladda upp filen. Försök igen.",
     your_browser_not_support_video_tag: "Din webbläsare stöder inte videomarkeringen.",
+    aiTypingIndicator: "AI tänker ...",
   }
 });
 
@@ -94,6 +97,7 @@ const PusherChat = () => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [typingIndicator, setTypingIndicator] = useState('');
+  const [aiTypingIndicator, setAiTypingIndicator] = useState('');
   const [isAiEnabled, setIsAiEnabled] = useState(false); // State to track AI checkbox
   const typingTimeoutRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
@@ -107,6 +111,7 @@ const PusherChat = () => {
   const [isCapturingVideo, setIsCapturingVideo] = useState(false);
   const [videoUploading, setvideoUploading] = useState(false);
   const [videoDuration, setVideoDuration] = useState(0);
+  const [isThinking, setIsThinking] = useState(false);
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -194,23 +199,27 @@ const PusherChat = () => {
     const channel = pusher.subscribe('chat');
 
     channel.bind('message', (newMessage) => {
-      setMessages((prevMessages) => [newMessage, ...prevMessages]);
+        setMessages((prevMessages) => [newMessage, ...prevMessages]);
     });
 
     channel.bind('user-typing', ({ username: typingUsername, isTyping }) => {
-      if (isTyping) {
-        setTypingIndicator(`${typingUsername} ${strings.typing}`);
-        clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = setTimeout(() => {
-          setTypingIndicator('');
-        }, 1000);
-      }
+        if (isTyping) {
+            setTypingIndicator(`${typingUsername} ${strings.typing}`);
+            clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = setTimeout(() => {
+                setTypingIndicator('');
+            }, 1000);
+        }
     });
 
+    channel.bind('ai-thinking', function (data) {
+      setIsThinking(data.isThinking);
+    });    
+
     return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
-      clearTimeout(typingTimeoutRef.current);
+        channel.unbind_all();
+        channel.unsubscribe();
+        clearTimeout(typingTimeoutRef.current);
     };
   };
 
@@ -243,22 +252,12 @@ const PusherChat = () => {
     setMessage(e.target.value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      // Send typing status based on the active modal
-      if (showModal) {
-        sendTypingStatus(false, 'modal');
-      } else if (showCaptureModal) {
-        sendTypingStatus(false, 'captureModal');
-      }
+      sendTypingStatus(false);
     }, 500);
-    // Send typing status immediately when typing
-    if (showModal) {
-      sendTypingStatus(true, 'modal');
-    } else if (showCaptureModal) {
-      sendTypingStatus(true, 'captureModal');
-    }
+    sendTypingStatus(true);
   };
 
-  const sendTypingStatus = async (isTyping, modalType) => {
+  const sendTypingStatus = async (isTyping) => {
     await Axios.post(`${API_BASE_URL}/api/chat/typing`, { username, isTyping }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     }).catch((error) => console.error('Error sending typing status', error));
@@ -272,6 +271,12 @@ const PusherChat = () => {
     setMessage('');
     sendTypingStatus(false);
     if (isAiEnabled) {
+      // Send "AI is thinking" message
+      setIsThinking(true);
+      await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: true }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+
       generateResponse(); // Call generateResponse if isAiEnabled is true
     }
     fetchMessages(); // Fetch messages after sending a new message
@@ -429,6 +434,9 @@ const generateResponse = async () => {
     // Update the messages state
     setMessages((prevMessages) => [aiResponseMessage, ...prevMessages]);
 
+    // Handle AI response (display in chat, etc.)
+    setIsThinking(false);
+
     // Fetch updated messages
     fetchMessages();
   } catch (error) {
@@ -465,6 +473,7 @@ const saveMessageToDatabase = async (message) => {
       </Button>
       <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
+      {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}
       <form className="message-form">
         <div>
           {strings.ask_from_ai}

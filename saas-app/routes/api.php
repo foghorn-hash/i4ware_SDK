@@ -86,6 +86,7 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/messages', [ChatController::class, 'message']);
 	Route::get('/messages', [ChatController::class, 'getMessages']);
 	Route::post('/typing', [ChatController::class, 'userTyping']);
+	Route::post('/thinking', [ChatController::class, 'thinking']);
 	Route::post('/upload', [ChatController::class, 'uploadMessage']);
 	Route::post('/capture-upload', [ChatController::class, 'captureUpload']);
 	Route::post('/upload-video', [ChatController::class, 'uploadVideo']);
