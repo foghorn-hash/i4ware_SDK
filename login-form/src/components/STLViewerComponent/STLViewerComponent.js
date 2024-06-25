@@ -126,33 +126,32 @@ function STLViewerComponent() {
     setShowModal(false);
   };
 
-  // const removeItem = async (item) => {
-  //   try {
-  //     setIsLoading(true); // Set isLoading to true when starting the request
-  //     const deleteUrl = `${API_BASE_URL}api/stl/stl-item?fileName=${item.stl_filename}`;
-  //     console.log(`Attempting to delete item: ${item.stl_filename} at URL: ${deleteUrl}`); // Debug statement
-  
-  //     const response = await axios.delete(deleteUrl, {
-  //       headers: {
-  //         Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
-  //       },
-  //     });
-  
-  //     console.log('Response from delete request:', response); // Debug statement
-  
-  //     if (response.status === 200) {
-  //       // Filter out the deleted item from the list
-  //       setStlItems((prevStlFiles) => prevStlFiles.filter((file) => file.stl_filename !== item.stl_filename));
-  //       console.log(`Item ${item.stl_filename} deleted successfully`); // Debug statement
-  //     } else {
-  //       console.error('Failed to delete the item. Status:', response.status); // Debug statement
-  //     }
-  //   } catch (error) {
-  //     console.error('Error deleting STL file:', error);
-  //   } finally {
-  //     setIsLoading(false); // Set isLoading to false when the request is complete
-  //   }
-  // };  
+const removeItem = async (fileName) => {
+  try {
+    setIsLoading(true);
+    const deleteUrl = `${API_BASE_URL}/api/stl/delete-stl?fileName=${fileName}`;
+    console.log(`Attempting to delete item: ${fileName} at URL: ${deleteUrl}`);
+
+    const response = await axios.delete(deleteUrl, {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME), 
+      },
+    });
+
+    console.log('Response from delete request:', response);
+
+    if (response.status === 200) {
+      setStlItems((prevStlFiles) => prevStlFiles.filter((file) => file.stl_filename !== fileName));
+      console.log(`Item ${fileName} deleted successfully`);
+    } else {
+      console.error('Failed to delete the item. Status:', response.status);
+    }
+  } catch (error) {
+    console.error('Error deleting STL file:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
   
   stlItems.forEach((file, index) => {
     //console.log(file.stl_filename);
@@ -186,7 +185,7 @@ function STLViewerComponent() {
                         />
                       )}
                       <Button variant="primary" onClick={() => openModal(file.stl_filename)}>{strings.viewSTL}</Button>
-                      {/* <Button variant="danger" onClick={() => removeItem(file)}>Delete</Button> */}
+                      <Button variant="danger" onClick={() => removeItem(file.stl_filename)}>Delete</Button>
                     </div>
                   </Card.Body>
                 </Card>
@@ -203,7 +202,7 @@ function STLViewerComponent() {
         </Modal.Header>
         <Modal.Body className='STLViewerComponent-modal-body'>
           {/* Render the viewer within the Modal */}
-          <ModalWindow3DViewer stlFilename={selectedModel}/>
+          <div className='STlViewerComponent-modal-window'><ModalWindow3DViewer stlFilename={selectedModel}/></div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={closeModal}>

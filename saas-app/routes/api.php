@@ -75,6 +75,7 @@ Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
 	Route::get('/stl-items', [StlController::class, 'getStlItems'])->name('stl.stl-items');
 	Route::get('/stl-item', [StlController::class, 'getStlItem'])->name('stl.stl-item');
 	Route::post('/stl-file', [StlController::class, 'getStlFile'])->name('stl.stl-file');
+	Route::delete('/delete-stl', [StlController::class, 'postStlDeleteFile'])->name('stl.delete-stl'); 
 });
 
 Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router) {

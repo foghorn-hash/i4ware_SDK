@@ -186,4 +186,21 @@ class StlController extends Controller
             return response()->json(['error' => 'File not found'], 404);
         }
     }
+
+    public function postStlDeleteFile(Request $request) 
+    {
+        $fileName = $request->query('fileName');
+
+        $filePath = storage_path('app/public/stl_files/' . $fileName);
+
+        if (file_exists($filePath)) {
+            if (unlink($filePath)) {
+                return response()->json(['message' => 'File deleted successfully'], 200);
+            } else {
+                return response()->json(['message' => 'File could not be deleted'], 500);
+            }
+        } else {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+    }
 }
