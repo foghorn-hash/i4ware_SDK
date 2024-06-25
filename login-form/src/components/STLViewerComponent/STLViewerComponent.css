@@ -1,7 +1,7 @@
 /* CSS for the screenshot image with the 'screenshot-image' id */
 #screenshot-image {
     max-width: 100%;
-    height: auto;
+ 
 }
 
 .scrollable-container {
@@ -63,4 +63,22 @@
 
 .STLViewerComponent-col {
     margin-bottom: 20px;
+}
+
+.STLViewerComponent-modal-body {
+    width: 100%;
+    height: 550px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media screen and (max-width: 600px) {
+    .STLViewerComponent-modal-body {
+        width: 100%;
+        height: 520px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }

@@ -126,6 +126,34 @@ function STLViewerComponent() {
     setShowModal(false);
   };
 
+  // const removeItem = async (item) => {
+  //   try {
+  //     setIsLoading(true); // Set isLoading to true when starting the request
+  //     const deleteUrl = `${API_BASE_URL}api/stl/stl-item?fileName=${item.stl_filename}`;
+  //     console.log(`Attempting to delete item: ${item.stl_filename} at URL: ${deleteUrl}`); // Debug statement
+  
+  //     const response = await axios.delete(deleteUrl, {
+  //       headers: {
+  //         Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
+  //       },
+  //     });
+  
+  //     console.log('Response from delete request:', response); // Debug statement
+  
+  //     if (response.status === 200) {
+  //       // Filter out the deleted item from the list
+  //       setStlItems((prevStlFiles) => prevStlFiles.filter((file) => file.stl_filename !== item.stl_filename));
+  //       console.log(`Item ${item.stl_filename} deleted successfully`); // Debug statement
+  //     } else {
+  //       console.error('Failed to delete the item. Status:', response.status); // Debug statement
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting STL file:', error);
+  //   } finally {
+  //     setIsLoading(false); // Set isLoading to false when the request is complete
+  //   }
+  // };  
+  
   stlItems.forEach((file, index) => {
     //console.log(file.stl_filename);
   });
@@ -158,6 +186,7 @@ function STLViewerComponent() {
                         />
                       )}
                       <Button variant="primary" onClick={() => openModal(file.stl_filename)}>{strings.viewSTL}</Button>
+                      {/* <Button variant="danger" onClick={() => removeItem(file)}>Delete</Button> */}
                     </div>
                   </Card.Body>
                 </Card>
@@ -167,11 +196,12 @@ function STLViewerComponent() {
         </InfiniteScroll>
       </Container>
       {isLoading && <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
-      <Modal show={showModal} onHide={closeModal} dialogClassName="STLViewerComponent-large-modal">
+      <Modal show={showModal}
+      onHide={closeModal} dialogClassName="STLViewerComponent-large-modal">
         <Modal.Header closeButton>
           <Modal.Title>{strings.modelViewerTitle}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className='STLViewerComponent-modal-body'>
           {/* Render the viewer within the Modal */}
           <ModalWindow3DViewer stlFilename={selectedModel}/>
         </Modal.Body>

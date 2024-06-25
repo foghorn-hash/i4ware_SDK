@@ -462,6 +462,7 @@ const saveMessageToDatabase = async (message) => {
   return (
     <>
     <div className="chat-container">
+      <div style={{ marginBottom: '30px' }}>
       <Button variant="primary" className='message-upload-button' onClick={handleShowModal}>
         {strings.upload_image_with_message}
       </Button>
@@ -471,6 +472,7 @@ const saveMessageToDatabase = async (message) => {
       <Button variant="primary" className='message-capture-video-button' onClick={handleCaptureVideoShowModal}>
         {strings.capture_video_with_message}
       </Button>
+      </div>
       <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
       {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}

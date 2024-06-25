@@ -207,6 +207,17 @@ function ManageDomain(props) {
               loader={<div className="loader">Loading...</div>}
             >
               {domains.map((item, index) => (
+                 <div className="mobile-table-body-domains">
+                  <div className="mobile-table-header-domains">
+                    <div className="column_domains">#</div>
+                    <div className="column_domains">{strings.domain}</div>
+                    <div className="column_domains">{strings.validBeforeAt}</div>
+                    <div className="column_domains">{strings.type}</div>
+                    <div className="column_domains">{strings.company}</div>
+                    <div className="column_domains">{strings.vatId}</div>
+                    <div className="column_domains"></div>
+                    <div className="column_domains"></div>
+                  </div>
                 <div key={item.id || index} className="table-row-domains">
                   <div className="column_domains">{index + 1}</div>
                   <div className="column_domains">{item.domain}</div>
@@ -250,10 +261,12 @@ function ManageDomain(props) {
                     </PermissionGate>
                   </div>
                 </div>
+              </div>
               ))}
             </InfiniteScroll>
             <div className="spacer"></div>
         </div>
+  
       </div>
     </>
   );

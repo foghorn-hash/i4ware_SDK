@@ -106,9 +106,9 @@ function ManageRoles(props) {
       </div>
       <div className="mt-3">
           <div className="table-header-roles">
-            <div className=".column-actions-roles">#</div>
-            <div className=".column-actions-roles">{strings.name}</div>
-            <div className=".column-actions-roles"></div>
+            <div className="column-actions-roles">#</div>
+            <div className="column-actions-roles">{strings.name}</div>
+            <div className="column-actions-roles"></div>
           </div>
           <div className='table-body-roles'>
           <InfiniteScroll
@@ -118,10 +118,16 @@ function ManageRoles(props) {
           loader={<div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
         >
           {roles.map((role, index) => (
+            <div className="mobile-table-body-roles">
+              <div className="mobile-table-header-roles">
+                <div className="column-actions-roles">#</div>
+                <div className="column-actions-roles">{strings.name}</div>
+                <div className="column-actions-roles"></div>
+              </div>
             <div key={role.id} className="table-row-roles">
               <div className="column-actions-roles">{index + 1}</div>
-              <div className='column-actions-roles'>{role.name}</div>
-              <div className='column-actions-roles'>
+              <div className="column-actions-roles">{role.name}</div>
+              <div className="column-actions-roles">
                 <Button 
                   className="btn-info" 
                   size="sm" 
@@ -145,6 +151,7 @@ function ManageRoles(props) {
                   {strings.remove}
                 </Button>
               </div>
+            </div>
             </div>
           ))}
         </InfiniteScroll>
