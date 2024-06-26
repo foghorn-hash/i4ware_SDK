@@ -335,6 +335,7 @@ function ManageAdmin() {
             <Formik 
               initialValues={{
                 name: "",
+                gender: "male",
                 email: "",
                 role: "",
                 password: "",
