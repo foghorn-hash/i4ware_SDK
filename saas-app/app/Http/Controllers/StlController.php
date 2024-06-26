@@ -192,9 +192,10 @@ class StlController extends Controller
         $fileName = $request->query('fileName');
 
         $filePath = storage_path('app/public/stl_files/' . $fileName);
+        $fileScreenshotPath = storage_path('app/public/stl-screenshots/screenshot_' . $fileName);
 
-        if (file_exists($filePath)) {
-            if (unlink($filePath)) {
+        if (file_exists($filePath) && file_exists($fileScreenshotPath)) {
+            if (unlink($filePath) && unlink($fileScreenshotPath)) {
                 return response()->json(['message' => 'File deleted successfully'], 200);
             } else {
                 return response()->json(['message' => 'File could not be deleted'], 500);
