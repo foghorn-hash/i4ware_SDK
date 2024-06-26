@@ -526,7 +526,7 @@ function ManageAdmin() {
             <div className="column">{strings.columnActions}</div>
           </div>
 
-          <div className="table-body">
+          <div className="table-body" >
             <InfiniteScroll
               pageStart={1}
               loadMore={loadMore}
@@ -541,6 +541,20 @@ function ManageAdmin() {
                   item.gender === 'male' ? DefaultMaleImage : DefaultFemaleImage;
 
                 return (
+                  <div className="mobile-table-body">
+                    <div className="mobile-table-header">
+                      <div className="column">#</div>
+                      <div className="column">ID</div>
+                      <div className="column">{strings.avatar}</div>
+                      <div className="column">{strings.columnName}</div>
+                      <div className="column">{strings.columnVerified}</div>
+                      <div className="column">{strings.email}</div>
+                      <div className="column">{strings.role}</div>
+                      <div className="column">{strings.columnDomain}</div>
+                      <div className="column">{strings.columnStatus}</div>
+                      <div className="column">{strings.columnActions}</div>
+                    </div>
+
                   <div key={index + 1} className="table-row">
                     <div className="column">{index + 1}</div>
                     <div className="column">{item.id}</div>
@@ -613,6 +627,7 @@ function ManageAdmin() {
                       </Dropdown.Menu>
                     </Dropdown>
                     </div>
+                  </div>
                   </div>
                 );
               })}
