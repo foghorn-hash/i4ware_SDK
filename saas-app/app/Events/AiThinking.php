@@ -7,6 +7,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
+use Auth;
 
 class AiThinking implements ShouldBroadcastNow
 {
@@ -23,7 +24,8 @@ class AiThinking implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new Channel('chat');
+        $user = Auth::user();
+        return new Channel($user->domain . '_chat');
     }
 
     public function broadcastAs()
