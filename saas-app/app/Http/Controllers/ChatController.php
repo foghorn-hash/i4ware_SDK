@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Events\Message;
 use App\Events\UserTyping;
-use App\Models\Message as MessageModel;
 use App\Events\AiThinking;
+use App\Models\Message as MessageModel;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Auth;
 use Storage;
 use App\Services\OpenAIService;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
 use App\Services\MarkdownService;
@@ -75,7 +76,7 @@ class ChatController extends Controller
                     ->orWhere(function ($query) use ($user) {
                         $query->where('messages.user_id', '=', null)
                                 ->where('messages.domain', '=', $user->domain);
-                    }); // Include messages with user_id = 0 only if domain matches
+                    }); // Include messages with user_id = NULL only if domain matches
             })
             ->orderBy('messages.created_at', 'desc')
             ->get()
@@ -180,6 +181,26 @@ class ChatController extends Controller
       
     }
 
+    private function analyzeMessage($messageText)
+    {
+        $client = new Client();
+
+        try {
+            $response = $client->post('https://api.canva.com/analyze', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . env('CANVA_AI_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => json_encode(['text' => $messageText]),
+            ]);
+
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (\Exception $e) {
+            // Handle API call failure
+            return ['error' => 'Unable to analyze message'];
+        }
+    }
+
     public function generateResponse(Request $request)
     {
         $user = Auth::user();
@@ -222,7 +243,7 @@ class ChatController extends Controller
         // Create new message
         $message = new MessageModel();
         $message->username = "AI";
-        $message->user_id = null; // No associated user
+        $message->user_id = null;
         $message->domain = $user->domain;
         $message->message = $highlightedMessage;
         $message->save();
@@ -305,6 +326,62 @@ class ChatController extends Controller
         }
 
         return response()->json(['error' => 'Media file not found in request'], 400);
+    }
+
+    public function synthesize(Request $request)
+    {
+        $messageId = $request->input('message_id');
+        $text = $request->input('text');
+        $voice = $request->input('voice', 'alloy');
+
+        // Retrieve the message by its ID
+        $message = MessageModel::find($messageId);
+
+        if ($message && $message->audio_path) {
+            // If audio_path is not null, return the existing audio path
+            return response()->json(['url' => Storage::url($message->audio_path)]);
+        }
+
+        $audioContent = $this->openaiService->synthesizeSpeech($text, $voice);
+
+        $fileName = 'audio/' . uniqid() . '.mp3';
+        Storage::disk('public')->put($fileName, $audioContent);
+
+        // Update the message with the new audio path
+        if ($message) {
+            $message->audio_path = $fileName;
+            $message->save();
+        }
+
+        return response()->json(['url' => Storage::url($fileName)]);
+    }
+
+    public function transcribe(Request $request)
+    {
+        $request->validate([
+            'audio' => 'required|file|mimes:ogg,mp3,wav',
+        ]);
+
+        $user = Auth::user();
+
+        $audioFile = $request->file('audio');
+        $audioPath = $audioFile->store('audio', 'public');
+
+        // Ensure the audioPath is correctly processed
+        $transcription = $this->openaiService->transcribeSpeech($audioPath);
+
+        // Create a new record in the database
+        $message = new MessageModel();
+        $message->username = $user->name;
+        $message->user_id = $user->id;
+        $message->domain = $user->domain;
+        $message->message = $transcription ?? '';
+        $message->save();
+
+        // Trigger an event for the new message
+        event(new Message($user->name, $transcription));
+
+        return response()->json(['success' => true, 'transcription' => $transcription]);
     }
 
 }

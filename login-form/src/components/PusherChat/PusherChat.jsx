@@ -11,6 +11,7 @@ import Swal from 'sweetalert2';
 import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/default.css';
 import MessageList from './MessageList';
+import AudioRecorder from '../AudioRecorder/AudioRecorder';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
 
@@ -39,6 +40,7 @@ let strings = new LocalizedStrings({
     failed_to_upload_file: "Failed to upload file. Please try again.",
     your_browser_not_support_video_tag: "Your browser does not support the video tag.",
     aiTypingIndicator: "AI is thinking...",
+    record_audio: "Record Audio",
   },
   fi: {
     send: "Lähetä",
@@ -64,6 +66,7 @@ let strings = new LocalizedStrings({
     failed_to_upload_file: "Tiedoston lataus epäonnistui. Olehyvä ja yritä uudestaan.",
     your_browser_not_support_video_tag: "Selaimesi ei tue video tagia.",
     aiTypingIndicator: "Tekoäly miettii ...",
+    record_audio: "Spela in ljud",
   },
   se: {
     send: "Skicka",
@@ -93,7 +96,9 @@ let strings = new LocalizedStrings({
 });
 
 const PusherChat = () => {
-  const [username, setUsername] = useState(localStorage.getItem(ACCESS_USER_DATA) || 'Guest');
+  const authData = localStorage.getItem(ACCESS_USER_DATA);
+  const authArray = JSON.parse(authData);
+  const [username, setUsername] = useState(authArray.name || 'Guest');
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [typingIndicator, setTypingIndicator] = useState('');
@@ -102,7 +107,8 @@ const PusherChat = () => {
   const typingTimeoutRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [showCaptureModal, setCaptureShowModal] = useState(false);
-  const [showCaptureVideoModal, setCaptureVideoShowModal] = useState(false);
+  const [showCaptureVideoShowModal, setCaptureVideoShowModal] = useState(false);
+  const [showRecordAudioShowModal, setRecordAudioShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -131,6 +137,9 @@ const PusherChat = () => {
 
   const handleCaptureVideoShowModal = () => setCaptureVideoShowModal(true);
   const handleCaptureVideoCloseModal = () => setCaptureVideoShowModal(false);
+
+  const handleRecordAudioShowModal = () => setRecordAudioShowModal(true);
+  const handleRecordAudioCloseModal = () => setRecordAudioShowModal(false);
 
   const startVideoCapture = () => {
     setIsCapturingVideo(true);
@@ -196,7 +205,7 @@ const PusherChat = () => {
 
   const initializePusher = () => {
     const pusher = new Pusher(API_PUSHER_KEY, { cluster: API_PUSHER_CLUSTER });
-    const channel = pusher.subscribe('chat');
+    const channel = pusher.subscribe(authArray.domain + '_chat');
 
     channel.bind('message', (newMessage) => {
         setMessages((prevMessages) => [newMessage, ...prevMessages]);
@@ -471,6 +480,9 @@ const saveMessageToDatabase = async (message) => {
       <Button variant="primary" className='message-capture-video-button' onClick={handleCaptureVideoShowModal}>
         {strings.capture_video_with_message}
       </Button>
+      <Button variant="primary" className='message-record-audio-button' onClick={handleRecordAudioShowModal}>
+        {strings.record_audio}
+      </Button>
       <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
       {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}
@@ -497,7 +509,7 @@ const saveMessageToDatabase = async (message) => {
     </div>
     <Modal show={showModal} onHide={handleCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-opload-title'>{strings.upload_image_with_message}</Modal.Title>
+        <Modal.Title className='massage-upload-title'>{strings.upload_image_with_message}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         {/* Add your content for image upload and message input here */}
@@ -518,7 +530,7 @@ const saveMessageToDatabase = async (message) => {
     </Modal>
     <Modal show={showCaptureModal} onHide={handleCaptureCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-opload-title'>{strings.capture_image_with_message}</Modal.Title>
+        <Modal.Title className='massage-upload-title'>{strings.capture_image_with_message}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         {/* Add your content for image upload and message input here */}
@@ -546,9 +558,9 @@ const saveMessageToDatabase = async (message) => {
         </Button>
       </Modal.Footer>
     </Modal>
-    <Modal show={showCaptureVideoModal} onHide={handleCaptureVideoCloseModal}>
+    <Modal show={showCaptureVideoShowModal} onHide={handleCaptureVideoCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-opload-title'>{strings.capture_video_with_message}</Modal.Title>
+        <Modal.Title className='massage-upload-title'>{strings.capture_video_with_message}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         {/* Add your content for image upload and message input here */}
@@ -575,6 +587,19 @@ const saveMessageToDatabase = async (message) => {
       </Modal.Body>
       <Modal.Footer className='message-upload-modal'>
         <Button variant="secondary" onClick={handleCaptureVideoCloseModal}>
+          {strings.close}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    <Modal show={showRecordAudioShowModal} onHide={handleRecordAudioCloseModal}>
+      <Modal.Header className='message-upload-modal' closeButton>
+        <Modal.Title className='massage-upload-title'>{strings.capture_video_with_message}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body className='message-upload-modal'>
+        <AudioRecorder fetchMessages={fetchMessages} />
+      </Modal.Body>
+      <Modal.Footer className='message-upload-modal'>
+        <Button variant="secondary" onClick={handleRecordAudioCloseModal}>
           {strings.close}
         </Button>
       </Modal.Footer>

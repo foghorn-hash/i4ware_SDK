@@ -1,14 +1,8 @@
-/* Styles for the container */
-.mt-3 {
-	margin-top: 3rem;
-  }
-  
-  /* Styles for the table header */
+/* Styles for the table header */
   .table-header-roles, .table-row-roles {
     display: grid;
     grid-template-columns: 50px 200px 1fr; /* adjust as needed */
-    padding: 8px;
-    line-height: 30px; /* height of the div */;
+    padding: 10px 0;
   }
 
   .column-actions-roles {
@@ -18,31 +12,37 @@
     padding-bottom: 20px;
   }
 
+  .mobile-table-header-roles {
+    display: none;
+  }
+
 @media (max-width: 900px) {
-    .mt-3 {
+    .mobile-table-body-roles {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      grid-template-rows: 100px auto;
       padding: 0;
-      }
+      margin-bottom: 50px;
+    }
+
+    .column-actions-roles {
+      min-height: 60px !important;
+      padding-bottom: 0;
+    }
     
-      .table-header-roles, .table-row-roles  {
+    .mobile-table-header-roles, .table-row-roles  {
       display: grid;
       grid-template-columns: 1fr;
-      grid-template-rows: repeat(3, 60px);
-      width: 100%;
       align-items: center;
+      padding: 0;
       }
-  
-    .table-row-roles {	
-      margin-bottom: 50px;
-      }
-  
-    .table-header-roles div, .table-row-roles div {
-      padding: 8px 0;
+
+    .mobile-table-header-roles div, .table-row-roles div {
       line-height: 30px;
       display: flex;
       align-items: center;
       }
-    
+
+    .table-header-roles {
+      display: none;
+    }  
 }
