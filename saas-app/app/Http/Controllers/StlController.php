@@ -190,10 +190,18 @@ class StlController extends Controller
     public function postStlDeleteFile(Request $request) 
     {
         $fileName = $request->query('fileName');
+        if (!$fileName) {
+            Log::error('File name is missing in the request.');
+            return response()->json(['message' => 'File name is required'], 400);
+        } 
+        
+        $filePath = public_path('storage/stl-files/' . $fileName . '.stl');
 
-        $filePath = storage_path('app/public/stl_files/' . $fileName);
-        $fileScreenshotPath = storage_path('app/public/stl-screenshots/screenshot_' . $fileName);
+        $fileScreenshotPath = public_path('storage/stl-screenshots/screenshot_' . $fileName);
 
+        Log::info("Attempting to delete file at path: " . $filePath);
+        Log::info("Attempting to delete screenshot at path: " . $fileScreenshotPath);
+        
         if (file_exists($filePath) && file_exists($fileScreenshotPath)) {
             if (unlink($filePath) && unlink($fileScreenshotPath)) {
                 return response()->json(['message' => 'File deleted successfully'], 200);
@@ -203,5 +211,5 @@ class StlController extends Controller
         } else {
             return response()->json(['message' => 'File not found'], 404);
         }
-    }
+}
 }

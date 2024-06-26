@@ -404,6 +404,7 @@ class ProfileController extends Controller
             $data[] = [
                 'id' => $role->id,
                 'name' => $role->name,
+                'domain' => $role->domain,
             ];
         }
     
