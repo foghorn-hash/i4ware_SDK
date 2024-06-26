@@ -18,7 +18,8 @@ let strings = new LocalizedStrings({
     edit: "Edit",
     remove: "Remove",
     previous: "Previous",
-    next: "Next"
+    next: "Next",
+    domain: "Domain"
   },
   fi: {
     add: "Lisää",
@@ -28,7 +29,8 @@ let strings = new LocalizedStrings({
     edit: "Muokkaa",
     remove: "Poista",
     previous: "Edellinen",
-    next: "Seuraava"
+    next: "Seuraava",
+    domain: "Domaini"
   },
   se: {
     add: "Lägg till",
@@ -38,7 +40,8 @@ let strings = new LocalizedStrings({
     edit: "Redigera",
     remove: "Ta bort",
     previous: "Föregående",
-    next: "Nästa"
+    next: "Nästa",
+    domain: "Domän"
   }
 });
 
@@ -108,6 +111,7 @@ function ManageRoles(props) {
           <div className="table-header-roles">
             <div className="column-actions-roles">#</div>
             <div className="column-actions-roles">{strings.name}</div>
+            <div className="column-actions-roles">{strings.domain}</div>
             <div className="column-actions-roles"></div>
           </div>
           <div className='table-body-roles'>
@@ -122,11 +126,13 @@ function ManageRoles(props) {
               <div className="mobile-table-header-roles">
                 <div className="column-actions-roles">#</div>
                 <div className="column-actions-roles">{strings.name}</div>
+                <div className='column-actions-roles'>{strings.domain}</div>
                 <div className="column-actions-roles"></div>
               </div>
             <div key={role.id} className="table-row-roles">
               <div className="column-actions-roles">{index + 1}</div>
               <div className="column-actions-roles">{role.name}</div>
+              <div className='column-actions-roles'>{role.domain}</div>
               <div className="column-actions-roles">
                 <Button 
                   className="btn-info" 

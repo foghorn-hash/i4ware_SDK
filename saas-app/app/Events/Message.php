@@ -9,6 +9,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Auth;
 
 class Message implements ShouldBroadcast
 {
@@ -25,7 +26,8 @@ class Message implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('chat');
+        $user = Auth::user();
+        return new Channel($user->domain . '_chat');
     }
 
     public function broadcastAs()

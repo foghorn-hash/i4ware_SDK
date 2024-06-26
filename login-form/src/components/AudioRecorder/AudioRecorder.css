@@ -1,0 +1,12 @@
+.audio-recorder-button {
+    padding: 10px 20px;
+	border-radius: 8px;
+	border: none;
+	background-color: #0d6efd;
+	color: #ffffff;
+	cursor: pointer;
+}
+
+.audio-recorder-clear {
+	clear: both;
+}

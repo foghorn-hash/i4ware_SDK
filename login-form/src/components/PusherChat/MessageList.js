@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Parser } from 'html-to-react'; // Assuming you're using this library
-import { API_BASE_URL, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import Axios from 'axios';
 import HighlightedResponse from './HighlightedResponse';
 import LocalizedStrings from 'react-localization';
 
@@ -74,6 +75,29 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
     scrollToBottom();
   }, [messages]);
 
+  const handleGenerateSpeech = async (text, gender, messageId) => {
+    let voice;
+
+    if (gender === 'male') {
+      voice = 'onyx';
+    } else if (gender === 'female') {
+      voice = 'shimmer';
+    } else {
+      voice = 'nova'; // Default voice if gender is not specified
+    }
+
+    try {
+      const response = await Axios.post(API_BASE_URL + '/api/chat/tts', { text, voice, message_id: messageId }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+      const audioUrl = response.data.url;
+      const audio = new Audio(API_BASE_URL + audioUrl);
+      audio.play();
+    } catch (error) {
+      console.error('Error generating speech:', error);
+    }
+  };
+
   return (
     <div className="messages-list">
       {[...processedMessages].reverse().map((msg, index) => (
@@ -81,10 +105,13 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
           <div className='message-date'>
             <strong>{msg.username}: </strong>
             <i>{msg.formatted_created_at}</i>
+            <button className="message-TTS" onClick={() => handleGenerateSpeech(msg.message, msg.gender, msg.id)}>Generate Speech</button>
           </div>
           <div className='massage-container'>
             <img src={msg.profilePicUrl || msg.defaultImg} className='message-avatar' alt={`Profile of ${msg.username}`} />
-            <span>{msg.parsedMessage}</span>
+            <span>
+              {msg.parsedMessage}
+            </span>
             {/* Render image if image_path is not null */}
             {renderMessageImageOrVideo(msg)}
             <div className='message-clear' />

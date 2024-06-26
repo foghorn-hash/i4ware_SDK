@@ -1,7 +1,7 @@
 /* Styles for the table header */
   .table-header-roles, .table-row-roles {
     display: grid;
-    grid-template-columns: 50px 200px 1fr; /* adjust as needed */
+    grid-template-columns: 50px 200px 200px 1fr; /* adjust as needed */
     padding: 10px 0;
   }
 
