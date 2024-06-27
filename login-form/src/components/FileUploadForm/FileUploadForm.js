@@ -9,17 +9,23 @@ let strings = new LocalizedStrings({
   en: {
     uploadStlFile: "Upload STL File",
     browse: "Browse...",
-    upload: "Upload"
+    upload: "Upload",
+    chose: "You chose file:",
+    press: "Press Upload to upload it."
   },
   fi: {
     uploadStlFile: "Lataa STL-tiedosto",
     browse: "Selaa...",
-    upload: "Lataa"
+    upload: "Lataa",
+    chose: "Valitsit tiedoston:",
+    press: "Paina Lataa ladataksesi sen."
   },
   se: {
     uploadStlFile: "Ladda upp STL-fil",
     browse: "Bläddra...",
-    upload: "Ladda upp"
+    upload: "Ladda upp",
+    chose: "Du valde fil:",
+    press: "Tryck på Ladda upp för att ladda upp den."
   }
 });
 
@@ -58,6 +64,7 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
 
         if (response.data && response.data.fileName) {
           newItemIsUploaded(response.data.fileName);
+          setSelectedFile(null);  
         }
       } catch (error) {
         console.error('Error uploading file:', error);
@@ -80,6 +87,11 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
         <label htmlFor="file-input">{strings.browse}</label>
       </div>
       <button className="FileFormUplaod-file-button" onClick={handleFileUpload}>{strings.upload}</button>
+      {selectedFile && (
+        <div className="file-info">
+          <p>{strings.chose} {selectedFile.name}. {strings.press}</p>
+        </div>
+      )}
     </div>
   );
 };

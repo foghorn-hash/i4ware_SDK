@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import axios from 'axios'; // Import Axios
 import { Modal, Card, Button, Container, Row, Col } from 'react-bootstrap';
@@ -9,6 +9,7 @@ import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA}
 import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
 import LocalizedStrings from 'react-localization';
+import ModalDelete from './ModalDelete';
 
 let strings = new LocalizedStrings({
   en: {
@@ -16,18 +17,21 @@ let strings = new LocalizedStrings({
     modelViewerTitle: "3D Model Viewer",
     close: "Close",
     loading: "Loading...",
+    delete: "Delete",
   },
   fi: {
     viewSTL: "Näytä STL",
     modelViewerTitle: "3D-mallin katseluohjelma",
     close: "Sulje",
     loading: "Ladataan...",
+    delete: "Poista",
   },
   se: {
     viewSTL: "Visa STL",
     modelViewerTitle: "3D-modellvisare",
     close: "Stäng",
     loading: "Laddar...",
+    delete: "Radera",
   }
 });
 
@@ -39,6 +43,8 @@ function STLViewerComponent() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false); 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -126,6 +132,16 @@ function STLViewerComponent() {
     setShowModal(false);
   };
 
+  const openDeleteModal = (fileName) => {
+    setFileToDelete(fileName);
+    setShowDeleteModal(true);
+  };
+
+  const closeModalDelete = () => {
+    setFileToDelete(null);
+    setShowDeleteModal(false);
+  };
+
 const removeItem = async (fileName) => {
   try {
     setIsLoading(true);
@@ -150,6 +166,7 @@ const removeItem = async (fileName) => {
     console.error('Error deleting STL file:', error);
   } finally {
     setIsLoading(false);
+    closeModalDelete();
   }
 };
   
@@ -184,8 +201,12 @@ const removeItem = async (fileName) => {
                           alt={`Screenshot for ${file.stl_filename}`}
                         />
                       )}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                      }}>
                       <Button variant="primary" onClick={() => openModal(file.stl_filename)}>{strings.viewSTL}</Button>
-                      <Button variant="danger" onClick={() => removeItem(file.stl_filename)}>Delete</Button>
+                      <Button variant="danger" onClick={() => openDeleteModal(file.stl_filename)}>{strings.delete}</Button></div>
                     </div>
                   </Card.Body>
                 </Card>
@@ -210,6 +231,11 @@ const removeItem = async (fileName) => {
           </Button>
         </Modal.Footer>
       </Modal>
+      <ModalDelete 
+        show={showDeleteModal} 
+        handleClose={closeModalDelete} 
+        handleDelete={removeItem} 
+        fileName={fileToDelete} />
     </>
   );
 }
