@@ -58,6 +58,7 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
 
         if (response.data && response.data.fileName) {
           newItemIsUploaded(response.data.fileName);
+          setSelectedFile(null);  
         }
       } catch (error) {
         console.error('Error uploading file:', error);
@@ -80,6 +81,11 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
         <label htmlFor="file-input">{strings.browse}</label>
       </div>
       <button className="FileFormUplaod-file-button" onClick={handleFileUpload}>{strings.upload}</button>
+      {selectedFile && (
+        <div className="file-info">
+          <p>You chose file: {selectedFile.name}. Press Upload to upload it.</p>
+        </div>
+      )}
     </div>
   );
 };

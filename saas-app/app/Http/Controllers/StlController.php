@@ -197,7 +197,7 @@ class StlController extends Controller
         
         $filePath = public_path('storage/stl-files/' . $fileName . '.stl');
 
-        $fileScreenshotPath = public_path('storage/stl-screenshots/screenshot_' . $fileName);
+        $fileScreenshotPath = public_path('storage/stl-screenshots/screenshot_' . $fileName . '.png');
 
         Log::info("Attempting to delete file at path: " . $filePath);
         Log::info("Attempting to delete screenshot at path: " . $fileScreenshotPath);
