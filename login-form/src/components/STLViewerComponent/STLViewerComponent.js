@@ -17,18 +17,21 @@ let strings = new LocalizedStrings({
     modelViewerTitle: "3D Model Viewer",
     close: "Close",
     loading: "Loading...",
+    delete: "Delete",
   },
   fi: {
     viewSTL: "Näytä STL",
     modelViewerTitle: "3D-mallin katseluohjelma",
     close: "Sulje",
     loading: "Ladataan...",
+    delete: "Poista",
   },
   se: {
     viewSTL: "Visa STL",
     modelViewerTitle: "3D-modellvisare",
     close: "Stäng",
     loading: "Laddar...",
+    delete: "Radera",
   }
 });
 
@@ -203,7 +206,7 @@ const removeItem = async (fileName) => {
                         justifyContent: 'space-between',
                       }}>
                       <Button variant="primary" onClick={() => openModal(file.stl_filename)}>{strings.viewSTL}</Button>
-                      <Button variant="danger" onClick={() => openDeleteModal(file.stl_filename)}>Delete</Button></div>
+                      <Button variant="danger" onClick={() => openDeleteModal(file.stl_filename)}>{strings.delete}</Button></div>
                     </div>
                   </Card.Body>
                 </Card>
