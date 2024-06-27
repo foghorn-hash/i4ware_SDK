@@ -206,10 +206,10 @@ class StlController extends Controller
             if (unlink($filePath) && unlink($fileScreenshotPath)) {
                 return response()->json(['message' => 'File deleted successfully'], 200);
             } else {
-                return response()->json(['message' => 'File could not be deleted'], 500);
+                return response()->json(['error' => 'File could not be deleted'], 500);
             }
         } else {
-            return response()->json(['message' => 'File not found'], 404);
+            return response()->json(['error' => 'File not found'], 404);
         }
 }
 }
