@@ -129,7 +129,7 @@ function STLViewerComponent() {
 const removeItem = async (fileName) => {
   try {
     setIsLoading(true);
-    const deleteUrl = `${API_BASE_URL}/storage/stl-files/${fileName}.stl`;
+    const deleteUrl = `${API_BASE_URL}/api/stl/delete-stl?fileName=${fileName}`;
     console.log(`Attempting to delete item: ${fileName} at URL: ${deleteUrl}`);
 
     const response = await axios.delete(deleteUrl, {
