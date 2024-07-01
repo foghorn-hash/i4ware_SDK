@@ -89,7 +89,6 @@ function Header(props) {
     title = "Welcome";
   }
 
-  function renderLogout(localization) {
     const handleLogout = () => {
       axios
         .get(API_BASE_URL + "/api/users/logout", {
@@ -139,6 +138,7 @@ function Header(props) {
       window.location.href = finalUrl;
     };
 
+  const renderLogout = () => {
     if (localization===null) {
       var language = API_DEFAULT_LANGUAGE;
     } else {
@@ -171,6 +171,7 @@ function Header(props) {
     );
   }
 
+
   const handleDrawerOpen = () => {
     setMobileMenuOpen(true); 
   };
@@ -189,7 +190,7 @@ function Header(props) {
         { text: "manageUsers", link: "/manage-users", permission: "users.view" },
         { text: "manageDomains", link: "/manage-domains", permission: "domain.view" },
         { text: "manageRoles", link: "/manage-roles", permission: "roles.view" },
-        { text: "settings", link: "/settings", permission: "settings.manage" },
+        { text: "settings", link: "/settings", permission: "settings.manage" }
       ].map((item, index) => {
         // console.log(item.text, strings[item.text]);
         return item.permission ? (
@@ -204,6 +205,14 @@ function Header(props) {
           </Nav.Link>
         );
         })}
+        {authState.isLogged && (
+          <Nav.Link className="btn btn-danger" style={{ color: 'white', marginTop: "40px"}} onClick={() => {
+          handleLogout();
+          handleDrawerClose();
+        }}>
+          {strings.logout}
+          </Nav.Link>
+        )}
     </Nav>
   );
 

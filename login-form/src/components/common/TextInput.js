@@ -1,5 +1,6 @@
 import {Formik, Field} from "formik";
 import React, {useState} from "react";
+import "./TextInput.css"; 
 
 function TextInput(props) {
   return (
@@ -43,7 +44,9 @@ function PassWordInput(props) {
         meta,
       }) => (
         <>
-          <div className="input-group">
+         <div className="input-container">
+          <div className="input-group"
+          >
             <input
               type={!show ? "password" : "text"}
               className={
@@ -53,6 +56,7 @@ function PassWordInput(props) {
               }
               {...field}
             />
+
             <div class="input-group-append">
               <span
                 class="input-group-text"
@@ -87,8 +91,10 @@ function PassWordInput(props) {
                 )}
               </span>
             </div>
-            {meta.touched && meta.error && (
-              <div class="invalid-feedback">{meta.error}</div>
+          </div>
+        
+          {meta.touched && meta.error && (
+            <div className="invalid-feedback">{meta.error}</div>
             )}
           </div>
         </>

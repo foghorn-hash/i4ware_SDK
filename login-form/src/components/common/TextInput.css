@@ -1,0 +1,31 @@
+.input-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-group {
+    display: flex;
+    width: 100%;
+    align-items: center;
+  }
+  
+  .input-group .form-control {
+    flex: 1;
+  }
+  
+  .input-group-append {
+    display: flex;
+  }
+  
+  .input-group-text {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .invalid-feedback {
+    display: block;
+  }
+  
+  
