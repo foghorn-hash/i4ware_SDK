@@ -221,6 +221,10 @@
 	cursor: pointer;
   }
 
+  .code-block {
+	background-color: #161616 !important;
+}
+
 @media screen and (max-width: 600px) {
 	.message-capture-video-button {
 		margin-top: 10px;

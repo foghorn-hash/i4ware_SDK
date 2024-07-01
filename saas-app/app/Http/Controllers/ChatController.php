@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\Message;
 use App\Events\UserTyping;
 use App\Events\AiThinking;
+use App\Events\UserSpeech;
 use App\Models\Message as MessageModel;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -14,22 +15,20 @@ use App\Services\OpenAIService;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
-use App\Services\MarkdownService;
 use Illuminate\Support\Facades\Validator;
 
 class ChatController extends Controller
 {
     protected $user;
-    protected $openaiService;
+    protected $openAiService;
     protected $markdownService;
 
-    public function __construct(OpenAIService $openaiService, MarkdownService $markdownService)
+    public function __construct(OpenAIService $openAiService)
     {
         //$this->apiToken = uniqid(base64_encode(Str::random(40)));
         $this->middleware('auth:api');
         $this->user = new User;
-        $this->openaiService = $openaiService;
-        $this->markdownService = $markdownService;
+        $this->openAiService = $openAiService;
     }
 
     /**
@@ -98,6 +97,16 @@ class ChatController extends Controller
         broadcast(new UserTyping($username, $isTyping))->toOthers();
     
         return response()->json(['status' => 'success']);
+    }
+
+    public function speech(Request $request)
+    {
+        $username = $request->username;
+        $isSpeech = $request->isSpeech;
+    
+        broadcast(new UserSpeech($username, $isSpeech))->toOthers();
+    
+        return response()->json(['status' => 'success', 'message' => $isSpeech]);
     }
     
     public function uploadMessage(Request $request)
@@ -206,7 +215,7 @@ class ChatController extends Controller
         $user = Auth::user();
 
         $prompt = $request->input('prompt');
-        $response = $this->openaiService->generateText($prompt);
+        $response = $this->openAiService->generateText($prompt);
 
         return response()->json(['response' => $response]);
     }
@@ -217,7 +226,6 @@ class ChatController extends Controller
 
         // Validate incoming request data
         $validator = Validator::make($request->all(), [
-            'messagePlain' => 'required|string',
             'message' => 'required|string',
         ]);
 
@@ -227,19 +235,8 @@ class ChatController extends Controller
 
         $prompt = $request->input('message');
 
-        // Extract message content from request
-        $promptPlain = $request->input('messagePlain');
-
-        // Check if the message contains code
-        $containsCode = $this->containsCode($promptPlain);
-
-        // Apply syntax highlighting if message contains code
-        if ($containsCode) {
-            $highlightedMessage = $this->applySyntaxHighlighting($this->markdownService->parse(highlight_string($prompt)));
-        } else {
-            $highlightedMessage = $this->markdownService->parse($promptPlain); // No syntax highlighting needed
-        }
-
+        $highlightedMessage = $prompt;
+        
         // Create new message
         $message = new MessageModel();
         $message->username = "AI";
@@ -249,26 +246,9 @@ class ChatController extends Controller
         $message->save();
 
         // Trigger an event for the new message
-        event(new Message($user->name, $promptPlain));
+        event(new Message($user->name, $prompt));
 
         return response()->json(['success' => 'Message saved successfully'], 200);
-    }
-
-    // Function to detect if message contains code
-    private function containsCode($message)
-    {
-        // Implement your code detection logic here
-        // For example, you can use regular expressions to detect code snippets
-        // Modify this according to your specific needs
-        return preg_match('/<code>(.*?)<\/code>/', $message);
-    }
-
-    // Function to apply syntax highlighting to code within the message
-    private function applySyntaxHighlighting($message)
-    {
-        // Implement syntax highlighting logic using a library like `highlight.js` or `Prism.js`
-        // For demonstration, you can use a placeholder method
-        return $message; // Placeholder: return the original message (no syntax highlighting)
     }
 
     public function thinking(Request $request)
@@ -342,7 +322,7 @@ class ChatController extends Controller
             return response()->json(['url' => Storage::url($message->audio_path)]);
         }
 
-        $audioContent = $this->openaiService->synthesizeSpeech($text, $voice);
+        $audioContent = $this->openAiService->synthesizeSpeech($text, $voice);
 
         $fileName = 'audio/' . uniqid() . '.mp3';
         Storage::disk('public')->put($fileName, $audioContent);
@@ -368,7 +348,7 @@ class ChatController extends Controller
         $audioPath = $audioFile->store('audio', 'public');
 
         // Ensure the audioPath is correctly processed
-        $transcription = $this->openaiService->transcribeSpeech($audioPath);
+        $transcription = $this->openAiService->transcribeSpeech($audioPath);
 
         // Create a new record in the database
         $message = new MessageModel();

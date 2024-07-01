@@ -9,10 +9,12 @@ class OpenAIService
 {
     protected $client;
     protected $apiKey;
+    protected $maxTokens;
 
     public function __construct()
     {
         $this->apiKey = env('OPENAI_API_KEY');
+        $this->maxTokens = (integer) env('OPENAI_MAX_TOKENS');
         $this->client = new Client([
             'base_uri' => 'https://api.openai.com',
             'headers' => [
@@ -50,7 +52,7 @@ class OpenAIService
             'json' => [
                 'model' => 'gpt-4o',
                 'messages' => $messages,
-                'max_tokens' => (integer) env('OPENAI_MAX_TOKENS'),
+                'max_tokens' => $this->maxTokens,
             ],
         ]);
 

@@ -1,33 +1,34 @@
 import React from 'react';
-import hljs from 'highlight.js/lib/core';
-import php from 'highlight.js/lib/languages/php';
-import javascript from 'highlight.js/lib/languages/javascript';
-import html from 'highlight.js/lib/languages/xml';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github.css'; // or your preferred highlight.js theme
 
-hljs.registerLanguage('javascript', javascript);
-hljs.registerLanguage('html', html);
-hljs.registerLanguage('php', php);
+const customComponents = {
+  code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+          <div>
+              <pre className="code-block" {...props}>
+                  {children}
+              </pre>
+          </div>
+      ) : (
+          <code className="code-block" {...props}>
+              {children}
+          </code>
+      );
+  },
+};
 
-const HighlightedResponse = ({ message }) => {
-    // Determine the language of the code block based on the context
-    let language = 'plaintext'; // Default to plaintext if no specific language is identified
-
-    // Check for specific languages in the message content
-    if (message.includes('<script>') || message.includes('javascript')) {
-        language = 'javascript';
-      } else if (message.includes('<html>') || message.includes('<div>')) {
-        language = 'html';
-      } else if (message.includes('<?php') || message.includes('php')) {
-        language = 'php';
-      }
-
-  const highlightedHTML = hljs.highlightAuto(language, message).value;
+const HighlightedResponse = ({ markdown}) => {
 
   return (
-    <div
-      dangerouslySetInnerHTML={{
-        __html: highlightedHTML,
-      }}
+    <ReactMarkdown
+            children={markdown}
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={customComponents}
     />
   );
 };
