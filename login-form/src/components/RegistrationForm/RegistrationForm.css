@@ -56,3 +56,10 @@
     margin-top: 6px;
     margin-bottom: 5px;
 }
+
+@media screen and (max-width: 800px) {
+    .register-card {
+        width: 100%;
+    }
+    
+}
