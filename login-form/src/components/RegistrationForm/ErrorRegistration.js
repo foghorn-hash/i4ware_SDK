@@ -8,10 +8,10 @@ let strings = new LocalizedStrings({
   en: {
     error: "Error messages",
     error_messages: "Here are the mistakes in your registration form:",
-    email_error: "The email has already been taken",
-    email_error_valid: "The email is not valid",
-    domain_error: "The domain has already been taken",
-    domain_error_valid: "The domain is not valid",
+    email_error: "The email has already been taken.",
+    email_error_valid: "The email is not valid.",
+    domain_error: "The domain has already been taken.",
+    domain_error_valid: "The domain is not valid.",
     close: "Close",
     end_message: "Please, correct the mistakes and try again."
   },
@@ -49,6 +49,21 @@ function ErrorRegistration ({ show, handleClose, errorMessages }) {
     strings.setLanguage(localization);
   }
 
+  const localizedErrorMessages = errorMessages.map((message) => {
+    switch (message) {
+      case 'The email has already been taken.':
+        return strings.email_error;
+      case 'The email is not valid':
+        return strings.email_error_valid;
+      case 'The domain has already been taken.':
+        return strings.domain_error;
+      case 'The domain is not valid.':
+        return strings.domain_error_valid;
+      default:
+        return message;
+    }
+  });
+
   return (
     <>
       <Modal show={show} onHide={handleClose} animation={false} centered>
@@ -58,7 +73,7 @@ function ErrorRegistration ({ show, handleClose, errorMessages }) {
         <Modal.Body>
         <p>{strings.error_messages}</p>
         <ul>
-            {errorMessages.map((message, index) => (
+            {localizedErrorMessages.map((message, index) => (
               <li key={index}>{message}</li>
             ))}
         </ul>
