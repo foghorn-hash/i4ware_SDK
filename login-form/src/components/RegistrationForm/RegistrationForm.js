@@ -11,6 +11,7 @@ import Captcha from "demos-react-captcha";
 import "./../../captcha.css";
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
+import ErrorRegistration from "./ErrorRegistration";
 
 let strings = new LocalizedStrings({
   en:{
@@ -27,7 +28,7 @@ let strings = new LocalizedStrings({
     error:"Unexpected error!",
     gender:"Gender",
     name:"Name",
-    success_registeration:"Registration successful and verification email has been sent.",
+    success_registration:"Registration successful and verification email has been sent.",
     selectPrivacyPolicy: "Please Select Privacy Policy.",
     neverShareName: "We'll never share your name with anyone else.",
     neverShareGender: "We'll never share your gender with anyone else.",
@@ -61,7 +62,7 @@ let strings = new LocalizedStrings({
     error:"Odottamaton virhe!",
     gender:"Sukupuoli",
     name:"Nimi",
-    success_in_registeration:"Rekisteräinti onnistui ja vahvistus sähköposti on lähetetty.",
+    success_registration:"Rekisteräinti onnistui ja vahvistus sähköposti on lähetetty.",
     selectPrivacyPolicy: "Valitse tietosuojakäytäntö.",
     neverShareName: "Emme koskaan jaa nimeäsi kenenkään muun kanssa.",
     neverShareGender: "Emme koskaan jaa sukupuoltasi kenenkään muun kanssa.",
@@ -95,7 +96,7 @@ let strings = new LocalizedStrings({
     error: "Oväntat fel!",
     gender: "Kön",
     name: "Namn",
-    success_in_registeration: "Registreringen lyckades och en bekräftelse har skickats till din e-post.",
+    success_registration: "Registreringen lyckades och en bekräftelse har skickats till din e-post.",
     selectPrivacyPolicy: "Välj integritetspolicy.",
     neverShareName: "Vi delar aldrig ditt namn med någon annan.",
     neverShareGender: "Vi delar aldrig ditt kön med någon annan.",
@@ -164,6 +165,8 @@ function RegistrationForm(props) {
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
   const [captchaSuccess, setCaptchaSuccess] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [errorMessages, setErrorMessages] = useState([]);
 
   const {authState, authActions} = React.useContext(AuthContext);
   const [setting, setSetting] = React.useState({
@@ -199,36 +202,72 @@ function RegistrationForm(props) {
     request()
       .post(API_BASE_URL + "/api/users/register", values)
       .then(function (response) {
-        const json_parsed = response.data
-        debugger
-        if (json_parsed.success === true) {
-          setState(prevState => ({
-            ...prevState,
-            successMessage:
-              strings.success_in_registeration,
-          }));
-          setError(null);
+        console.log("Full response:", response); 
 
-          setLoading(false);
-          setTimeout(()=>{
-            redirectToLogin();
-          },5000)
+        const json_parsed = response.data
+        console.log("Parsed response data:", json_parsed);
+        console.log("Server response:", json_parsed);
+        console.log(json_parsed.success);
+        console.log(json_parsed.message);
+        // debugger
+        if (json_parsed.success) {
+          setState((prevState) => ({
+            ...prevState,
+            successMessage: json_parsed.message || strings.success_registration,
+          }));
+          // setLoading(false);
+          // setTimeout(() => {
+          // redirectToLogin();
+          // }, 5000);
+          setModalIsOpen(true);
         } else {
-          setLoading(false);
-          console.log(json_parsed.data);
-          for (const key in json_parsed.data.data) {
-            if (Object.hasOwnProperty.call(json_parsed.data.data, key)) {
-              const element = json_parsed.data.data[key];
-              formProps.setFieldError(key, element[0]);
-            }
+          const errors = [];
+          for (const [key, value] of Object.entries(json_parsed.data)) {
+            errors.push(...value);
           }
+          setErrorMessages(errors);
+          setModalIsOpen(true);
+          console.log(errors);
         }
+        setLoading(false);
       })
       .catch(function (error) {
         setLoading(false);
-        console.log(error);
+        console.error("Request failed:", error); 
       });
+      //   if (json_parsed.success === true) {
+      //     setState(prevState => ({
+      //       ...prevState,
+      //       successMessage: json_parsed.message ||
+      //         strings.success_registration,
+      //     }));
+      //     setError(null);
+
+      //     setLoading(false);
+      //     setTimeout(()=>{
+      //       redirectToLogin();
+      //     },5000)
+      //   } else {
+      //     setLoading(false);
+      //     console.log(json_parsed.data);
+      //     for (const key in json_parsed.data.data) {
+      //       if (Object.hasOwnProperty.call(json_parsed.data.data, key)) {
+      //         const element = json_parsed.data.data[key];
+      //         formProps.setFieldError(key, element[0]);
+      //       }
+      //     }
+      //   }
+      // })
+      // .catch(function (error) {
+      //   setLoading(false);
+      //   console.log(error);
+      // });
   };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
+
   const redirectToLogin = () => {
     props.updateTitle("Login");
     props.history.push("/login");
@@ -240,7 +279,7 @@ function RegistrationForm(props) {
 
   return (
     <div className={"registeration d-flex justify-content-center " }>
-        {loading && <div className={"loading-view"} ></div>}
+        {/* {loading && <div className={"loading-view"} ></div>} */}
       <div className="animated-card">
         <div className="card col-12 col-lg-6 register-card mt-2">
           <div
@@ -266,7 +305,7 @@ function RegistrationForm(props) {
               }
             }}
           >
-            {({values, errors, submitCount}) => {
+            {({values, errors, touched, submitCount}) => {
               return (
                 <Form className="Register-form"> 
                   {
@@ -408,6 +447,7 @@ function RegistrationForm(props) {
           </div>
         </div>
       </div>
+    <ErrorRegistration show={modalIsOpen} handleClose={closeModal} errorMessages={errorMessages} />
     </div>
   );
 }
