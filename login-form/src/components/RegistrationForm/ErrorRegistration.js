@@ -37,7 +37,7 @@ let strings = new LocalizedStrings({
   }
 });
 
-function ErrorRegistration ({ show, handleClose, errorMessages }) {
+function ErrorRegistration ({ show, handleClose, errorMessages, successMessage }) {
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -53,11 +53,11 @@ function ErrorRegistration ({ show, handleClose, errorMessages }) {
     switch (message) {
       case 'The email has already been taken.':
         return strings.email_error;
-      case 'The email is not valid':
+      case 'The email format is invalid':
         return strings.email_error_valid;
       case 'The domain has already been taken.':
         return strings.domain_error;
-      case 'The domain is not valid.':
+      case 'The domain format is invalid.':
         return strings.domain_error_valid;
       default:
         return message;
@@ -68,9 +68,13 @@ function ErrorRegistration ({ show, handleClose, errorMessages }) {
     <>
       <Modal show={show} onHide={handleClose} animation={false} centered>
         <Modal.Header closeButton>
-          <Modal.Title>{strings.error}</Modal.Title>
+          <Modal.Title>{successMessage ? strings.success_registration : strings.error}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+        {successMessage ? (
+          <p>{successMessage}</p>
+        ) : (
+          <>
         <p>{strings.error_messages}</p>
         <ul>
             {localizedErrorMessages.map((message, index) => (
@@ -78,6 +82,8 @@ function ErrorRegistration ({ show, handleClose, errorMessages }) {
             ))}
         </ul>
         <p>{strings.end_message}</p>
+        </>
+        )}
         </Modal.Body>
         <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>

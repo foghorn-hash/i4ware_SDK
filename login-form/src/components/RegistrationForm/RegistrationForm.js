@@ -12,6 +12,7 @@ import "./../../captcha.css";
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
 import ErrorRegistration from "./ErrorRegistration";
+import axios from "axios";
 
 let strings = new LocalizedStrings({
   en:{
@@ -199,26 +200,29 @@ function RegistrationForm(props) {
 
   const sendDetailsToServer = (values, formProps) => {
     setLoading(true);
-    request()
-      .post(API_BASE_URL + "/api/users/register", values)
-      .then(function (response) {
+    // console.log("Sending values to server:", values);
+
+    // request()
+    //   .post(API_BASE_URL + "/api/users/register", values)
+      axios.post(`${API_BASE_URL}/api/users/register`, values)
+      .then( (response) => {
         console.log("Full response:", response); 
 
         const json_parsed = response.data
-        console.log("Parsed response data:", json_parsed);
+        // console.log("Parsed response data:", json_parsed);
         console.log("Server response:", json_parsed);
-        console.log(json_parsed.success);
-        console.log(json_parsed.message);
+        // console.log(json_parsed.success);
+        // console.log(json_parsed.message);
         // debugger
         if (json_parsed.success) {
           setState((prevState) => ({
             ...prevState,
             successMessage: json_parsed.message || strings.success_registration,
           }));
-          // setLoading(false);
-          // setTimeout(() => {
-          // redirectToLogin();
-          // }, 5000);
+          setLoading(false);
+          setTimeout(() => {
+          redirectToLogin();
+          }, 5000);
           setModalIsOpen(true);
         } else {
           const errors = [];
@@ -233,7 +237,7 @@ function RegistrationForm(props) {
       })
       .catch(function (error) {
         setLoading(false);
-        console.error("Request failed:", error); 
+        // console.error("Error response data:", error.response.data);
       });
       //   if (json_parsed.success === true) {
       //     setState(prevState => ({
@@ -447,7 +451,12 @@ function RegistrationForm(props) {
           </div>
         </div>
       </div>
-    <ErrorRegistration show={modalIsOpen} handleClose={closeModal} errorMessages={errorMessages} />
+    <ErrorRegistration 
+    show={modalIsOpen} 
+    handleClose={closeModal} 
+    errorMessages={errorMessages} 
+    successMessage={state.successMessage}
+     />
     </div>
   );
 }
