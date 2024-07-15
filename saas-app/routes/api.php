@@ -81,6 +81,7 @@ Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
 Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router) {
 	Route::get('/assets', [GalleryController::class, 'assets'])->name('assets.asset-items');
 	Route::post('/upload-media', [GalleryController::class, 'uploadMedia'])->name('gallery.upload-media');
+	Route::delete('/photos_videos/delete', [GalleryController::class, 'deleteMedia'])->name('gallery.delete-media');
 });
 
 Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {

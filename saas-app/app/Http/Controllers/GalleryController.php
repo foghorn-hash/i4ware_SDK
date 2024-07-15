@@ -90,6 +90,8 @@ class GalleryController extends Controller
             // Move the uploaded file to the storage directory
             $path = $file->storeAs('public/photos_videos', $filename);
 
+            Log::info('File uploaded to: ' . $path);
+
             $path_to_store_in_db = 'photos_videos/'.$filename;
 
             // Create a new record in the database
@@ -114,5 +116,47 @@ class GalleryController extends Controller
 
         return response()->json(['error' => 'Media file not found in request'], 400);
     }
+
+    public function deleteMedia(Request $request)
+    {
+        $fileName = $request->query('fileName');
+        
+        if (!$fileName) {
+            Log::error('File name is missing in the request.');
+            return response()->json(['message' => 'File name is required'], 400);
+        }
+    
+        // Find the media record in the database
+        $media = Assets::where('filename', $fileName)->first();
+    
+        if (!$media) {
+            return response()->json(['message' => 'File not found in the database'], 404);
+        }
+    
+        // Construct the file path
+        $filePath = storage_path('app/public/' . $media->asset_path);
+    
+        Log::info("Attempting to delete file at path: " . $filePath);
+      
+        // Check if the file exists
+        if (file_exists($filePath)) {
+            // Attempt to delete the file
+            if (unlink($filePath)) {
+                // File deleted successfully, now delete the record from the database
+                $media->delete();
+                Log::info('File and database record deleted successfully for: ' . $fileName);
+                return response()->json(['message' => 'File deleted successfully'], 200);
+            } else {
+                // Unable to delete the file
+                return response()->json(['message' => 'File could not be deleted'], 500);
+            }
+        } else {
+            // File not found, delete the record from the database anyway
+            $media->delete();
+            Log::info('File not found, but database record deleted for: ' . $fileName);
+            return response()->json(['message' => 'File not found, but database record deleted'], 404);
+        }
+    }
+    
 }
  

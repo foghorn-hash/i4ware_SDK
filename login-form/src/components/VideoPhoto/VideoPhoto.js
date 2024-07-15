@@ -14,6 +14,7 @@ import ImageVideoGallary from "../imageVideoGallary/imageVideoGallary";
 import CaptureVideoPhoto from '../CaptureVideoPhoto/CaptureVideoPhoto';
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
+import ModalPhotoVideoDelete from "./ModalPhotoVideoDelete";
 
 let strings = new LocalizedStrings({
     en: {
@@ -214,11 +215,6 @@ function VideoPhoto(props) {
                 >
                     {strings.uploadPhoto}
                 </Button>
-
-
-
-
-
                 <Button
                     className="VideoPhoto-button"
                     variant="primary"
@@ -227,8 +223,7 @@ function VideoPhoto(props) {
                 >
                     {strings.capturePhoto}
                 </Button>
-
-
+                
                 <input
                     type="file"
                     ref={videoFileInputRef}
