@@ -54,7 +54,7 @@ const ImageVideoGallary = ({ data }) => {
   };
 
   const openDeleteModal = (fileName) => {
-    console.log(`Preparing to delete item: ${fileName}`);
+    // console.log(`Preparing to delete item: ${fileName}`);
     setFileToDelete(fileName);
     setShowDeleteModal(true);
   };
@@ -77,7 +77,7 @@ const ImageVideoGallary = ({ data }) => {
     try {
       setIsLoading(true);
       const deleteUrl = `${API_BASE_URL}/api/gallery/photos_videos/delete?fileName=${fileName}`;
-      console.log(`Attempting to delete item: ${fileName} at URL: ${deleteUrl}`);
+      // console.log(`Attempting to delete item: ${fileName} at URL: ${deleteUrl}`);
   
       const response = await axios.delete(deleteUrl, {
         headers: {
@@ -85,11 +85,11 @@ const ImageVideoGallary = ({ data }) => {
         },
       });
   
-      console.log('Response from delete request:', response);
+      // console.log('Response from delete request:', response);
   
       if (response.status === 200) {
         setItems((prevItems) => prevItems.filter((item) => item.filename !== fileName));
-        console.log(`Item ${fileName} deleted successfully`);
+        // console.log(`Item ${fileName} deleted successfully`);
       } else {
         console.error('Failed to delete the item. Status:', response.status);
       }
@@ -132,7 +132,7 @@ const ImageVideoGallary = ({ data }) => {
         }}
         onClick={() => {
           const fullUrl = `${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`;
-          console.log(`Preparing to delete item: ${item.filename} with full URL: ${fullUrl}`);
+          // console.log(`Preparing to delete item: ${item.filename} with full URL: ${fullUrl}`);
             openDeleteModal(item.filename)
         }}>
           {strings.delete}
