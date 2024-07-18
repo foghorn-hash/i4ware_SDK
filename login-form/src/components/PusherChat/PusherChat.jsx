@@ -6,6 +6,7 @@ import DefaultMaleImage from "../../male-default-profile-picture.png";
 import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 import Webcam from 'react-webcam';
 import Swal from 'sweetalert2';
 import MessageList from './MessageList';
@@ -13,6 +14,7 @@ import AudioRecorder from '../AudioRecorder/AudioRecorder';
 import { Mic } from 'react-bootstrap-icons';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
+import { CloseButton } from 'react-bootstrap';
 
 let strings = new LocalizedStrings({
   en: {
@@ -29,7 +31,7 @@ let strings = new LocalizedStrings({
     enter_your_message: "Enter your message here...",
     start_video: "Start Video",
     stop_video: "Stop Video",
-    upload: "Upload",
+    upload: "Upload and send",
     duration: "Duration",
     upload_successful: "Upload Successful",
     image_upload_successful: "Image upload success",
@@ -56,7 +58,7 @@ let strings = new LocalizedStrings({
     enter_your_message: "Kirjoita viestisi tähän...",
     start_video: "Aloita Video",
     stop_video: "Lopeta Video",
-    upload: "Lataa",
+    upload: "Lataa ja lähetä",
     duration: "Kesto",
     upload_successful: "Lataus onnistui",
     image_upload_successful: "Kuvan lataus onnistui",
@@ -83,7 +85,7 @@ let strings = new LocalizedStrings({
     enter_your_message: "Skriv ditt meddelande här...",
     start_video: "Starta video",
     stop_video: "Stoppa video",
-    upload: "Ladda upp",
+    upload: "Ladda upp och skicka",
     duration: "Varaktighet",
     upload_successful: "Uppladdning lyckades",
     image_upload_successful: "Bilduppladdning lyckades",
@@ -140,7 +142,11 @@ const PusherChat = () => {
   const handleCaptureCloseModal = () => setCaptureShowModal(false);
 
   const handleCaptureVideoShowModal = () => setCaptureVideoShowModal(true);
-  const handleCaptureVideoCloseModal = () => setCaptureVideoShowModal(false);
+  
+  const handleCaptureVideoCloseModal = () => {
+    setCaptureVideoShowModal(false);
+    setVideoDuration(0); // Reset video duration to 0
+  };
 
   const handleRecordAudioShowModal = () => setRecordAudioShowModal(true);
   const handleRecordAudioCloseModal = () => setRecordAudioShowModal(false);
@@ -178,6 +184,18 @@ const PusherChat = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
+  };
+
+  const anyModalOpen = showModal || showCaptureModal || showCaptureVideoShowModal;
+
+  useEffect(() => {
+    if (!anyModalOpen) {
+      setMessage('');
+    }
+  }, [anyModalOpen]);
+
+  const clearMessage = () => {
+    setMessage('');
   };
 
   useEffect(() => {
@@ -508,26 +526,32 @@ const saveMessageToDatabase = async (message) => {
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
       {speechIndicator && <div className="typing-indicator">{speechIndicator}</div>}
       {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}
-      <form className="message-form">
-        <div>
-          {strings.ask_from_ai}
-          <input
+
+      <Form className="message-form">
+      <Form.Group>
+        <Form.Check
             type="checkbox"
             className="message-ai"
-            name="ai"
+            label={strings.ask_from_ai}
             checked={isAiEnabled}
             onChange={handleAiCheckboxChange}
           />
-        </div>
-        <textarea
+      </Form.Group>
+      <Form.Group style={{ position: 'relative' }}>
+        <Form.Control
+          as="textarea"
           className="message-input"
           placeholder={strings.box}
-          value={message}
+          value={showModal || showCaptureModal || showCaptureVideoShowModal ? '' : message}
+          // value={message}
           onChange={handleTyping}
           style={{ height: 'auto', minHeight: '50px' }}
         />
-        <button className="send-button" onClick={submitMessage}>{strings.send}</button>
-      </form>
+        <CloseButton onClick={clearMessage} style={{ position: 'absolute', top: '10px', right: '20px', color: 'white'
+       }} />
+      </Form.Group>
+        <Button variant='primary' onClick={submitMessage}>{strings.send}</Button>
+      </Form>
     </div>
     <Modal show={showModal} onHide={handleCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
