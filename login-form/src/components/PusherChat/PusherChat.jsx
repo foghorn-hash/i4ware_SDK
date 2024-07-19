@@ -6,13 +6,15 @@ import DefaultMaleImage from "../../male-default-profile-picture.png";
 import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 import Webcam from 'react-webcam';
 import Swal from 'sweetalert2';
 import MessageList from './MessageList';
 import AudioRecorder from '../AudioRecorder/AudioRecorder';
-import { Mic } from 'react-bootstrap-icons';
+import { Mic, Camera, CameraVideo, Upload } from 'react-bootstrap-icons';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
+import { CloseButton } from 'react-bootstrap';
 
 let strings = new LocalizedStrings({
   en: {
@@ -24,12 +26,13 @@ let strings = new LocalizedStrings({
     upload_image_with_message: "Upload Image with Message",
     capture_image_with_message: "Capture Image with Message",
     capture_video_with_message: "Capture Video with Message",
+    speech_to_text: "Speech to Text",
     ask_from_ai: "Ask from AI",
     close: "Close",
     enter_your_message: "Enter your message here...",
     start_video: "Start Video",
     stop_video: "Stop Video",
-    upload: "Upload",
+    upload: "Upload and send",
     duration: "Duration",
     upload_successful: "Upload Successful",
     image_upload_successful: "Image upload success",
@@ -51,12 +54,13 @@ let strings = new LocalizedStrings({
     upload_image_with_message: "Lataa kuva viestin kassa",
     capture_image_with_message: "Kaappaa kuva viestin kanssa",
     capture_video_with_message: "Kaappaa video viestin kanssa",
+    speech_to_text: "Puhe tekstiksi",
     ask_from_ai: "Kysy tekoälyltä",
     close: "Sulje",
     enter_your_message: "Kirjoita viestisi tähän...",
     start_video: "Aloita Video",
     stop_video: "Lopeta Video",
-    upload: "Lataa",
+    upload: "Lataa ja lähetä",
     duration: "Kesto",
     upload_successful: "Lataus onnistui",
     image_upload_successful: "Kuvan lataus onnistui",
@@ -78,12 +82,13 @@ let strings = new LocalizedStrings({
     upload_image_with_message: "Ladda upp bild med meddelande",
     capture_image_with_message: "Fånga bild med meddelande",
     capture_video_with_message: "Fånga video med meddelande",
+    speech_to_text: "Tal till text",
     ask_from_ai: "Fråga en AI",
     close: "Stäng",
     enter_your_message: "Skriv ditt meddelande här...",
     start_video: "Starta video",
     stop_video: "Stoppa video",
-    upload: "Ladda upp",
+    upload: "Ladda upp och skicka",
     duration: "Varaktighet",
     upload_successful: "Uppladdning lyckades",
     image_upload_successful: "Bilduppladdning lyckades",
@@ -140,7 +145,11 @@ const PusherChat = () => {
   const handleCaptureCloseModal = () => setCaptureShowModal(false);
 
   const handleCaptureVideoShowModal = () => setCaptureVideoShowModal(true);
-  const handleCaptureVideoCloseModal = () => setCaptureVideoShowModal(false);
+  
+  const handleCaptureVideoCloseModal = () => {
+    setCaptureVideoShowModal(false);
+    setVideoDuration(0); // Reset video duration to 0
+  };
 
   const handleRecordAudioShowModal = () => setRecordAudioShowModal(true);
   const handleRecordAudioCloseModal = () => setRecordAudioShowModal(false);
@@ -178,6 +187,18 @@ const PusherChat = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
+  };
+
+  const anyModalOpen = showModal || showCaptureModal || showCaptureVideoShowModal;
+
+  useEffect(() => {
+    if (!anyModalOpen) {
+      setMessage('');
+    }
+  }, [anyModalOpen]);
+
+  const clearMessage = () => {
+    setMessage('');
   };
 
   useEffect(() => {
@@ -493,41 +514,47 @@ const saveMessageToDatabase = async (message) => {
     <>
     <div className="chat-container">
       <Button variant="primary" className='message-upload-button' onClick={handleShowModal}>
-        {strings.upload_image_with_message}
+         <Upload /> {strings.upload_image_with_message}
       </Button>
       <Button variant="primary" className='message-capture-button' onClick={handleCaptureShowModal}>
-        {strings.capture_image_with_message}
+         <Camera /> {strings.capture_image_with_message}
       </Button>
       <Button variant="primary" className='message-capture-video-button' onClick={handleCaptureVideoShowModal}>
-        {strings.capture_video_with_message}
+         <CameraVideo /> {strings.capture_video_with_message}
       </Button>
       <Button variant="primary" className='message-record-audio-button' onClick={handleRecordAudioShowModal}>
-        <Mic />
+        <Mic /> {strings.speech_to_text}
       </Button>
       <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
       {speechIndicator && <div className="typing-indicator">{speechIndicator}</div>}
       {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}
-      <form className="message-form">
-        <div>
-          {strings.ask_from_ai}
-          <input
+
+      <Form className="message-form">
+      <Form.Group>
+        <Form.Check
             type="checkbox"
             className="message-ai"
-            name="ai"
+            label={strings.ask_from_ai}
             checked={isAiEnabled}
             onChange={handleAiCheckboxChange}
           />
-        </div>
-        <textarea
+      </Form.Group>
+      <Form.Group style={{ position: 'relative' }}>
+        <Form.Control
+          as="textarea"
           className="message-input"
           placeholder={strings.box}
-          value={message}
+          value={showModal || showCaptureModal || showCaptureVideoShowModal ? '' : message}
+          // value={message}
           onChange={handleTyping}
           style={{ height: 'auto', minHeight: '50px' }}
         />
-        <button className="send-button" onClick={submitMessage}>{strings.send}</button>
-      </form>
+        <CloseButton onClick={clearMessage} style={{ position: 'absolute', top: '10px', right: '20px', color: 'white'
+       }} />
+      </Form.Group>
+        <Button variant='primary' onClick={submitMessage}>{strings.send}</Button>
+      </Form>
     </div>
     <Modal show={showModal} onHide={handleCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
@@ -615,7 +642,7 @@ const saveMessageToDatabase = async (message) => {
     </Modal>
     <Modal show={showRecordAudioShowModal} onHide={handleRecordAudioCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-upload-title'>{strings.capture_video_with_message}</Modal.Title>
+        <Modal.Title className='massage-upload-title'>{strings.speech_to_text}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         <AudioRecorder fetchMessages={fetchMessages} isThinking={isThinking} setIsThinking={setIsThinking} setSpeechIndicator={setSpeechIndicator} sendSpeechStatus={sendSpeechStatus} />
