@@ -11,7 +11,7 @@ import Webcam from 'react-webcam';
 import Swal from 'sweetalert2';
 import MessageList from './MessageList';
 import AudioRecorder from '../AudioRecorder/AudioRecorder';
-import { Mic } from 'react-bootstrap-icons';
+import { Mic, Camera, CameraVideo, Upload } from 'react-bootstrap-icons';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
 import { CloseButton } from 'react-bootstrap';
@@ -26,6 +26,7 @@ let strings = new LocalizedStrings({
     upload_image_with_message: "Upload Image with Message",
     capture_image_with_message: "Capture Image with Message",
     capture_video_with_message: "Capture Video with Message",
+    speech_to_text: "Speech to Text",
     ask_from_ai: "Ask from AI",
     close: "Close",
     enter_your_message: "Enter your message here...",
@@ -56,6 +57,7 @@ let strings = new LocalizedStrings({
     upload_image_with_message: "Lataa kuva viestin kassa",
     capture_image_with_message: "Kaappaa kuva viestin kanssa",
     capture_video_with_message: "Kaappaa video viestin kanssa",
+    speech_to_text: "Puhe tekstiksi",
     ask_from_ai: "Kysy tekoälyltä",
     close: "Sulje",
     enter_your_message: "Kirjoita viestisi tähän...",
@@ -86,6 +88,7 @@ let strings = new LocalizedStrings({
     upload_image_with_message: "Ladda upp bild med meddelande",
     capture_image_with_message: "Fånga bild med meddelande",
     capture_video_with_message: "Fånga video med meddelande",
+    speech_to_text: "Tal till text",
     ask_from_ai: "Fråga en AI",
     close: "Stäng",
     enter_your_message: "Skriv ditt meddelande här...",
@@ -617,16 +620,16 @@ const saveMessageToDatabase = async (message) => {
     <>
     <div className="chat-container">
       <Button variant="primary" className='message-upload-button' onClick={handleShowModal}>
-        {strings.upload_image_with_message}
+         <Upload /> {strings.upload_image_with_message}
       </Button>
       <Button variant="primary" className='message-capture-button' onClick={handleCaptureShowModal}>
-        {strings.capture_image_with_message}
+         <Camera /> {strings.capture_image_with_message}
       </Button>
       <Button variant="primary" className='message-capture-video-button' onClick={handleCaptureVideoShowModal}>
-        {strings.capture_video_with_message}
+         <CameraVideo /> {strings.capture_video_with_message}
       </Button>
       <Button variant="primary" className='message-record-audio-button' onClick={handleRecordAudioShowModal}>
-        <Mic />
+        <Mic /> {strings.speech_to_text}
       </Button>
       <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
       {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
@@ -778,7 +781,7 @@ const saveMessageToDatabase = async (message) => {
     </Modal>
     <Modal show={showRecordAudioShowModal} onHide={handleRecordAudioCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
-        <Modal.Title className='massage-upload-title'>{strings.capture_video_with_message}</Modal.Title>
+        <Modal.Title className='massage-upload-title'>{strings.speech_to_text}</Modal.Title>
       </Modal.Header>
       <Modal.Body className='message-upload-modal'>
         <AudioRecorder fetchMessages={fetchMessages} isThinking={isThinking} setIsThinking={setIsThinking} setSpeechIndicator={setSpeechIndicator} sendSpeechStatus={sendSpeechStatus} />
