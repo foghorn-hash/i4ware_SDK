@@ -37,12 +37,15 @@ let strings = new LocalizedStrings({
     image_upload_successful: "Image upload success",
     capture_successful: "Image capture success",
     video_capture_successful: "Video capture success",
-    please_select_file: "Please select a file to upload.",
+    please_select_file: "Please select a file to upload",
     failed_to_upload_file: "Failed to upload file. Please try again.",
     your_browser_not_support_video_tag: "Your browser does not support the video tag.",
     aiTypingIndicator: "AI is thinking...",
     record_audio: "Record Audio",
     speech: "is recoding speech...",
+    please_capture_image: "Please capture an image to upload",
+    please_capture_video: "Please capture a video to upload",
+    please_write_message: "Please write a message to send"
   },
   fi: {
     send: "Lähetä",
@@ -64,12 +67,15 @@ let strings = new LocalizedStrings({
     image_upload_successful: "Kuvan lataus onnistui",
     capture_successful: "Kuvan kaappaus onnistui",
     video_capture_successful: "Videon kaappaus onnistui",
-    please_select_file: "Olehyvä ja valitse tiedosto minkä haluat ladata.",
+    please_select_file: "Olehyvä ja valitse tiedosto minkä haluat ladata",
     failed_to_upload_file: "Tiedoston lataus epäonnistui. Olehyvä ja yritä uudestaan.",
     your_browser_not_support_video_tag: "Selaimesi ei tue video tagia.",
     aiTypingIndicator: "Tekoäly miettii ...",
     record_audio: "Näuhoita ääni",
     speech: "nauhoittaa puhetta...",
+    please_capture_image: "Olehyvä ja kaappaa kuva ladataksesi",
+    please_capture_video: "Olehyvä ja kaappaa video ladataksesi",
+    please_write_message: "Olehyvä ja kirjoita viesti lähettääksesi"
   },
   se: {
     send: "Skicka",
@@ -91,12 +97,15 @@ let strings = new LocalizedStrings({
     image_upload_successful: "Bilduppladdning lyckades",
     capture_successful: "Bildupptagning lyckades",
     video_capture_successful: "Videoupptagning lyckades",
-    please_select_file: "Vänligen välj en fil att ladda upp.",
+    please_select_file: "Vänligen välj en fil att ladda upp",
     failed_to_upload_file: "Misslyckades med att ladda upp filen. Försök igen.",
     your_browser_not_support_video_tag: "Din webbläsare stöder inte videomarkeringen.",
     aiTypingIndicator: "AI tänker ...",
     record_audio: "Spela in ljud",
     speech: "spela in tal...",
+    please_capture_image: "Vänligen ta en bild för att ladda upp",
+    please_capture_video: "Vänligen ta en video för att ladda upp",
+    please_write_message: "Vänligen skriv ett meddelande att skicka"
   }
 });
 
@@ -119,11 +128,15 @@ const PusherChat = () => {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
+  const [imageVideoSrc, setImageVideoSrc] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isCapturingVideo, setIsCapturingVideo] = useState(false);
   const [videoUploading, setvideoUploading] = useState(false);
   const [videoDuration, setVideoDuration] = useState(0);
   const [isThinking, setIsThinking] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [highlight, setHighlight] = useState({ button: false, textarea: false });
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -136,16 +149,29 @@ const PusherChat = () => {
   }
 
   const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
-
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setImageUploading(false);
+    setError('');
+    setHighlight({ button: false, textarea: false }); 
+  }
+  
   const handleCaptureShowModal = () => setCaptureShowModal(true);
-  const handleCaptureCloseModal = () => setCaptureShowModal(false);
+  const handleCaptureCloseModal = () => {
+    setCaptureShowModal(false);
+    setImageSrc(null);
+    setError('');
+    setHighlight({ button: false, textarea: false });
+  }
 
   const handleCaptureVideoShowModal = () => setCaptureVideoShowModal(true);
   
   const handleCaptureVideoCloseModal = () => {
     setCaptureVideoShowModal(false);
     setVideoDuration(0); // Reset video duration to 0
+    setImageVideoSrc(null);
+    setError('');
+    setHighlight({ button: false, textarea: false });
   };
 
   const handleRecordAudioShowModal = () => setRecordAudioShowModal(true);
@@ -158,6 +184,8 @@ const PusherChat = () => {
   };
 
   const stopVideoCapture = () => {
+    const imageVideoSrc = webcamRef.current.getScreenshot();
+    setImageVideoSrc(imageVideoSrc);
     setIsCapturingVideo(false);
     stopRecording();
   };
@@ -288,6 +316,20 @@ const PusherChat = () => {
       });
   };
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImageUploading(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      setSelectedFile(file);
+      setError('');
+      setHighlight({ button: false, textarea: false }); 
+    }
+  };
+
   const handleTyping = (e) => {
     setMessage(e.target.value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -295,6 +337,8 @@ const PusherChat = () => {
       sendTypingStatus(false);
     }, 500);
     sendTypingStatus(true);
+    setError('');
+    setHighlight({ button: false, textarea: false }); 
   };
 
   const sendTypingStatus = async (isTyping) => {
@@ -332,13 +376,41 @@ const PusherChat = () => {
     setIsAiEnabled(e.target.checked);
   };
 
+  const validateUpload = (image, message) => {
+    let errorMsg = '';
+    let highlightButton = false;
+    let highlightTextarea = false;
+  
+    if (!image && !message) {
+      errorMsg = `${strings.please_select_file}<br />${strings.please_write_message}`;
+      highlightButton = true;
+      highlightTextarea = true;
+    } else if (!image) {
+      errorMsg = strings.please_select_file;
+      highlightButton = true;
+    } else if (!message) {
+      errorMsg = strings.please_write_message;
+      highlightTextarea = true;
+    }
+  
+    return { errorMsg, highlightButton, highlightTextarea };
+  };
+
   const handleUpload = async (e) => {
     e.preventDefault();
+    const { errorMsg, highlightButton, highlightTextarea } = validateUpload(imageUploading, message);
 
-    if (!selectedFile) {
-      alert(strings.please_select_file);
+    if (errorMsg) {
+      setError(errorMsg);
+      setHighlight({ button: highlightButton, textarea: highlightTextarea });
+      setTimeout(() => {
+        setHighlight({ button: false, textarea: false });
+      }, 3000); // Clear highlighting after 3 seconds
       return;
     }
+
+    setError(''); // Clear any existing error
+    setHighlight({ button: false, textarea: false }); // Remove highlighting
 
     const formData = new FormData();
     formData.append('message', message);
@@ -366,18 +438,34 @@ const PusherChat = () => {
       });
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert(strings.failed_to_upload_file);
+      setError(strings.failed_to_upload_file);
     }
   };
 
   const capture = () => {
     const imageSrc = webcamRef.current.getScreenshot();
     // Update the state with the captured image source
-    setImageSrc(imageSrc);;
+    setImageSrc(imageSrc);
+    setError(''); 
+    setHighlight({ button: false, textarea: false }); 
   };
 
   const uploadCapture = async (e) => {
     e.preventDefault();
+    const { errorMsg, highlightButton, highlightTextarea } = validateUpload(imageSrc, message);
+
+    if (errorMsg) {
+      setError(errorMsg);
+      setHighlight({ button: highlightButton, textarea: highlightTextarea });
+      setTimeout(() => {
+        setHighlight({ button: false, textarea: false });
+      }, 3000); // Clear highlighting after 3 seconds
+      return;
+    }
+
+    setError(''); // Clear any existing error
+    setHighlight({ button: false, textarea: false }); // Remove highlighting
+
     try {
       // Send the captured image to the server
       const formData = new FormData();
@@ -403,17 +491,35 @@ const PusherChat = () => {
       });
     } catch (error) {
       console.error('Error uploading image', error);
+      setError(strings.failed_to_upload_file);
     }
   };
 
   const uploadVideo = async (e) => {
     e.preventDefault();
+
+    const { errorMsg, highlightButton, highlightTextarea } = validateUpload(imageVideoSrc, message);
+  
+    if (errorMsg) {
+      setError(errorMsg);
+      setHighlight({ button: highlightButton, textarea: highlightTextarea });
+      setTimeout(() => {
+        setHighlight({ button: false, textarea: false });
+      }, 3000); // Clear highlighting after 3 seconds
+      return;
+    }
+  
+    setError(''); // Clear any existing error
+    setHighlight({ button: false, textarea: false }); // Remove highlighting
+  
     handleCaptureVideoCloseModal();  
+
     if (recordedChunks.length) {
     //  setvideoUploading(true);
       const blob = new Blob(recordedChunks, {
         type: 'video/webm',
       });
+      
       const formData = new FormData();
       formData.append('message', message);
       formData.append('file', blob, 'captured-video.webm');
@@ -560,11 +666,27 @@ const saveMessageToDatabase = async (message) => {
       <Modal.Body className='message-upload-modal'>
         {/* Add your content for image upload and message input here */}
         {/* For simplicity, I'll provide a basic form */}
+        
         <form className='upload-form'>
-          <input type="file" id="upload-input" className='message-file-selector' onChange={(e) => setSelectedFile(e.target.files[0])} /> {/* Input for image upload */}
-          <label htmlFor="upload-input" className='message-file-button'>{strings.browse}</label>
-          <textarea name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
+          <input 
+            type="file" 
+            id="upload-input" className='message-file-selector' 
+            // onChange={(e) => setSelectedFile(e.target.files[0])} 
+            onChange={handleFileChange} 
+            /> {/* Input for image upload */}
+          <label 
+            htmlFor="upload-input" 
+            className={`message-file-button ${highlight.button ? 'highlight' : ''}`}>
+              {strings.browse}
+          </label>
+          {imageUploading &&  <img className='imageUpload' src={imageUploading} />}
+          <textarea 
+            name="message" 
+            value={message} 
+            placeholder={strings.enter_your_message} className={`message-textarea ${highlight.textarea ? 'highlight' : ''}`} 
+            onChange={handleTyping} />
           <br />
+          {error && <div className='error-message' dangerouslySetInnerHTML={{ __html: error }} />}
           <button className='message-upload-button' onClick={handleUpload}>{strings.upload}</button>
         </form>
       </Modal.Body>
@@ -589,13 +711,20 @@ const saveMessageToDatabase = async (message) => {
           screenshotFormat="image/jpeg"
           videoConstraints={{ width: 1920, height:1080 }}
         />
-        <button className="Webcam-capture-button" onClick={capture}>
+        <button className={`message-file-button ${highlight.button ? 'highlight' : ''}`} onClick={capture}>
           {strings.capturePhoto}
         </button>
+        {imageSrc && <img className='Webcam-message' src={imageSrc} />}
         <form className='upload-form'>
-          <textarea name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
+          <textarea name="message" 
+            value={message} 
+            placeholder={strings.enter_your_message}  className={`message-textarea ${highlight.textarea ? 'highlight' : ''}`} 
+            onChange={handleTyping} />
           <br />
-          <button className='message-upload-button' onClick={uploadCapture}>{strings.upload}</button>
+          {error && <div className='error-message' dangerouslySetInnerHTML={{ __html: error }} />}
+          <button 
+            className='message-upload-button'
+            onClick={uploadCapture}>{strings.upload}</button>
         </form>
       </Modal.Body>
       <Modal.Footer className='message-upload-modal'>
@@ -620,14 +749,24 @@ const saveMessageToDatabase = async (message) => {
           videoConstraints={{ width: 1920, height:1080 }}
         />
         {!isCapturingVideo ? (
-          <button className="Webcam-button startVideo" onClick={startVideoCapture}>{strings.start_video}</button>
+          <button 
+            className={`Webcam-button startVideo ${highlight.button ? 'highlight' : ''}`}
+            onClick={startVideoCapture}>
+              {strings.start_video}
+          </button>
         ) : (
           <button className="Webcam-button stopVideo" onClick={stopVideoCapture}>{strings.stop_video}</button>
         )}
         <div>{strings.duration}: {formatDuration(videoDuration)}</div>
+        {imageVideoSrc && <img className='Webcam-message' src={imageVideoSrc} />}
         <form className='upload-form'>
-          <textarea name="message" value={message} placeholder={strings.enter_your_message} className='message-textarea' onChange={handleTyping} />
+          <textarea 
+            name="message" 
+            value={message} 
+            placeholder={strings.enter_your_message} className={`message-textarea ${highlight.textarea ? 'highlight' : ''}`} 
+            onChange={handleTyping} />
           <br />
+          {error && <div className='error-message' dangerouslySetInnerHTML={{ __html: error }} />}
           <button className='message-upload-button' onClick={uploadVideo}>{strings.upload}</button>
         </form>
       </Modal.Body>
