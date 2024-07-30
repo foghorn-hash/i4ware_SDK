@@ -103,8 +103,10 @@ Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function () {
     Route::get('/customers', [NetvisorController::class, 'getCustomers']);
     Route::get('/products', [NetvisorController::class, 'getProducts']);
     Route::get('/invoices', [NetvisorController::class, 'getInvoices']);
+	Route::get('/some-data', [NetvisorController::class, 'getSomeData']);
     Route::post('/create-invoice', [NetvisorController::class, 'createInvoice']);
     Route::post('/create-customer', [NetvisorController::class, 'createCustomer']);
     Route::post('/create-product', [NetvisorController::class, 'createProduct']);
 });
 
+Route::get('/test-netvisor', [NetvisorController::class, 'test']);

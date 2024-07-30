@@ -9,7 +9,7 @@ use GuzzleHttp\Exception\RequestException;
 class NetvisorAPIService
 {
     protected $client;
-    protected $baseUri;
+    protected $baseUrl;
     protected $apiKey;
     protected $apiSecret;
     protected $sender;
@@ -23,7 +23,7 @@ class NetvisorAPIService
     public function __construct()
     {
         $this->client = new Client();
-        $this->baseUri = config('netvisor.base_uri');
+        $this->baseUrl = config('netvisor.base_url');
         $this->apiKey = config('netvisor.api_key');
         $this->apiSecret = config('netvisor.api_secret');
         $this->sender = 'YourSender'; // Replace with actual sender value
@@ -38,7 +38,7 @@ class NetvisorAPIService
     public function getMAC()
     {
         $parameters = array(
-            $this->baseUri,
+            $this->baseUrl,
             $this->sender,
             $this->customerId,
             now()->timestamp,
@@ -57,7 +57,7 @@ class NetvisorAPIService
     {
         $mac = $this->getMAC();
         Transaction::create([
-            'url' => $this->baseUri,
+            'url' => $this->baseUrl,
             'sender' => $this->sender,
             'customer_id' => $this->customerId,
             'timestamp' => now()->timestamp,
@@ -72,7 +72,7 @@ class NetvisorAPIService
 
     public function sendRequest($method, $endpoint, $data = [])
     {
-        $url = $this->baseUri . $endpoint;
+        $url = $this->baseUrl . $endpoint;
 
         try {
             $response = $this->client->request($method, $url, [
@@ -89,6 +89,18 @@ class NetvisorAPIService
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function getSomeData()
+    {
+        $response = $this->client->get($this->baseUrl . '/some-endpoint', [
+            'headers' => [
+                'API-KEY' => $this->apiKey,
+                'API-SECRET' => $this->apiSecret,
+            ],
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true);
     }
 
     // Add more methods as needed for other API endpoints

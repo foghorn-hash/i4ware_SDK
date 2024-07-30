@@ -14,6 +14,12 @@ class NetvisorController extends Controller
         $this->netvisorAPI = $netvisorAPI;
     }
 
+    public function getSomeData()
+    {
+        $response = $this->netvisorAPI->getSomeData();
+        return response()->json($response);
+    }
+
     public function getCustomers()
     {
         $response = $this->netvisorAPI->sendRequest('GET', '/customers');
@@ -48,5 +54,16 @@ class NetvisorController extends Controller
     {
         $response = $this->netvisorAPI->sendRequest('POST', '/create-product', $request->all());
         return response()->json($response);
+    }
+
+    public function test()
+    {
+        $netvisorAPI = new NetvisorAPIService();
+        $data = $netvisorAPI->getSomeData();
+
+        return response()->json($data);
+
+        Log::info('Netvisor test data: ' . json_encode($data));
+        dd(config('netvisor'));
     }
 }
