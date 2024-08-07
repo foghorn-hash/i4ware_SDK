@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\NetvisorAPIService;
+use Illuminate\Support\Facades\Log;
 
 class NetvisorController extends Controller
 {
@@ -58,12 +59,16 @@ class NetvisorController extends Controller
 
     public function test()
     {
-        $netvisorAPI = new NetvisorAPIService();
-        $data = $netvisorAPI->getSomeData();
-
-        return response()->json($data);
-
-        Log::info('Netvisor test data: ' . json_encode($data));
-        dd(config('netvisor'));
+        try {
+            Log::info('Test method called');
+            $netvisorAPI = new NetvisorAPIService();
+            $data = $netvisorAPI->getSomeData();
+            
+            Log::info('Netvisor test data: ' . json_encode($data));
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Test method error: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred'], 500);
+        }
     }
 }

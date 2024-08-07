@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Transaction;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Log;
 
 class NetvisorAPIService
 {
@@ -22,7 +23,6 @@ class NetvisorAPIService
 
     public function __construct()
     {
-        $this->client = new Client();
         $this->baseUrl = config('netvisor.base_url');
         $this->apiKey = config('netvisor.api_key');
         $this->apiSecret = config('netvisor.api_secret');
@@ -33,6 +33,11 @@ class NetvisorAPIService
         $this->transactionId = uniqid(); // Generate a unique transaction ID
         $this->customerKey = 'YourCustomerKey'; // Replace with actual customer key
         $this->partnerKey = 'YourPartnerKey'; // Replace with actual partner key
+      
+        $this->client = new Client([
+            'base_url' => $this->baseUrl,
+            'timeout'  => 10.0,
+        ]);
     }
 
     public function getMAC()
@@ -93,15 +98,18 @@ class NetvisorAPIService
 
     public function getSomeData()
     {
-        $response = $this->client->get($this->baseUrl . '/some-endpoint', [
-            'headers' => [
-                'API-KEY' => $this->apiKey,
-                'API-SECRET' => $this->apiSecret,
-            ],
-        ]);
-
-        return json_decode($response->getBody()->getContents(), true);
+        try {
+            $response = $this->client->get($this->baseUrl . '/some-endpoint', [
+                'headers' => [
+                    'API-KEY' => $this->apiKey,
+                    'API-SECRET' => $this->apiSecret,
+                ],
+            ]);
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (RequestException $e) {
+            Log::error('Netvisor API request failed', ['message' => $e->getMessage()]);
+            return ['error' => 'Failed to connect to Netvisor API'];
+        }
     }
-
     // Add more methods as needed for other API endpoints
 }
