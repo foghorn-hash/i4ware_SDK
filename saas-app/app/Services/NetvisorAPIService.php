@@ -11,8 +11,6 @@ class NetvisorAPIService
 {
     protected $client;
     protected $baseUrl;
-    protected $apiKey;
-    protected $apiSecret;
     protected $sender;
     protected $customerId;
     protected $language;
@@ -20,58 +18,105 @@ class NetvisorAPIService
     protected $transactionId;
     protected $customerKey;
     protected $partnerKey;
+    protected $timestamp;
+    // protected $partnerId;
 
     public function __construct()
     {
         $this->baseUrl = config('netvisor.base_url');
-        $this->apiKey = config('netvisor.api_key');
-        $this->apiSecret = config('netvisor.api_secret');
-        $this->sender = 'YourSender'; // Replace with actual sender value
-        $this->customerId = 'YourCustomerID'; // Replace with actual customer ID
-        $this->language = 'FI'; // Replace with actual language
-        $this->organisationId = 'YourOrganisationID'; // Replace with actual organisation ID
-        $this->transactionId = uniqid(); // Generate a unique transaction ID
-        $this->customerKey = 'YourCustomerKey'; // Replace with actual customer key
-        $this->partnerKey = 'YourPartnerKey'; // Replace with actual partner key
-      
+        // Replace spaces with underscores and assign to $this->sender
+        $this->sender = str_replace(' ', '_', config('netvisor.sender'));
+       // Convert customer ID to lowercase
+        $this->customerId = strtolower(config('netvisor.customer_id'));
+        $this->language = config('netvisor.language', 'FI');
+        $this->organisationId = config('netvisor.organisation_id');
+        // Convert customerKey and partnerKey to lowercase
+        $this->customerKey = strtolower(config('netvisor.customer_key'));
+        $this->partnerKey = strtolower(config('netvisor.partner_key'));
+        // $this->partnerId = strtolower(config('netvisor.partner_id'));
+
+        $this->transactionId = uniqid();
+        // $this->timestamp = now()->toIso8601String();
+        date_default_timezone_set('UTC');
+        $this->timestamp = now()->format('Y-m-d H:i:s.u');
+        $this->timestamp = substr($this->timestamp, 0, 23); // Reduce the last numbers to 3
+
         $this->client = new Client([
-            'base_url' => $this->baseUrl,
             'timeout'  => 10.0,
         ]);
     }
 
-    public function getMAC()
+    public function getMAC($url)
     {
         $parameters = array(
-            $this->baseUrl,
+            $url,
             $this->sender,
             $this->customerId,
-            now()->timestamp,
+            $this->timestamp,
             $this->language,
             $this->organisationId,
             $this->transactionId,
             $this->customerKey,
-            $this->partnerKey
+            $this->partnerKey,
         );
         
-        $parameters = array_map("strval", $parameters);
-        return hash("sha256", implode("", $parameters));
+        // Ensure all parameters are string type
+        $parameters = array_map('strval', $parameters);
+
+        // Create the concatenated string
+        $sha256string = implode('&', $parameters);
+        // Log::info('MAC parameters: ' . json_encode($parameters));
+         // Log for debugging
+         Log::info('Concatenated string for MAC: ' . $sha256string);
+        // $sha256string = $url . "&" . $this->sender . "&" . $this->customerId . "&" . $this->timestamp . "&" . $this->language . "&" . $this->organisationId . "&" . $this->transactionId . "&" . $this->customerKey . "&" . $this->partnerKey;
+        
+        $h_mac = hash("sha256", $sha256string);
+        
+        // Log the calculated HMAC for debugging purposes
+        Log::info('Calculated HMAC with modified parameters: ' . $h_mac);
+
+        // Return the calculated HMAC
+        return $h_mac;
+    }
+
+    public function getHeaders($url)
+    {
+        $mac = $this->getMAC($url);
+
+        // Log MAC here only if this function is called
+        Log::info('Calculated HMAC: ' . $mac);
+
+        return [
+            'Content-Type' => 'text/plain',
+            'X-Netvisor-Authentication-Sender' => $this->sender,
+            'X-Netvisor-Authentication-CustomerId' => $this->customerId,
+            // 'X-Netvisor-Authentication-PartnerId' => $this->partnerId,
+            'X-Netvisor-Authentication-PartnerId' => $this->partnerKey,
+            'X-Netvisor-Authentication-Timestamp' => $this->timestamp,
+            'X-Netvisor-Authentication-TransactionId' => $this->transactionId,
+            'X-Netvisor-Interface-Language' => $this->language,
+            'X-Netvisor-Organisation-ID' => $this->organisationId,
+            // 'X-Netvisor-Authentication-CustomerKey' => $this->customerKey,
+            // 'X-Netvisor-Authentication-PartnerKey' => $this->partnerKey,
+            'X-Netvisor-Authentication-MAC' => $mac,
+            'X-Netvisor-Authentication-MACHashCalculationAlgorithm' => 'SHA256',
+        ];
     }
 
     public function saveTransaction()
     {
-        $mac = $this->getMAC();
         Transaction::create([
             'url' => $this->baseUrl,
             'sender' => $this->sender,
             'customer_id' => $this->customerId,
-            'timestamp' => now()->timestamp,
+            'timestamp' => $this->timestamp,
             'language' => $this->language,
             'organisation_id' => $this->organisationId,
             'transaction_id' => $this->transactionId,
             'customer_key' => $this->customerKey,
             'partner_key' => $this->partnerKey,
-            'mac' => $mac,
+            // 'partner_id' => $this->partnerId,
+            'mac' => $this->getMAC($this->baseUrl),  // Include URL in MAC calculation
         ]);
     }
 
@@ -80,15 +125,20 @@ class NetvisorAPIService
         $url = $this->baseUrl . $endpoint;
 
         try {
+            $mac = $this->getMAC($url);
+            Log::info('MAC used in sendRequest: ' . $mac);
+            Log::info('Sending request to Netvisor API', ['method' => $method, 'url' => $url, 'data' => $data]);
             $response = $this->client->request($method, $url, [
-                'headers' => $this->getHeaders(),
+                'headers' => $this->getHeaders($url),
                 'json' => $data,
             ]);
 
             $this->saveTransaction();
+        
 
             return json_decode($response->getBody(), true);
         } catch (RequestException $e) {
+            Log::error('Netvisor API request failed', ['message' => $e->getMessage()]);
             return [
                 'error' => true,
                 'message' => $e->getMessage(),
@@ -96,20 +146,50 @@ class NetvisorAPIService
         }
     }
 
+    public function getCustomers()
+    {
+        return $this->sendRequest('GET', '/customerlist.nv');
+    }
+    
+    public function getProducts()
+    {
+        return $this->sendRequest('GET', '/productlist.nv');
+    }
+
     public function getSomeData()
     {
         try {
-            $response = $this->client->get($this->baseUrl . '/some-endpoint', [
-                'headers' => [
-                    'API-KEY' => $this->apiKey,
-                    'API-SECRET' => $this->apiSecret,
-                ],
+            $url = $this->baseUrl . '/customerlist.nv';
+            
+            $headers = $this->getHeaders($url);
+            // Log the MAC explicitly in getSomeData
+            $mac = $this->getMAC($url);
+            Log::info('MAC used in getSomeData: ' . $mac);
+
+            // Log the headers for debugging
+            Log::info('Netvisor API request headers', $headers);
+    
+            $response = $this->client->get($url, [
+                'headers' => $headers,
             ]);
-            return json_decode($response->getBody()->getContents(), true);
+    
+            $body = $response->getBody()->getContents();
+            $statusCode = $response->getStatusCode();
+            $responseHeaders = $response->getHeaders();
+    
+            Log::info('Netvisor API response', [
+                'url' => $url,
+                'status_code' => $statusCode,
+                'headers' => $responseHeaders,
+                'body' => $body
+            ]);
+    
+            return json_decode($body, true);
         } catch (RequestException $e) {
             Log::error('Netvisor API request failed', ['message' => $e->getMessage()]);
             return ['error' => 'Failed to connect to Netvisor API'];
         }
     }
+    
     // Add more methods as needed for other API endpoints
 }
