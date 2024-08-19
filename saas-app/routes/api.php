@@ -11,6 +11,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StlController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\NetvisorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,3 +98,7 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/tts', [ChatController::class, 'synthesize']);
 	Route::post('/stt', [ChatController::class, 'transcribe']);
 });
+
+Route::get('/test-netvisor', [NetvisorController::class, 'test']);
+
+Route::get('/invoices', [NetvisorController::class, 'getSalesInvoices']);
