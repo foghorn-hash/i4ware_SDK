@@ -10,6 +10,18 @@
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   }
 
+  .message-ai {
+	margin-left: 10px;
+	margin-right: 10px;
+	text-align: left;
+}
+
+.generate-image-ai {
+	margin-left: 10px;
+	margin-right: 10px;
+	text-align: left;
+}
+
   .message-upload-modal {
 	border: 0;
   }

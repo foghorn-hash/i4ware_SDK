@@ -97,6 +97,8 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/save-message', [ChatController::class, 'saveMessageToDatabase']);
 	Route::post('/tts', [ChatController::class, 'synthesize']);
 	Route::post('/stt', [ChatController::class, 'transcribe']);
+	Route::post('/generate-image', [ChatController::class, 'generateImage']);
+	Route::post('/speech', [ChatController::class, 'speech']);
 });
 
 Route::get('/test-netvisor', [NetvisorController::class, 'test']);

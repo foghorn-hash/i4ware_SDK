@@ -1,26 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AudioRecorder.css';
-import RecordRTC, { invokeSaveAsDialog } from 'recordrtc';
+import RecordRTC from 'recordrtc';
 import Axios from 'axios';
 import WaveSurfer from 'wavesurfer.js';
 import { Circle, Mic } from 'react-bootstrap-icons';
+import Form from 'react-bootstrap/Form';
 import { API_BASE_URL, ACCESS_USER_DATA, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants"; // Assuming you have ACCESS_TOKEN_NAME defined
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
   en: { 
     ask_from_ai: "Ask from AI",
-    waveform: "Wavefrom",
+    waveform: "Waveform",
     volume: "Volume Level Meter",
     male: "Male",
     female: "Female",
-   },
+    generate_image: "Generate Image",
+  },
   fi: { 
     ask_from_ai: "Kysy tekoälyltä",
     waveform: "Ääniraita",
     volume: "Äänenvoimakkuusmittari",
     male: "Mies",
     female: "Nainen",
+    generate_image: "Luo kuva",
   },
   se: { 
     ask_from_ai: "Fråga en AI",
@@ -28,14 +31,17 @@ let strings = new LocalizedStrings({
     volume: "ljudvolym",
     male: "Man",
     female: "Kvinna",
+    generate_image: "Generera bild",
   }
 });
 
-const AudioRecorder = (props) => {
+const AudioRecorder = ({ fetchMessages, setSpeechIndicator, sendSpeechStatus, setIsThinking }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
   const [isAiEnabled, setIsAiEnabled] = useState(false);
+  const [isGenerateEnabled, setIsGenerateEnabled] = useState(false); // State to track AI checkbox
+  const [gender, setGender] = useState('male');
   const audioRef = useRef(null);
   const waveformRef = useRef(null);
   const wavesurfer = useRef(null);
@@ -44,38 +50,49 @@ const AudioRecorder = (props) => {
   const analyserRef = useRef(null);
   const meterRef = useRef(null);
   const animationFrameIdRef = useRef(null);
-  const [gender, setGender] = useState('male');
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+  const urlParams = new URLSearchParams(window.location.search.substring(1));
+  const localization = urlParams.get('lang') || API_DEFAULT_LANGUAGE;
+  strings.setLanguage(localization);
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  useEffect(() => {
+    if (audioBlob && waveformRef.current) {
+      if (wavesurfer.current) {
+        wavesurfer.current.destroy();
+      }
+      wavesurfer.current = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: '#ddd',
+        progressColor: '#ff5500',
+        responsive: true,
+      });
+      wavesurfer.current.load(URL.createObjectURL(audioBlob));
+    }
+  }, [audioBlob]);
 
-  const handleAiCheckboxChange = (e) => {
-    setIsAiEnabled(e.target.checked);
-  };
-
-  const handleChatGPTResponse = (responseText) => {
+  const handleChatGPTResponse = async (responseText) => {
     console.log('Received response from ChatGPT:', responseText);
     if (isAiEnabled) {
-        props.sendSpeechStatus(false);
-        props.setSpeechIndicator('');
-        // Handle AI response (display in chat, etc.)
-        props.setIsThinking(true);
-        Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: true }, {
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
-        });
-        generateResponse(responseText);
+      sendSpeechStatus(false);
+      setSpeechIndicator('');
+      setIsThinking(true);
+      await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: true }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+      await generateResponse(responseText);
+    } else if (isGenerateEnabled) {
+      sendSpeechStatus(false);
+      setSpeechIndicator('');
+      setIsThinking(true);
+      await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: true }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+      await generateImage(responseText);
     }
-    props.fetchMessages();
+    fetchMessages();
   };
 
-  const startRecording = () => {
+  const startRecording = async () => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
       const newRecorder = RecordRTC(stream, {
         type: 'audio',
@@ -86,7 +103,7 @@ const AudioRecorder = (props) => {
       setIsRecording(true);
       mediaStreamRef.current = stream;
       setupAudioLevelMeter(stream);
-      props.sendSpeechStatus(true);
+      sendSpeechStatus(true);
     }).catch(err => {
       console.error('Error accessing microphone', err);
     });
@@ -102,7 +119,6 @@ const AudioRecorder = (props) => {
     const dataArray = new Uint8Array(bufferLength);
 
     source.connect(analyser);
-
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
 
@@ -120,66 +136,65 @@ const AudioRecorder = (props) => {
 
   const generateResponse = async (message) => {
     try {
-      const token = localStorage.getItem(ACCESS_TOKEN_NAME);
-      const response = await Axios.post(
-        `${API_BASE_URL}/api/chat/generate-response`,
-        { prompt: message },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-  
-      console.log(response.data.response);
-  
-      const messgeForHighliht = response.data.response;
-  
-      const highlightedHTML = messgeForHighliht;
-  
-      // Create the AI response message object with highlighted message
+      const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-response`, { prompt: message }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
       const aiResponseMessage = {
         username: 'AI',
-        message: highlightedHTML, // Use the highlighted response
-        gender: gender,
+        message: response.data.response,
+        generate: false,
+        gender,
         created_at: new Date().toISOString(),
       };
-  
-      // Save the AI response message to the database
       await saveMessageToDatabase(aiResponseMessage);
-  
-      // Handle AI response (display in chat, etc.)
-      props.setIsThinking(false);
+      setIsThinking(false);
       await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
       });
-
-      props.fetchMessages();
-
+      fetchMessages();
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error generating AI response:', error);
     }
   };
-  
+
+  const generateImage = async (message) => {
+    try {
+      const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-image`, { prompt: message, generate: true }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+      const highlightedHTML = response.data.response;
+      const aiResponseMessage = {
+        username: 'AI',
+        generate: true,
+        message: highlightedHTML,
+        created_at: new Date().toISOString(),
+      };
+      await saveMessageToDatabase(aiResponseMessage);
+      setIsThinking(false);
+      await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+      fetchMessages(); // Fetch messages after generating AI response
+    } catch (error) {
+      console.error('Error:', error);
+      setIsThinking(false);
+    }
+  };
+
   const saveMessageToDatabase = async (message) => {
     try {
-      const token = localStorage.getItem(ACCESS_TOKEN_NAME);
       await Axios.post(`${API_BASE_URL}/api/chat/save-message`, message, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
       });
       console.log('Message saved to database successfully:', message);
-      props.fetchMessages();
+      fetchMessages();
     } catch (error) {
       console.error('Error saving message to database:', error);
     }
   };
 
   const stopRecording = () => {
-    recorder.stopRecording(() => {
+    recorder.stopRecording(async () => {
       const blob = recorder.getBlob();
       const audioUrl = URL.createObjectURL(blob);
       audioRef.current.src = audioUrl;
@@ -190,7 +205,7 @@ const AudioRecorder = (props) => {
       formData.append('audio', blob, 'recording.mp3');
       formData.append('gender', gender); // Append gender to the form data
 
-      Axios.post(`${API_BASE_URL}/api/chat/stt`, formData, {
+      await Axios.post(`${API_BASE_URL}/api/chat/stt`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
@@ -198,8 +213,8 @@ const AudioRecorder = (props) => {
       }).then(response => {
         console.log('Transcription result:', response.data.transcription);
         handleChatGPTResponse(response.data.transcription);
-        props.sendSpeechStatus(false);
-        props.setSpeechIndicator('');
+        sendSpeechStatus(false);
+        setSpeechIndicator('');
       }).catch(error => {
         console.error('Error uploading audio file:', error);
       });
@@ -217,26 +232,15 @@ const AudioRecorder = (props) => {
     });
   };
 
-  const handleChange = (event) => {
-    setGender(event.target.value);
+  const handleAiCheckboxChange = (e) => {
+    setIsAiEnabled(e.target.checked);
+    if (e.target.checked) setIsGenerateEnabled(false); // Uncheck the other option
   };
-
-  useEffect(() => {
-    if (audioBlob && waveformRef.current) {
-      if (wavesurfer.current) {
-        wavesurfer.current.destroy();
-      }
-      wavesurfer.current = WaveSurfer.create({
-        container: waveformRef.current,
-        waveColor: '#ddd',
-        progressColor: '#ff5500',
-        responsive: true,
-      });
-
-      const audioUrl = URL.createObjectURL(audioBlob);
-      wavesurfer.current.load(audioUrl);
-    }
-  }, [audioBlob]);
+  
+  const handleGenerateCheckboxChange = (e) => {
+    setIsGenerateEnabled(e.target.checked);
+    if (e.target.checked) setIsAiEnabled(false); // Uncheck the other option
+  };
 
   return (
     <div>
@@ -252,21 +256,32 @@ const AudioRecorder = (props) => {
         {isRecording ? <Circle /> : <Mic />}
       </button>
       <div className='audio-recorder-clear' />
-      {strings.ask_from_ai}
-          <input
-            type="checkbox"
+      <Form.Check // prettier-ignore
+            type="radio"
             className="message-ai"
-            name="ai"
+            name="ai-options"
+            label={strings.ask_from_ai}
             checked={isAiEnabled}
             onChange={handleAiCheckboxChange}
+            value="ai"
           />
-          <div className='audio-recorder-clear' />
-          <select className='select-gender' id="gender" value={gender} onChange={handleChange}>
-            <option value="male">{strings.male}</option>
-            <option value="female">{strings.female}</option>
-          </select>
+          <Form.Check // prettier-ignore
+            type="radio"
+            className="generate-image-ai"
+            name="ai-options"
+            label={strings.generate_image}
+            checked={isGenerateEnabled}
+            onChange={handleGenerateCheckboxChange}
+            value="generate-image"
+          />
+      <div className='audio-recorder-clear' />
+      <select className='select-gender' id="gender" value={gender} onChange={(e) => setGender(e.target.value)}>
+        <option value="male">{strings.male}</option>
+        <option value="female">{strings.female}</option>
+      </select>
     </div>
   );
 };
 
 export default AudioRecorder;
+

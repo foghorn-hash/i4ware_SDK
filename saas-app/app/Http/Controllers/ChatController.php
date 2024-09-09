@@ -212,7 +212,6 @@ class ChatController extends Controller
 
     public function generateResponse(Request $request)
     {
-        $user = Auth::user();
 
         $prompt = $request->input('prompt');
         $response = $this->openAiService->generateText($prompt);
@@ -220,33 +219,58 @@ class ChatController extends Controller
         return response()->json(['response' => $response]);
     }
 
+    public function generateImage(Request $request) {
+        
+        $prompt = $request->input('prompt');
+        $response = $this->openAiService->generateImage($prompt);
+
+        return response()->json(['response' => $response]);
+
+    }
+
     public function saveMessageToDatabase(Request $request)
     {       
         $user = Auth::user();
+        $request = $request->all();
+        
+        $generate = $request['generate'];
 
-        // Validate incoming request data
-        $validator = Validator::make($request->all(), [
-            'message' => 'required|string',
-        ]);
+        $message = new MessageModel();
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
+        if ($generate===true) {
+
+            // Generate a unique filename
+            $file = file_get_contents($request['message']['data'][0]['url']);
+            $fileName = 'ai_images/' . uniqid() . '.png';
+            Storage::disk('public')->put($fileName, $file);
+
+            $message->username = "AI";
+            $message->user_id = null;
+            $message->domain = $user->domain;
+            $message->image_path = 'storage/' . $fileName;
+            $message->message = $request['message']['data'][0]['revised_prompt'];
+            $message->type = "image";
+            $message->gender = "male";
+
+        } else {
+        
+            // Create new message
+            $prompt = $request['message'];
+
+            $highlightedMessage = $prompt; // No syntax highlighting needed
+            
+            $message->username = "AI";
+            $message->user_id = null;
+            $message->domain = $user->domain;
+            $message->message = $highlightedMessage;
+            $message->gender = "male";
+
         }
 
-        $prompt = $request->input('message');
-
-        $highlightedMessage = $prompt;
-        
-        // Create new message
-        $message = new MessageModel();
-        $message->username = "AI";
-        $message->user_id = null;
-        $message->domain = $user->domain;
-        $message->message = $highlightedMessage;
         $message->save();
 
         // Trigger an event for the new message
-        event(new Message($user->name, $prompt));
+        event(new MessagePublic("AI", $prompt));
 
         return response()->json(['success' => 'Message saved successfully'], 200);
     }
