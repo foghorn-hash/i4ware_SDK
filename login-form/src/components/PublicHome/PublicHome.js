@@ -15,19 +15,19 @@ let strings = new LocalizedStrings({
     video: "To view this video please enable JavaScript, and consider upgrading to a",
     web: "web browser that",
     support: "supports HTML5 video",
-    copyright: "| i4ware - SDK | Copyright © i4ware Software 2004-2023, all rights reserved. | Version 1.0.0"
+    copyright: "| i4ware - SDK | Copyright © i4ware Software 2004-2024, all rights reserved. | Version 1.0.0"
   },
   fi: {
     video: "Katsoaksesi tämän videon ota JavaScript käyttöön, ja harkitse päivittämistä",
     web: "verkkoselaimeen, joka",
     support: "tukee HTML5-videota",
-    copyright: "| i4ware - SDK | Tekijänoikeudet © i4ware Software 2004-2023, kaikki oikeudet pidätetään. | Versio 1.0.0"
+    copyright: "| i4ware - SDK | Tekijänoikeudet © i4ware Software 2004-2024, kaikki oikeudet pidätetään. | Versio 1.0.0"
   },
   se: {
     video: "För att se den här videon, aktivera JavaScript och överväg att uppgradera",
     web: "din webbläsare till en som",
     support: "stöder HTML5-video",
-    copyright: "| i4ware - SDK | Upphovsrätt © i4ware Software 2004-2023, alla rättigheter förbehållna. | Version 1.0.0"
+    copyright: "| i4ware - SDK | Upphovsrätt © i4ware Software 2004-2024, alla rättigheter förbehållna. | Version 1.0.0"
   }
 });
 
@@ -52,7 +52,6 @@ function PublicHome() {
         <video
             id="my-player"
             class="video-js PublicHomePlayer"
-            controls
             preload="auto"
             autoplay="true"
             loop="true"
