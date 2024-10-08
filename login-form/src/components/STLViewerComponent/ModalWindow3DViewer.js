@@ -99,5 +99,5 @@ export function ModalWindow3DViewer({ stlFilename }) {
         }
       };  
   
-  return <div ref={modalViewerRef}></div>;
+  return <div className='stl-model' ref={modalViewerRef}></div>;
   }
