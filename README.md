@@ -4,17 +4,7 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 A project to demonstrate usage of basic react.js hooks
 
-Join my YouTube Channel Gold Level Member to get personal trading, teaching and Full-Stack Developer help by MARK HAMILTON.
-
-<!-- TUTORIAL-AD:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/6SfdOKwuBDk?si=mbzbcoHKRCrpu5BB" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
-<!-- TUTORIAL-AD:END -->
+Join my YouTube Channel Gold Level Member to get personal trading, teaching and Full-Stack Developer help by MARK HAMILTON: https://www.youtube.com/watch?v=6SfdOKwuBDk
 
 ### Leave a feedback
 If you found this project useful, then make sure to star the project.
