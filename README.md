@@ -16,8 +16,6 @@ Join my YouTube Channel Gold Level Member to get personal trading, teaching and 
 <!-- prettier-ignore-end -->
 <!-- TUTORIAL-AD:END -->
 
-Join my YouTube Channel Gold Level Member to get personal trading, teaching and Full-Stack Developer help by MARK HAMILTON.
-
 ### Leave a feedback
 If you found this project useful, then make sure to star the project.
 
