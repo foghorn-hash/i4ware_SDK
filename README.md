@@ -9,7 +9,9 @@ Join my YouTube Channel Gold Level Member to get personal trading, teaching and 
 <!-- TUTORIAL-AD:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+
 <iframe width="560" height="315" src="https://www.youtube.com/embed/6SfdOKwuBDk?si=mbzbcoHKRCrpu5BB" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- TUTORIAL-AD:END -->
