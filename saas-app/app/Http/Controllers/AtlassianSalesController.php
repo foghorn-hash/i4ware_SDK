@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 
 class AtlassianSalesController extends Controller
 {
@@ -16,7 +15,7 @@ class AtlassianSalesController extends Controller
             $atlassianSales = $this->fetchTransactions();
 
             // Fetch local sales (from invoices)
-            $localSales = Invoice::with('items')->get()->flatMap(function ($invoice) {
+            $localSales = Invoice::orderBy('due_date')->get()->flatMap(function ($invoice) {
                 return $invoice->items->map(function ($item) use ($invoice) {
                     return [
                         'saleDate' => $invoice->due_date,
@@ -71,7 +70,7 @@ class AtlassianSalesController extends Controller
     private function getLocalSales()
     {
         // Fetch invoices and calculate totals
-        $invoices = Invoice::with('items')->get();
+        $invoices = Invoice::orderBy('due_date')->get();
 
         $totalExcludingVat = 0;
         $totalIncludingVat = 0;
@@ -142,7 +141,7 @@ class AtlassianSalesController extends Controller
         }
 
         // Fetch local sales data
-        $localSales = Invoice::with('items')->orderBy('due_date')->get()->flatMap(function ($invoice) {
+        $localSales = Invoice::orderBy('due_date')->get()->flatMap(function ($invoice) {
             return $invoice->items->map(function ($item) use ($invoice) {
                 return [
                     'saleYear' => date('Y', strtotime($invoice->due_date)),
@@ -251,8 +250,7 @@ class AtlassianSalesController extends Controller
             }
 
             // Fetch local sales
-            $localSales = Invoice::with('items')
-                ->orderBy('due_date') // Order invoices by due_date
+            $localSales = Invoice::orderBy('due_date') // Order invoices by due_date
                 ->get()
                 ->flatMap(function ($invoice) {
                     return $invoice->items->map(function ($item) use ($invoice) {
