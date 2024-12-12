@@ -104,7 +104,7 @@ class AtlassianSalesController extends Controller
 
         $uri = "https://marketplace.atlassian.com/rest/2/vendors/{$vendorId}/reporting/sales/transactions/export";
 
-        // Make GET request with basic authentication
+        // Fetch Atlassian sales data
         $response = Http::withBasicAuth($username, $password)
             ->timeout(60)
             ->accept('application/json')
@@ -120,18 +120,16 @@ class AtlassianSalesController extends Controller
 
         $transactions = $response->json();
 
-        // Initialize variables
+        // Initialize variables for Atlassian sales
         $json = ['root' => []];
-        $yearData = ['root' => []];
-
         foreach ($transactions as $transaction) {
-            $vendorAmount = number_format((float)($transaction['purchaseDetails']['vendorAmount'] ?? 0), 2, '.', '');
+            $vendorAmount = (float)($transaction['purchaseDetails']['vendorAmount'] ?? 0);
             $saleDate = $transaction['purchaseDetails']['saleDate'] ?? null;
 
             if ($saleDate) {
                 $saleYear = date("Y", strtotime($saleDate));
 
-                // Aggregate balanceVendor per year
+                // Aggregate Atlassian sales per year
                 if (!isset($json['root'][$saleYear])) {
                     $json['root'][$saleYear] = [
                         'balanceVendor' => 0,
@@ -143,7 +141,33 @@ class AtlassianSalesController extends Controller
             }
         }
 
+        // Fetch local sales data
+        $localSales = Invoice::with('items')->orderBy('due_date')->get()->flatMap(function ($invoice) {
+            return $invoice->items->map(function ($item) use ($invoice) {
+                return [
+                    'saleYear' => date('Y', strtotime($invoice->due_date)),
+                    'amount' => $invoice->total_including_vat,
+                ];
+            });
+        });
+
+        // Aggregate local sales data per year
+        foreach ($localSales as $localSale) {
+            $saleYear = $localSale['saleYear'];
+            $amount = (float)$localSale['amount'];
+
+            if (!isset($json['root'][$saleYear])) {
+                $json['root'][$saleYear] = [
+                    'balanceVendor' => 0,
+                    'saleYear' => $saleYear,
+                ];
+            }
+
+            $json['root'][$saleYear]['balanceVendor'] += $amount;
+        }
+
         // Convert the aggregated data into a flat array
+        $yearData = ['root' => []];
         $i = 0;
         foreach ($json['root'] as $year => $data) {
             $yearData['root'][$i] = $data;
@@ -195,56 +219,77 @@ class AtlassianSalesController extends Controller
 
     public function getCumulativeSales()
     {
-
         // Configurations
         $vendorId = env('ATLASSIAN_VENDOR_ID');
         $username = env('ATLASSIAN_USERNAME');
         $password = env('ATLASSIAN_PASSWORD');
-        
+
         try {
             // Replace with your Atlassian API URL
             $apiUrl = "https://marketplace.atlassian.com/rest/2/vendors/{$vendorId}/reporting/sales/transactions/export?accept=json&order=asc";
 
             // Fetch data from Atlassian API
-            $response = Http::withBasicAuth(env('ATLASSIAN_USERNAME'), env('ATLASSIAN_PASSWORD'))
-                ->get($apiUrl);
+            $response = Http::withBasicAuth($username, $password)->get($apiUrl);
 
             if (!$response->successful()) {
                 return response()->json(['error' => 'Failed to fetch data from Atlassian'], 500);
             }
 
             $salesData = $response->json();
-            $cumulativeData = [];
-
+            $salesByDate = [];
             $cumulativeVendorBalance = 0;
 
+            // Process Atlassian sales
             foreach ($salesData as $transaction) {
                 $saleDate = $transaction['purchaseDetails']['saleDate'] ?? null;
-                $vendorAmount = number_format((float)($transaction['purchaseDetails']['vendorAmount'] ?? 0), 2, '.', '');
+                $vendorAmount = (float)($transaction['purchaseDetails']['vendorAmount'] ?? 0);
 
                 if ($saleDate) {
                     $formattedDate = date('Y-m', strtotime($saleDate)); // Group by Year-Month
-                    $cumulativeVendorBalance += $vendorAmount;
-
-                    // Prepare cumulative data by date
-                    if (!isset($cumulativeData[$formattedDate])) {
-                        $cumulativeData[$formattedDate] = [
-                            'saleDate' => $formattedDate,
-                            'cumulativeVendorBalance' => $cumulativeVendorBalance,
-                        ];
-                    } else {
-                        $cumulativeData[$formattedDate]['cumulativeVendorBalance'] = $cumulativeVendorBalance;
-                    }
+                    $salesByDate[$formattedDate] = ($salesByDate[$formattedDate] ?? 0) + $vendorAmount;
                 }
             }
 
-            // Convert data to a sorted array
-            $cumulativeData = array_values($cumulativeData);
+            // Fetch local sales
+            $localSales = Invoice::with('items')
+                ->orderBy('due_date') // Order invoices by due_date
+                ->get()
+                ->flatMap(function ($invoice) {
+                    return $invoice->items->map(function ($item) use ($invoice) {
+                        return [
+                            'saleDate' => date('Y-m', strtotime($invoice->due_date)), // Use due_date for saleDate
+                            'amount' => (float) $invoice->total_including_vat,       // Ensure amount is numeric
+                        ];
+                    });
+                });
+
+            // Add local sales to salesByDate
+            foreach ($localSales as $localSale) {
+                $saleDate = $localSale['saleDate'];
+                $amount = (float)$localSale['amount'];
+
+                $salesByDate[$saleDate] = ($salesByDate[$saleDate] ?? 0) + $amount;
+            }
+
+            // Sort sales by date
+            ksort($salesByDate);
+
+            // Calculate cumulative balance
+            $cumulativeData = [];
+            foreach ($salesByDate as $saleDate => $amount) {
+                $cumulativeVendorBalance += $amount;
+
+                $cumulativeData[] = [
+                    'saleDate' => $saleDate,
+                    'cumulativeVendorBalance' => $cumulativeVendorBalance,
+                ];
+            }
 
             return response()->json(['root' => $cumulativeData]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 }
 

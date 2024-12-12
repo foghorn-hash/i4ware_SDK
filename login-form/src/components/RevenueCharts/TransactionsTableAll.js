@@ -115,18 +115,6 @@ const TransactionsTableAll = () => {
 
       {/* Bar Chart */}
       <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="saleDate" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="vendorAmount" fill="#007bff" name={strings.name} />
-        </BarChart>
-      </ResponsiveContainer>
-      <h2>{strings.title}</h2>
-
-      {/* Bar Chart */}
-      <ResponsiveContainer width="100%" height={400}>
         <BarChart data={chartDataMerged}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="saleDate" />
