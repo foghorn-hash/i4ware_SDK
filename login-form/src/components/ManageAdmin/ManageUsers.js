@@ -109,7 +109,7 @@ let strings = new LocalizedStrings({
     confirmPasswordRequired: "Vahvista salasana vaaditaan",
     notAssigned: "ei osoitettu",
   },
-  se: {
+  sv: {
     areYouSure: "Är du säker?",
     wantToChangeUserStatus: "Vill du verkligen ändra användarens status?",
     wantToVerifyUser: "Vill du verkligen verifiera användaren?",

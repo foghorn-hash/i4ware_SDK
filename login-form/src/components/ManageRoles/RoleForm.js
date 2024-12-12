@@ -28,7 +28,7 @@ let strings = new LocalizedStrings({
     required: "Vaadittu",
     allDomains: "Kaikki domainit"
   },
-  se: {
+  sv: {
     addRole: "Lägg till roll",
     editRole: "Redigera roll",
     roleName: "Rollnamn",

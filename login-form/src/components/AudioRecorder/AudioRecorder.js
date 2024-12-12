@@ -25,7 +25,7 @@ let strings = new LocalizedStrings({
     female: "Nainen",
     generate_image: "Luo kuva",
   },
-  se: { 
+  sv: { 
     ask_from_ai: "Fråga en AI",
     waveform: "ljudspår",
     volume: "ljudvolym",

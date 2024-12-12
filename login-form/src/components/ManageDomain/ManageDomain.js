@@ -55,7 +55,7 @@ let strings = new LocalizedStrings({
     previous: "Edellinen",
     next: "Seuraava"
   },
-  se: {
+  sv: {
     actions: "Åtgärder",
     extendTrial30Days: "Förläng provperioden med 30 dagar",
     makePaidSubscription: "Gör prenumeration betald",

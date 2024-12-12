@@ -34,6 +34,7 @@ let strings = new LocalizedStrings({
     nameRequired: "Name is required",
     genderRequired: "Gender is required",
     loading: "Loading...",
+    saved: "Your profile details have been saved successfully.",
   },
   fi: {
     myDetails: "Omat tiedot",
@@ -50,8 +51,9 @@ let strings = new LocalizedStrings({
     nameRequired: "Nimi vaaditaan",
     genderRequired: "Sukupuoli vaaditaan",
     loading: "Ladataan...",
+    saved: "Profiilisi on tallennettu onnistuneesti.",
   },
-  se: {
+  sv: {
     myDetails: "Mina uppgifter",
     uploadImage: "Ladda upp bild",
     removeImage: "Ta bort bild",
@@ -66,6 +68,7 @@ let strings = new LocalizedStrings({
     nameRequired: "Namn är obligatoriskt",
     genderRequired: "Kön är obligatoriskt",
     loading: "Laddar...",
+    saved: "Din profilinformation har sparats.",
   }
 });
 
@@ -157,7 +160,7 @@ function MyProfile(props) {
         if(res.status === 200){
           if(res.data.success === true ){
             setData(res.data.user);
-            setShowMessage(res.data.message)
+            setShowMessage(strings.saved)
             setTimeout(()=>{
               setShowMessage(null)
             },2500)

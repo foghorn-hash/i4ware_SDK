@@ -39,7 +39,7 @@ let strings = new LocalizedStrings({
    error_domain_is_expired:"Käyttätunnus ja salasana eivät täsmää tai domainin tilaus ei ole validi tai on umpeuttunut!",
    success_in_login:"Kirjatuminen onnistui. Uudelleen ohjataan kotisivulle..",
  },
- se: {
+ sv: {
   email: "E-postadress",
   enteremail: "Ange e-postadress",
   newershare: "Jag delar aldrig din e-postadress med andra.",

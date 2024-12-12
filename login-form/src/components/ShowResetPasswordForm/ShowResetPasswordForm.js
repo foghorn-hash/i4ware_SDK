@@ -44,7 +44,7 @@ let strings = new LocalizedStrings({
     orLogin: "tai kirjaudu?",
     login: "Kirjaudu sisään"
   },
-  se: {
+  sv: {
     invalidEmail: "Ogiltig e-postadress",
     required: "Obligatoriskt",
     tooLong: "För långt!",

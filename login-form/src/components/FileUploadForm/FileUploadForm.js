@@ -20,7 +20,7 @@ let strings = new LocalizedStrings({
     chose: "Valitsit tiedoston:",
     press: "Paina Lataa ladataksesi sen."
   },
-  se: {
+  sv: {
     uploadStlFile: "Ladda upp STL-fil",
     browse: "Bläddra...",
     upload: "Ladda upp",

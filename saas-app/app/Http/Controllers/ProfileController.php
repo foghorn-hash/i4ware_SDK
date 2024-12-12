@@ -331,10 +331,23 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $domain = DB::table('settings')->updateOrInsert(['setting_key' => $request->setting_key], [
-            "setting_key" => $request->setting_key,
-            "setting_value" => $request->setting_value,
-        ]);
+        $settingFound = DB::table('settings')->where('setting_key', '=', $request->setting_key )->get();
+
+        if (count($settingFound) == 1) {
+            $domain = DB::table('settings')->updateOrInsert(['setting_key' => $request->setting_key], [
+                "setting_key" => $request->setting_key,
+                "setting_value" => $request->setting_value,
+                "updated_at" => Carbon::now(),
+            ]);
+
+        } else {
+            $domain = DB::table('settings')->updateOrInsert(['setting_key' => $request->setting_key], [
+                "setting_key" => $request->setting_key,
+                "setting_value" => $request->setting_value,
+                "created_at" => Carbon::now(),
+                "updated_at" => Carbon::now(),
+            ]);
+        }
 
         return response()->json([
             'success' => true,

@@ -25,7 +25,7 @@ let strings = new LocalizedStrings({
     close: "Sulje",
     end_message: "Ole hyvä ja korjaa virheet ja yritä uudelleen."
   },
-  se: {
+  sv: {
     error: "Felmeddelanden",
     error_messages: "Här är felen i din registreringsformulär:",
     email_error: "E-postadressen har redan tagits",

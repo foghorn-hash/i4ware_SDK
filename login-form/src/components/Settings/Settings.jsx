@@ -14,16 +14,22 @@ let strings = new LocalizedStrings({
     showCaptcha: "Show Captcha in Register Form",
     disableRegistration: "Disable registration from other domains than domain owner",
     settingUpdated: "Setting Updated successfully",
+    disableLicenseDetails: "Disable Lisense Details",
+    enableNetvisor: "Enable Netvisor",
   },
   fi: {
     showCaptcha: "Näytä Captcha rekisteröintilomakkeessa",
     disableRegistration: "Estä rekisteröinti muilta kuin domainin omistajilta",
     settingUpdated: "Asetukset päivitetty",
+    disableLicenseDetails: "Deaktivoi lisenssitiedot",
+    enableNetvisor: "Aktivoi Netvisor",
   },
-  se: {
+  sv: {
     showCaptcha: "Visa Captcha i registreringsformuläret",
     disableRegistration: "Blockera registrering för andra än domänägare",
-    settingUpdated: "Inställningar uppdaterade"
+    settingUpdated: "Inställningar uppdaterade",
+    disableLicenseDetails: "Avaktivera licensinformation",
+    enableNetvisor: "Aktivera Netvisor",
   }
 });
 
@@ -129,6 +135,50 @@ function Settings() {
           />
           <label class="form-check-label" for="defaultCheck2">
             {strings.disableRegistration}
+          </label>
+          <br />
+          <input
+            class="form-check-input"
+            type="checkbox"
+            value=""
+            id="defaultCheck3"
+            onClick={e => {
+              settingUpdate({
+                setting_key: "disable_license_details",
+                setting_value: e.target.checked,
+              });
+
+              setSetting({
+                ...setting,
+                disable_license_details: e.target.checked
+              })
+            }}
+            checked={setting.disable_license_details}
+          />
+          <label class="form-check-label" for="defaultCheck3">
+            {strings.disableLicenseDetails}
+          </label>
+          <br />
+          <input
+            class="form-check-input"
+            type="checkbox"
+            value=""
+            id="defaultCheck4"
+            onClick={e => {
+              settingUpdate({
+                setting_key: "ensable_netvisor",
+                setting_value: e.target.checked,
+              });
+
+              setSetting({
+                ...setting,
+                ensable_netvisor: e.target.checked
+              })
+            }}
+            checked={setting.ensable_netvisor}
+          />
+          <label class="form-check-label" for="defaultCheck4">
+            {strings.enableNetvisor}
           </label>
         </div>
       </div>

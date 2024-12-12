@@ -19,6 +19,12 @@ let strings = new LocalizedStrings({
     upload: "Lataa",
     removeImage: "Poista kuva",
     closeOverlay: "Sulje",
+  },
+  sv: {
+    capturePhoto: "Ta ett foto",
+    upload: "Ladda upp",
+    removeImage: "Ta bort bild",
+    closeOverlay: "Stäng",
   }
 });
 

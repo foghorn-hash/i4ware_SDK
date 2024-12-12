@@ -3,6 +3,22 @@ import './UserDataComponent.css';
 import Axios from 'axios';
 import {API_BASE_URL, ACCESS_TOKEN_NAME} from '../../constants/apiConstants';
 import request from '../../utils/Request';
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+	en: {
+	  welcome: "Welcome",
+	  unauthorized: "You're unauthorized!"
+	},
+	fi: {
+	   welcome: "Tervetuloa",
+	   unauthorized: "Olet luvaton käyttäjä!"
+	},
+	sv: {
+	   welcome: "Välkomna",
+	   unauthorized: "Du är obehörig!"
+	}
+  });
 
 class UserDataComponent extends Component {
         
@@ -19,14 +35,14 @@ class UserDataComponent extends Component {
 				.then(function (response) {
 					if(response.status !== 200){
 					  //redirectToLogin()
-					  message = "you're unauthorized!";
+					  message = strings.unauthorized;
 					} else {
 					  message = response.data.name;
 					}
 				})
 				.catch(function (error) {
 				  //redirectToLogin()
-				  message = "you're unauthorized!";
+				  message = strings.unauthorized;
 				});
 				
 			this.setState({successMessage: message});
@@ -36,7 +52,7 @@ class UserDataComponent extends Component {
 	  
 			return (
                 <div className="userMessage">			
-			        Welcome, {this.state.successMessage}
+			        {strings.welcome}, {this.state.successMessage}
                 </div>				
 			);
 		};

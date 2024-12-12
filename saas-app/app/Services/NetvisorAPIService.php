@@ -103,16 +103,9 @@ class NetvisorAPIService
     public function saveTransaction()
     {
         Transaction::create([
-            'url' => $this->baseUrl,
-            'sender' => $this->sender,
-            'customer_id' => $this->customerId,
             'timestamp' => $this->timestamp,
             'language' => $this->language,
-            'organisation_id' => $this->organisationId,
             'transaction_id' => $this->transactionId,
-            'customer_key' => $this->customerKey,
-            'partner_key' => $this->partnerKey,
-            // 'partner_id' => $this->partnerId,
             'mac' => $this->getMAC($this->baseUrl)
         ]);
     }

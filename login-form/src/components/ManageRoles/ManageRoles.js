@@ -32,7 +32,7 @@ let strings = new LocalizedStrings({
     next: "Seuraava",
     domain: "Domaini"
   },
-  se: {
+  sv: {
     add: "Lägg till",
     numberSign: "#",
     name: "Namn",

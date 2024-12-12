@@ -23,7 +23,7 @@ let strings = new LocalizedStrings({
     support: "tukee HTML5-videota",
     copyright: "| i4ware - SDK | Tekijänoikeudet © i4ware Software 2004-2024, kaikki oikeudet pidätetään. | Versio 1.0.0"
   },
-  se: {
+  sv: {
     video: "För att se den här videon, aktivera JavaScript och överväg att uppgradera",
     web: "din webbläsare till en som",
     support: "stöder HTML5-video",

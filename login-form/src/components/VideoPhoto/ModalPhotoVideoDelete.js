@@ -16,7 +16,7 @@ let strings = new LocalizedStrings({
     yes: "Kyllä, poista se",
     no: "Ei, peruuta",
   },
-  se: {
+  sv: {
     are_you_sure: "Är du säker?",
     are_you_sure_text: "Är du säker på att du vill radera denna post? Denna åtgärd kan inte ångras.",
     yes: "Ja, radera den",

@@ -44,7 +44,7 @@ let strings = new LocalizedStrings({
     required: "Vaadittu",
     mobileNumberStringError: "Matkapuhelinnumeron tulee olla merkkijonona maakoodin kanssa"
   },
-  se: {
+  sv: {
     manageDomain: "Hantera domän",
     technicalContactEmail: "Teknisk kontaktpersons e-post",
     billingContactEmail: "Faktureringskontaktpersons e-post",

@@ -83,7 +83,7 @@ let strings = new LocalizedStrings({
     invalidDomain: "Verkkotunnus on virheellinen",
     passwordsDontMatch: "Salasanan ja vahvistetun salasanan tulee olla sama."
   },
-  se: {
+  sv: {
     email: "E-post",
     enteremail: "Ange din e-postadress",
     newershare: "Jag delar aldrig din e-postadress med andra.",

@@ -26,6 +26,7 @@ import RoleForm from "./components/ManageRoles/RoleForm";
 import STLViewerComponent from "./components/STLViewerComponent/STLViewerComponent";
 import VideoPhoto from "./components/VideoPhoto/VideoPhoto";
 import PusherChat from "./components/PusherChat/PusherChat";
+import Charts from "./components/RevenueCharts/Charts";
 import ErrorBoundary from "./contexts/ErrorBoundry";
 import LOGO from "./52311-logo-transparent.png";
 import Button from 'react-bootstrap/Button';
@@ -48,7 +49,7 @@ let strings = new LocalizedStrings({
     conditions: 'Yllä oleva tekijänoikeusilmoitus ja tämä lupailmoitus on sisällytettävä kaikkiin Ohjelmiston kopioihin tai olennaisiin osiin siitä.',
     warranty: 'OHJELMISTO TARJOTAAN "SELLAISENAAN", ILMAN MINKÄÄNLAISTA TAKUUTA, OLIVAT NE SITTEN NIMELLISIÄ TAI OLETETTUJA, MUKAAN LUKIEN, MUTTA EI RAJOITTUEN, KAUPALLISUUSTAKUUT, TIETTYYN TARKOITUKSEEN SOPIVUUSTAKUUT JA LOUKKAAMATTOMUUSTAKUUT. MISSÄÄN TAPAUKSESSA TEKIJÄT TAI TEKIJÄNOIKEUDEN HALTIJAT EIVÄT OLE VASTUUSSA MISTÄÄN VAATEISTA, VAHINGOISTA TAI MUUSTA VASTUUSTA, OLI KYSE SOPIMUKSESTA, TUOTTAMUKSESTA TAI MUUSTA SEIKASTA, JOKA JOHTUU OHJELMISTON TAI SEN KÄYTÖN TAI MUUN TOIMINNAN YHTEYDESSÄ TAI SIITÄ JOHTUEN.',
   },
-  se: {
+  sv: {
     license: "Licens",
     copyright: "Upphovsrätt © 2022–nutid i4ware Software",
     permission: 'Härmed ges tillstånd, kostnadsfritt, till varje person som erhåller en kopia av denna programvara och tillhörande dokumentationsfiler (nedan kallad "Programvara"), att använda Programvaran utan begränsningar, inklusive rätten att använda, kopiera, modifiera, sammanfoga, publicera, distribuera, underlicensiera och/eller sälja kopior av Programvaran samt att ge personer till vilka Programvaran tillhandahålls tillstånd att göra detsamma, under förutsättning att följande villkor uppfylls:',
@@ -139,6 +140,7 @@ function App() {
               </Route>
               <PrivateRoute path="/home" component={Home} />
               <PrivateRoute path="/my-profile" component={MyProfile} />
+              <PrivateRoute path="/revenue-report" component={Charts} />
               <PrivateRoute path="/manage-users" component={ManageAdmin} />
               <PrivateRoute path="/manage-domains/add" component={ManageDomainForm} />
               <PrivateRoute path="/manage-domains/edit" component={ManageDomainForm} />

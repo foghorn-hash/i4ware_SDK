@@ -21,7 +21,7 @@ let strings = new LocalizedStrings({
     change: "Vaihda",
     close: "Sulje"
   },
-  se: {
+  sv: {
     passwordChange: "Byt lösenord",
     password: "Lösenord",
     confirmPassword: "Bekräfta lösenord",

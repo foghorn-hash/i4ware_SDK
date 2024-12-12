@@ -17,7 +17,7 @@ let strings = new LocalizedStrings({
       goToLogin: "Siirry kirjautumaan?",
       loginHere: "Kirjaudu tästä"
     },
-    se: {
+    sv: {
       emailVerification: "E-postverifiering",
       goToLogin: "Gå till inloggning?",
       loginHere: "Logga in här"

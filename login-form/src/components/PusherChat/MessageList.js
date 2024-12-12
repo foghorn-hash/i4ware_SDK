@@ -17,7 +17,7 @@ let strings = new LocalizedStrings({
     generateSpeech: "Luo puhe",
     stopSpeech: "Pysäytä puhe"
   },
-  se: {
+  sv: {
     your_browser_not_support_video_tag: "Din webbläsare stöder inte videomarkeringen.",
     generateSpeech: "Generera tal",
     stopSpeech: "Stoppa tal"

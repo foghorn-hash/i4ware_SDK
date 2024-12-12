@@ -26,7 +26,7 @@ let strings = new LocalizedStrings({
     loading: "Ladataan...",
     delete: "Poista",
   },
-  se: {
+  sv: {
     viewSTL: "Visa STL",
     modelViewerTitle: "3D-modellvisare",
     close: "Stäng",

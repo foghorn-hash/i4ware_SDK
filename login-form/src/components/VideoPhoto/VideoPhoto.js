@@ -31,7 +31,7 @@ let strings = new LocalizedStrings({
         uploadVideo: "Lataa video",
         captureVideo: "Ota video",
     },
-    se: {
+    sv: {
         videoPhoto: "Video/Foto",
         uploadPhoto: "Ladda upp foto",
         capturePhoto: "Ta foto",

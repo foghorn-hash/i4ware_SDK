@@ -40,7 +40,7 @@ let strings = new LocalizedStrings({
     required: "Vaadittu",
     tooLong: "Liian pitkä!"
   },
-  se: {
+  sv: {
     neverShareEmail: "Vi delar aldrig din e-postadress med någon annan.",
     submit: "Skicka",
     noAccount: "Har du inget konto?",

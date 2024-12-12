@@ -12,6 +12,7 @@ use App\Http\Controllers\StlController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NetvisorController;
+use App\Http\Controllers\AtlassianSalesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +102,14 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/speech', [ChatController::class, 'speech']);
 });
 
-Route::get('/test-netvisor', [NetvisorController::class, 'test']);
+Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router) {
+	Route::get('/test-netvisor', [NetvisorController::class, 'test']);
+	Route::get('/invoices', [NetvisorController::class, 'getSalesInvoices']);
+});
 
-Route::get('/invoices', [NetvisorController::class, 'getSalesInvoices']);
+// Route for Atlassian sales report
+Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router) {
+	Route::get('/sales-report', [AtlassianSalesController::class, 'getSalesReport']);
+	Route::get('/cumulative-sales', [AtlassianSalesController::class, 'getCumulativeSales']);
+	Route::get('/transactions', [AtlassianSalesController::class, 'getTransactions']);
+});

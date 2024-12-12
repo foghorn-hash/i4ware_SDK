@@ -14,7 +14,7 @@ let strings = new LocalizedStrings({
   fi: {
     delete: "Poista",
   },
-  se: {
+  sv: {
     delete: "Radera",
   }
 });

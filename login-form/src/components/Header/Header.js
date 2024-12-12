@@ -30,6 +30,7 @@ let strings = new LocalizedStrings({
     welcome: "Welcome",
     videoPhoto: "Video/Photo",
     chat: "Chat",
+    revenueReport: "Revenues",
   },
   fi: {
     login: "Kirjaudu sisään",
@@ -43,8 +44,9 @@ let strings = new LocalizedStrings({
     welcome: "Tervetuloa",
     videoPhoto: "Video/Kuva",
     chat: "Chatti",
+    revenueReport: "Liikevaihtod",
   },
-  se: {
+  sv: {
     login: "Logga in",
     logout: "Logga ut",
     myProfile: "Min Profil",
@@ -56,6 +58,7 @@ let strings = new LocalizedStrings({
     welcome: "Välkommen",
     videoPhoto: "Video/Foto",
     chat: "Chatt",
+    revenueReport: "Intäkter",
   }
 });
 
@@ -150,7 +153,7 @@ function Header(props) {
         <select id="language-selector" className="language-selector" onChange={handleLocalization}>
           <option value="fi" selected={language === 'fi'}>Finnish</option>
           <option value="en" selected={language === 'en'}>English</option>
-          <option value="se" selected={language === 'se'}>Swedish</option>
+          <option value="sv" selected={language === 'sv'}>Swedish</option>
         </select>
   
         {authState.isLogged ? (
@@ -184,6 +187,7 @@ function Header(props) {
     <Nav className="flex-column">
       {[
         { text: "myProfile", link: "/my-profile" },
+        { text: "revenueReport", link: "/revenue-report" },
         { text: "stlViewer", link: "/stl-viewer" },
         { text: "videoPhoto", link: "/video-photo" },
         { text: "chat", link: "/pusher-chat" },
@@ -264,6 +268,10 @@ function Header(props) {
               {authState.isLogged && (
                 <NavLink className="Header-nav-link" to="/my-profile"
                 onClick={() => setMobileMenuOpen(false)}>{strings.myProfile}</NavLink>
+              )}
+              {authState.isLogged && (
+                <NavLink className="Header-nav-link" to="/revenue-report"  
+                onClick={() => setMobileMenuOpen(false)}>{strings.revenueReport}</NavLink>
               )}
               {authState.isLogged && (
                 <NavLink className="Header-nav-link" to="/stl-viewer"  

@@ -46,7 +46,8 @@ let strings = new LocalizedStrings({
     speech: "is recoding speech...",
     please_capture_image: "Please capture an image to upload",
     please_capture_video: "Please capture a video to upload",
-    please_write_message: "Please write a message to send"
+    please_write_message: "Please write a message to send",
+    generate_image: "Generate Image",
   },
   fi: {
     send: "Lähetä",
@@ -77,9 +78,10 @@ let strings = new LocalizedStrings({
     speech: "nauhoittaa puhetta...",
     please_capture_image: "Olehyvä ja kaappaa kuva ladataksesi",
     please_capture_video: "Olehyvä ja kaappaa video ladataksesi",
-    please_write_message: "Olehyvä ja kirjoita viesti lähettääksesi"
+    please_write_message: "Olehyvä ja kirjoita viesti lähettääksesi",
+    generate_image: "Luo kuva",
   },
-  se: {
+  sv: {
     send: "Skicka",
     typing: "skriver...",
     box: "Skriv meddelande...",
@@ -108,7 +110,8 @@ let strings = new LocalizedStrings({
     speech: "spela in tal...",
     please_capture_image: "Vänligen ta en bild för att ladda upp",
     please_capture_video: "Vänligen ta en video för att ladda upp",
-    please_write_message: "Vänligen skriv ett meddelande att skicka"
+    please_write_message: "Vänligen skriv ett meddelande att skicka",
+    generate_image: "Generera bild",
   }
 });
 
@@ -122,6 +125,7 @@ const PusherChat = () => {
   const [speechIndicator, setSpeechIndicator] = useState('');
   const [aiTypingIndicator, setAiTypingIndicator] = useState('');
   const [isAiEnabled, setIsAiEnabled] = useState(false); // State to track AI checkbox
+  const [isGenerateEnabled, setIsGenerateEnabled] = useState(false); // State to track AI checkbox
   const typingTimeoutRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [showCaptureModal, setCaptureShowModal] = useState(false);
@@ -358,25 +362,65 @@ const PusherChat = () => {
 
   const submitMessage = async (e) => {
     e.preventDefault();
-    await Axios.post(`${API_BASE_URL}/api/chat/messages`, { username, message }, {
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
-    });
-    setMessage('');
-    sendTypingStatus(false);
-    if (isAiEnabled) {
-      // Send "AI is thinking" message
-      setIsThinking(true);
-      await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: true }, {
+    try {
+      const optionSelected = isAiEnabled ? 'ask_from_ai' : isGenerateEnabled ? 'generate_image' : null;
+      await Axios.post(`${API_BASE_URL}/api/chat/messages`, { username, message }, {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
       });
-      generateResponse(); // Call generateResponse if isAiEnabled is true
-    } else {
-      fetchMessages(); // Fetch messages after sending a new message
+      setMessage('');
+      sendTypingStatus(false);
+      if (isAiEnabled) {
+        setIsThinking(true);
+        await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: true }, {
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+        });
+        await generateResponse();
+      } else if (isGenerateEnabled) {
+        setIsThinking(true);
+        await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: true }, {
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+        });
+        await generateImage();
+      } else {
+        fetchMessages(); // Fetch messages after sending user message
+      }
+    } catch (error) {
+      console.error('Failed to send message', error);
+    }
+  };
+
+  const generateImage = async () => {
+    try {
+      const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-image`, { prompt: message, generate: true }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+      const highlightedHTML = response.data.response;
+      const aiResponseMessage = {
+        username: 'AI',
+        generate: true,
+        message: highlightedHTML,
+        created_at: new Date().toISOString(),
+      };
+      await saveMessageToDatabase(aiResponseMessage);
+      setIsThinking(false);
+      await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+      });
+      fetchMessages(); // Fetch messages after generating AI response
+    } catch (error) {
+      console.error('Error:', error);
+      setIsThinking(false);
     }
   };
 
   const handleAiCheckboxChange = (e) => {
     setIsAiEnabled(e.target.checked);
+    if (e.target.checked) setIsGenerateEnabled(false); // Uncheck the other option
+  };
+  
+  const handleGenerateCheckboxChange = (e) => {
+    setIsGenerateEnabled(e.target.checked);
+    if (e.target.checked) setIsAiEnabled(false); // Uncheck the other option
   };
 
   const validateUpload = (image, message) => {
@@ -638,12 +682,23 @@ const saveMessageToDatabase = async (message) => {
 
       <Form className="message-form">
       <Form.Group>
-        <Form.Check
-            type="checkbox"
+          <Form.Check // prettier-ignore
+            type="radio"
             className="message-ai"
+            name="ai-options"
             label={strings.ask_from_ai}
             checked={isAiEnabled}
             onChange={handleAiCheckboxChange}
+            value="ai"
+          />
+          <Form.Check // prettier-ignore
+            type="radio"
+            className="generate-image-ai"
+            name="ai-options"
+            label={strings.generate_image}
+            checked={isGenerateEnabled}
+            onChange={handleGenerateCheckboxChange}
+            value="generate-image"
           />
       </Form.Group>
       <Form.Group style={{ position: 'relative' }}>
