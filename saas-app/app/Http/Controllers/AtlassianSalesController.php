@@ -4,9 +4,90 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
 
 class AtlassianSalesController extends Controller
 {
+    public function getMergedSales()
+    {
+        try {
+            // Fetch Atlassian sales
+            $atlassianSales = $this->fetchTransactions();
+
+            // Fetch local sales (from invoices)
+            $localSales = Invoice::with('items')->get()->flatMap(function ($invoice) {
+                return $invoice->items->map(function ($item) use ($invoice) {
+                    return [
+                        'saleDate' => $invoice->due_date,
+                        'vendorAmount' => $invoice->total_including_vat,
+                        'description' => "Invoice #{$invoice->id}",
+                    ];
+                });
+            });
+
+            // Normalize Atlassian sales
+            $normalizedAtlassianSales = array_map(function ($transaction) {
+                return [
+                    'saleDate' => $transaction['saleDate'],
+                    'vendorAmount' => $transaction['vendorAmount'],
+                    'description' => 'Atlassian Sale',
+                ];
+            }, $atlassianSales['root']);
+
+            // Merge sales data
+            $mergedSales = collect($normalizedAtlassianSales)
+                ->merge($localSales)
+                ->sortBy('saleDate')
+                ->values()
+                ->all();
+
+            // Return merged sales as JSON
+            return response()->json(['root' => $mergedSales]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getCombinedSales()
+    {
+        // Step 1: Fetch local sales
+        $localSales = $this->getLocalSales();
+
+        // Step 2: Fetch Atlassian sales
+        $atlassianSales = $this->fetchTransactions()['root'];
+
+        // Step 3: Combine data
+        $combinedSales = [
+            'localSales' => $localSales,
+            'atlassianSales' => $atlassianSales,
+        ];
+
+        // Step 4: Return combined data
+        return response()->json($combinedSales);
+    }
+
+    private function getLocalSales()
+    {
+        // Fetch invoices and calculate totals
+        $invoices = Invoice::with('items')->get();
+
+        $totalExcludingVat = 0;
+        $totalIncludingVat = 0;
+
+        foreach ($invoices as $invoice) {
+            $totalExcludingVat += $invoice->total_excluding_vat;
+            $totalIncludingVat += $invoice->total_including_vat;
+        }
+
+        return [
+            'totalInvoices' => $invoices->count(),
+            'totalExcludingVat' => number_format($totalExcludingVat, 2),
+            'totalIncludingVat' => number_format($totalIncludingVat, 2),
+            'invoices' => $invoices,
+        ];
+    }
 
     public function getTransactions()
     {
@@ -139,7 +220,7 @@ class AtlassianSalesController extends Controller
 
             foreach ($salesData as $transaction) {
                 $saleDate = $transaction['purchaseDetails']['saleDate'] ?? null;
-                $vendorAmount = (float)($transaction['purchaseDetails']['vendorAmount'] ?? 0);
+                $vendorAmount = number_format((float)($transaction['purchaseDetails']['vendorAmount'] ?? 0), 2, '.', '');
 
                 if ($saleDate) {
                     $formattedDate = date('Y-m', strtotime($saleDate)); // Group by Year-Month

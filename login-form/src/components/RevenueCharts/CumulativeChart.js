@@ -12,6 +12,29 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+// ES6 module syntax
+import LocalizedStrings from 'react-localization';
+
+let strings = new LocalizedStrings({
+  en:{
+    title:"Cumulative Sales Chart",
+    error:"Failed to fetch transactions. Please try again.",
+    loading:"Loading...",
+    name:"Cumulative Vendor Balance",
+  },
+  fi: {
+    title:"Cumulative Sales Chart",
+    error:"Failed to fetch transactions. Please try again.",
+    loading:"Loading...",
+    name:"Cumulative Vendor Balance",
+  },
+  sv: {
+   title: "Cumulative Sales Chart",
+   error:"Failed to fetch transactions. Please try again.",
+   loading:"Loading...",
+   name:"Cumulative Vendor Balance",
+ }
+ });
 
 const CumulativeChart = () => {
   const [chartData, setChartData] = useState([]);
@@ -45,7 +68,7 @@ const CumulativeChart = () => {
           <XAxis dataKey="saleDate" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="cumulativeVendorBalance" fill="#99ff00" name="Cumulative Vendor Balance" />
+          <Bar dataKey="cumulativeVendorBalance" fill="#99ff00" name={strings.name} />
         </BarChart>
       </ResponsiveContainer>
     </div>

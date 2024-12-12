@@ -5,11 +5,11 @@ import CumulativeChart from "./CumulativeChart";
 
 const Charts = () => {
     return (
-      <di>
+      <div>
         <TransactionsTable />
         <TransactionsTableAll />
         <CumulativeChart />
-      </di>
+      </div>
     );
 };
 
