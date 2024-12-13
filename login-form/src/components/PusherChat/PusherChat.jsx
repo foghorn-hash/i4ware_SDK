@@ -389,30 +389,6 @@ const PusherChat = () => {
     }
   };
 
-  const generateImage = async () => {
-    try {
-      const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-image`, { prompt: message, generate: true }, {
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
-      });
-      const highlightedHTML = response.data.response;
-      const aiResponseMessage = {
-        username: 'AI',
-        generate: true,
-        message: highlightedHTML,
-        created_at: new Date().toISOString(),
-      };
-      await saveMessageToDatabase(aiResponseMessage);
-      setIsThinking(false);
-      await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
-      });
-      fetchMessages(); // Fetch messages after generating AI response
-    } catch (error) {
-      console.error('Error:', error);
-      setIsThinking(false);
-    }
-  };
-
   const handleAiCheckboxChange = (e) => {
     setIsAiEnabled(e.target.checked);
     if (e.target.checked) setIsGenerateEnabled(false); // Uncheck the other option
@@ -601,60 +577,57 @@ const PusherChat = () => {
 
 const generateResponse = async () => {
   try {
-    const token = localStorage.getItem(ACCESS_TOKEN_NAME);
-    const response = await Axios.post(
-      `${API_BASE_URL}/api/chat/generate-response`,
-      { prompt: message },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    console.log(response.data.response);
-
-    const messgeForHighliht = response.data.response;
-
-    const highlightedHTML = messgeForHighliht;
-
-    // Create the AI response message object with highlighted message
+    const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-response`, { prompt: message }, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+    });
+    const highlightedHTML = response.data.response;
     const aiResponseMessage = {
       username: 'AI',
-      message: highlightedHTML, // Use the highlighted response
+      message: highlightedHTML,
+      generate: false,
       created_at: new Date().toISOString(),
     };
-
-    // Save the AI response message to the database
     await saveMessageToDatabase(aiResponseMessage);
-
-    // Update the messages state
-    //setMessages((prevMessages) => [aiResponseMessage, ...prevMessages]);
-
-    // Handle AI response (display in chat, etc.)
     setIsThinking(false);
     await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     });
-
-    // Fetch updated messages
-    fetchMessages();
+    fetchMessages(); // Fetch messages after generating AI response
   } catch (error) {
     console.error('Error:', error);
+    setIsThinking(false);
+  }
+};
+
+const generateImage = async () => {
+  try {
+    const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-image`, { prompt: message, generate: true }, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+    });
+    const highlightedHTML = response.data.response;
+    const aiResponseMessage = {
+      username: 'AI',
+      generate: true,
+      message: highlightedHTML,
+      created_at: new Date().toISOString(),
+    };
+    await saveMessageToDatabase(aiResponseMessage);
+    setIsThinking(false);
+    await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+    });
+    fetchMessages(); // Fetch messages after generating AI response
+  } catch (error) {
+    console.error('Error:', error);
+    setIsThinking(false);
   }
 };
 
 const saveMessageToDatabase = async (message) => {
   try {
-    const token = localStorage.getItem(ACCESS_TOKEN_NAME);
     await Axios.post(`${API_BASE_URL}/api/chat/save-message`, message, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     });
-    console.log('Message saved to database successfully:', message);
   } catch (error) {
     console.error('Error saving message to database:', error);
   }

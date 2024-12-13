@@ -55,33 +55,8 @@ const TransactionsTableAll = () => {
     }
 
   useEffect(() => {
-    fetchTransactions();
     fetchMergedTransactions();
   }, []);
-
-  const fetchTransactions = async () => {
-    try {
-      const response = await axios.get(
-        API_BASE_URL + "/api/reports/transactions"
-      ); // Replace with your Laravel API URL
-      const data = response.data.root;
-
-      // Prepare chart data
-      const formattedChartData = data.map((item) => ({
-        saleDate: item.saleDate,
-        vendorAmount: parseFloat(item.vendorAmount),
-        balanceVendor: parseFloat(item.balanceVendor),
-      }));
-
-      setTransactions(data);
-      setChartData(formattedChartData);
-    } catch (err) {
-      setError(strings.error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
 
   const fetchMergedTransactions = async () => {
     try {

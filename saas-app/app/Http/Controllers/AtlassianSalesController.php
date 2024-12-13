@@ -15,14 +15,12 @@ class AtlassianSalesController extends Controller
             $atlassianSales = $this->fetchTransactions();
 
             // Fetch local sales (from invoices)
-            $localSales = Invoice::orderBy('due_date')->get()->flatMap(function ($invoice) {
-                return $invoice->items->map(function ($item) use ($invoice) {
+            $localSales = Invoice::orderBy('due_date')->get()->map(function ($invoice) {
                     return [
                         'saleDate' => $invoice->due_date,
                         'vendorAmount' => $invoice->total_including_vat,
                         'description' => "Invoice #{$invoice->id}",
                     ];
-                });
             });
 
             // Normalize Atlassian sales
@@ -141,13 +139,11 @@ class AtlassianSalesController extends Controller
         }
 
         // Fetch local sales data
-        $localSales = Invoice::orderBy('due_date')->get()->flatMap(function ($invoice) {
-            return $invoice->items->map(function ($item) use ($invoice) {
+        $localSales = Invoice::orderBy('due_date')->get()->map(function ($invoice) {
                 return [
                     'saleYear' => date('Y', strtotime($invoice->due_date)),
                     'amount' => $invoice->total_including_vat,
                 ];
-            });
         });
 
         // Aggregate local sales data per year
@@ -252,13 +248,11 @@ class AtlassianSalesController extends Controller
             // Fetch local sales
             $localSales = Invoice::orderBy('due_date') // Order invoices by due_date
                 ->get()
-                ->flatMap(function ($invoice) {
-                    return $invoice->items->map(function ($item) use ($invoice) {
+                ->map(function ($invoice) {
                         return [
                             'saleDate' => date('Y-m', strtotime($invoice->due_date)), // Use due_date for saleDate
                             'amount' => (float) $invoice->total_including_vat,       // Ensure amount is numeric
                         ];
-                    });
                 });
 
             // Add local sales to salesByDate
