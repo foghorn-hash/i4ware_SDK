@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Invoice;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AtlassianSalesController extends Controller
 {
@@ -90,6 +92,40 @@ class AtlassianSalesController extends Controller
     {
         // Set response header type
         return response()->json($this->fetchTransactions());
+    }
+
+    public function addTransaction(Request $request)
+    {
+        
+      
+            $token = Str::random(64);
+            DB::table('invoices')->insert([[
+                'customer_id' => $request->customerID , 
+                'invoice_number' => $request->invoiceNumber ,
+                'total_excluding_vat' => $request->totalExcludingVat ,
+                'vat_percentage' => $request->vatPercentage ,
+                'due_date' => $request->dueDate ,
+                'status' => $request->status ,
+                ]]);
+
+        return response()->json([
+            'Details' => $request->invoiceNumber,
+            'data' => 'Transcation created!'
+        ], 200);
+    }
+
+
+    public function addCustomer(Request $request)
+    {
+        
+      
+            $token = Str::random(64);
+            DB::table('customers')->insert([['id' => $token , 'name' => $request->customerName]]);
+
+        return response()->json([
+            'Customer' => $request->customerName,
+            'data' => 'Customer is created!'
+        ], 200);
     }
 
     public function getSalesReport()

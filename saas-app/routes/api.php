@@ -114,4 +114,7 @@ Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router)
 	Route::get('/transactions', [AtlassianSalesController::class, 'getTransactions']);
 	Route::get('/combined-sales', [AtlassianSalesController::class, 'getCombinedSales']);
 	Route::get('/merged-sales', [AtlassianSalesController::class, 'getMergedSales']);
+	Route::post('/customer', [AtlassianSalesController::class, 'addCustomer']);
+	Route::post('/transaction', [AtlassianSalesController::class, 'addTransaction']);
+
 });
