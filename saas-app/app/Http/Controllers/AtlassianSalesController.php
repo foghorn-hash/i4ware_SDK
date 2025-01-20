@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
 
 class AtlassianSalesController extends Controller
 {
@@ -97,16 +99,30 @@ class AtlassianSalesController extends Controller
     public function addTransaction(Request $request)
     {
         
+        $totalIncludingVat = $request->totalExcludingVat + (($request->totalExcludingVat*$request->vatPercentage)/100);
       
-            $token = Str::random(64);
+        try{ 
             DB::table('invoices')->insert([[
                 'customer_id' => $request->customerID , 
                 'invoice_number' => $request->invoiceNumber ,
                 'total_excluding_vat' => $request->totalExcludingVat ,
                 'vat_percentage' => $request->vatPercentage ,
+                'total_including_vat' => $totalIncludingVat ,
                 'due_date' => $request->dueDate ,
                 'status' => $request->status ,
+                'created_at' => date('Y-m-d H:i:s'), 
+                'updated_at' => date('Y-m-d H:i:s')
                 ]]);
+
+            }
+            catch (\Throwable $th) {
+
+                return response()->json([
+                    'success' => false,
+                    'data' => $th->getMessage(),
+                ], 400);
+
+        }
 
         return response()->json([
             'Details' => $request->invoiceNumber,
@@ -114,18 +130,32 @@ class AtlassianSalesController extends Controller
         ], 200);
     }
 
+    public function getAllCustomer(){
+
+            $customers = DB::table('customers')->select('*')->get();
+
+            return response()->json(['data' => $customers ], 200);
+
+    }
 
     public function addCustomer(Request $request)
     {
-        
-      
-            $token = Str::random(64);
-            DB::table('customers')->insert([['id' => $token , 'name' => $request->customerName]]);
+            
+                $exists = DB::table('customers')->where('name', $request->customerName)->exists();
 
-        return response()->json([
-            'Customer' => $request->customerName,
-            'data' => 'Customer is created!'
-        ], 200);
+                if ($exists) {
+                    return response()->json(['message' => 'Customer name already exists'], 409);
+                }
+      
+            try{ 
+            DB::table('customers')->insert([[
+               'name' => $request->customerName, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]]);
+            }
+            catch (\Throwable $th) {
+              
+                return response()->json(['message' => $th->getMessage()], 409);
+        }
+        return response()->json([ 'message' => 'Customer is created!'  ], 201);
     }
 
     public function getSalesReport()
