@@ -3,7 +3,10 @@ import Button from 'react-bootstrap/Button';
 import {API_BASE_URL, API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
 import axios from "axios";
 
-const CustomerForm= () =>{
+
+const CustomerForm= ({handleClose}) =>{
+  
+
 
     const sendDetailsToServer = async (e) => {
         e.preventDefault();
@@ -12,12 +15,20 @@ const CustomerForm= () =>{
         console.log("Sending values to server:", formDataObj);
         
         
-     
-       await axios.post(API_BASE_URL + "/api/reports/customer", formDataObj).then( (response) => {
-            console.log("Full response:", response); 
-
-          })}
+        try{
+        const response = await axios.post(API_BASE_URL + "/api/reports/customer", formDataObj);
+        if(response.status === 201 ){
+            e.target.reset();
+            alert("Customer added successfully!");
+            handleClose();
+        } }catch(err){  alert(err.response.data.data)}
+            
+    
+    
+    }
     return(
+        <>
+       
 
 
 
@@ -30,7 +41,7 @@ const CustomerForm= () =>{
             <Button variant="primary" type="submit">
                 Submit
             </Button>
-        </Form>
+        </Form></>
         
     )}
 

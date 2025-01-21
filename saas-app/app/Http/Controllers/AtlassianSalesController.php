@@ -99,6 +99,12 @@ class AtlassianSalesController extends Controller
     public function addTransaction(Request $request)
     {
         
+        $exists = DB::table('invoices')->where('invoice_number', $request->invoiceNumber)->exists();
+
+                if ($exists) {
+                    return response()->json(['data' => 'Invoice number already exists'], 409);
+                }
+
         $totalIncludingVat = $request->totalExcludingVat + (($request->totalExcludingVat*$request->vatPercentage)/100);
       
         try{ 
@@ -118,7 +124,7 @@ class AtlassianSalesController extends Controller
             catch (\Throwable $th) {
 
                 return response()->json([
-                    'success' => false,
+                    
                     'data' => $th->getMessage(),
                 ], 400);
 
@@ -144,7 +150,7 @@ class AtlassianSalesController extends Controller
                 $exists = DB::table('customers')->where('name', $request->customerName)->exists();
 
                 if ($exists) {
-                    return response()->json(['message' => 'Customer name already exists'], 409);
+                    return response()->json(['data' => 'Customer name already exists'], 409);
                 }
       
             try{ 
@@ -153,10 +159,11 @@ class AtlassianSalesController extends Controller
             }
             catch (\Throwable $th) {
               
-                return response()->json(['message' => $th->getMessage()], 409);
+                return response()->json(['data' => $th->getMessage()], 400);
         }
         return response()->json([ 'message' => 'Customer is created!'  ], 201);
     }
+
 
     public function getSalesReport()
     {

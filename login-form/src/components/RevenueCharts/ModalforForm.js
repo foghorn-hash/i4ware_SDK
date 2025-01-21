@@ -15,7 +15,7 @@ return (
           <Modal.Title>{formType}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        {formType === "Customer" ? <CustomerForm/> : <TransactionForm/>}
+        {formType === "Customer" ? <CustomerForm handleClose={handleClose}/> : <TransactionForm handleClose={handleClose}/>}
         </Modal.Body>
 
       </Modal></div>
