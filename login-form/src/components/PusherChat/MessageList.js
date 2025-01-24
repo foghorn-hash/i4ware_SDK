@@ -6,6 +6,9 @@ import { PlayFill, StopFill } from 'react-bootstrap-icons';
 import CustomModal from './CustomModal'; // Import the custom modal component
 import LocalizedStrings from 'react-localization';
 
+let currentDate;
+let prevDate;
+
 let strings = new LocalizedStrings({
   en: {
     your_browser_not_support_video_tag: "Your browser does not support the video tag.",
@@ -172,13 +175,32 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
     }
   };
 
+
+  const checkDate = (currentDate) => {
+  if(currentDate !== prevDate){
+    prevDate = currentDate
+    return currentDate
+  }
+  else{
+    return null
+  }
+
+
+  }
   return (
     <div className="messages-list">
       {[...processedMessages].reverse().map((msg, index) => (
+        
         <div key={index} className="message">
+
+          <div className='date-line'>{checkDate(new Date(msg.formatted_created_at).toLocaleDateString())}</div>
+
           <div className='message-date'>
+         
             <strong>{msg.username}: </strong>
-            <i>{msg.formatted_created_at}</i>
+            <i>{new Date(msg.formatted_created_at).toLocaleTimeString()}</i>
+            
+
             <button className="message-TTS" onClick={() => handleToggleSpeech(msg.message, msg.gender, msg.id)}>
               {currentMessageId === msg.id ? <StopFill /> : <PlayFill />}
             </button>

@@ -181,6 +181,11 @@
 	padding-bottom: 10px;
 	border-bottom: 2px #2600ff96 solid;
   }
+  .date-line{
+	background-color: #262626;
+	text-align: center;
+
+  }
 
 .message-avatar {
 	width: 100px;
