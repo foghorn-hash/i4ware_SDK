@@ -648,10 +648,15 @@ const saveMessageToDatabase = async (message) => {
       <Button variant="primary" className='message-record-audio-button' onClick={handleRecordAudioShowModal}>
         <Mic /> {strings.speech_to_text}
       </Button>
-      <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
-      {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
-      {speechIndicator && <div className="typing-indicator">{speechIndicator}</div>}
-      {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}
+      <div className='message-area'>
+        <MessageList messages={messages} DefaultMaleImage={DefaultMaleImage} DefaultFemaleImage={DefaultFemaleImage} />
+        <div className='active-list'>
+          {typingIndicator && <div className="typing-indicator">{typingIndicator}</div>}
+          {speechIndicator && <div className="typing-indicator">{speechIndicator}</div>}
+          {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}
+        </div>
+      </div>
+
 
       <Form className="message-form">
       <Form.Group>
