@@ -203,10 +203,16 @@ const PusherChat = () => {
     }
   };
 
-  const startRecording = () => {
-    mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
-      mimeType: 'video/webm',
+  const startRecording = async () => {
+    // Request access to the webcam and microphone
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
     });
+
+
+    mediaRecorderRef.current = new MediaRecorder(stream);
+    
     mediaRecorderRef.current.addEventListener(
       'dataavailable',
       handleDataAvailable
