@@ -134,6 +134,7 @@ const PusherChat = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [imageSrc, setImageSrc] = useState(null);
   const [imageVideoSrc, setImageVideoSrc] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
@@ -553,16 +554,20 @@ const PusherChat = () => {
       formData.append('message', message);
       formData.append('file', blob, 'captured-video.webm');
 
+      setUploadProgress(0);
+
       await Axios.post(API_BASE_URL + '/api/chat/upload-video', formData, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
           'Content-Type': 'multipart/form-data',
-        }
+        },onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        },
       })
         .then(response => {
           console.log(response)
-          setvideoUploading(false);
-          handleCaptureVideoCloseModal(); 
+          setvideoUploading(false); 
           console.log("Video uploaded successfully");
           Swal.fire({
             icon: 'success',
@@ -570,6 +575,8 @@ const PusherChat = () => {
             text: strings.video_capture_successful,  
           }).then((result) => {
             if (result.isConfirmed) {
+              setUploadProgress(0);
+              //handleCaptureVideoCloseModal();
               fetchMessages();
             }
           });
@@ -811,6 +818,10 @@ const saveMessageToDatabase = async (message) => {
           {error && <div className='error-message' dangerouslySetInnerHTML={{ __html: error }} />}
           <button className='message-upload-button' onClick={uploadVideo}>{strings.upload}</button>
         </form>
+        <div style={{ marginTop: "10px" }}>
+          <progress value={uploadProgress} max="100"></progress>
+          <p>Uploading: {uploadProgress}%</p>
+        </div>
       </Modal.Body>
       <Modal.Footer className='message-upload-modal'>
         <Button variant="secondary" onClick={handleCaptureVideoCloseModal}>
