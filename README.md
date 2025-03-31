@@ -41,11 +41,13 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/ArianeJDB"><img src="https://avatars2.githubusercontent.com/u/45037868?v=4" width="100" height="100" alt=""/><br /><sub><b>Ari</b></sub></a><br /><a href="https://github.com/codeclassifiers/loginforms/commits?author=ArianeJDB" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/DeepaPrasanna"><img src="https://avatars1.githubusercontent.com/u/54895192?v=4" width="100" height="100" alt=""/><br /><sub><b>Deepa Prasanna</b></sub></a><br /><a href="https://github.com/codeclassifiers/loginforms/commits?author=DeepaPrasanna" title="Code">💻</a></td>
 	<td align="center"><a href="https://github.com/foghorn-hash"><img src="https://avatars.githubusercontent.com/u/66802573?v=4" width="100" height="100" alt=""/><br /><sub><b>Matti Kiviharju</b></sub></a><br /><a href="#" title="Code">💻</a></td>
-        <td align="center"><a href="https://github.com/ParkanonTulikukko"><img src="https://avatars.githubusercontent.com/u/60129091?v=4" width="100" height="100" alt=""/><br /><sub><b>Heikki Kuivala</b></sub></a><br /><a href="#" title="Code">💻</a></td>
-        <td align="center"><a href="https://github.com/bot80085"><img src="https://avatars.githubusercontent.com/u/108549262?v=4" width="100" height="100" alt=""/><br /><sub><b>Johan Mikola</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+        <td align="center"><a href="https://github.com/ParkanonTulikukko"><img src="https://avatars.githubusercontent.com/u/60129091?v=4" width="100" height="100" alt=""/><br /><sub><b>Heikki Kuivala</b></sub></a><br /><a href="#" title="Code">💻</a></td>		  
+	  </tr>
+   <tr>
+        <td align="center"><a href="https://github.com/rohitchelat2"><img src="https://avatars.githubusercontent.com/u/157241551?v=4" width="100" height="100" alt=""/><br /><sub><b>Rohit Chelat</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+	   <td align="center"><a href="https://github.com/bot80085"><img src="https://avatars.githubusercontent.com/u/108549262?v=4" width="100" height="100" alt=""/><br /><sub><b>Johan Mikola</b></sub></a><br /><a href="#" title="Code">💻</a></td>
         <td align="center"><a href="https://github.com/blackberry2024"><img src="https://avatars.githubusercontent.com/u/163501390?v=4" width="100" height="100" alt=""/><br /><sub><b>Halit Berat</b></sub></a><br /><a href="#" title="Code">💻</a></td>
         <td align="center"><a href="https://github.com/Makuzaza"><img src="https://avatars.githubusercontent.com/u/142216993?v=4" width="100" height="100" alt=""/><br /><sub><b>Maria Kuznetsova</b></sub></a><br /><a href="#" title="Code">💻</a></td>
-        <td align="center"><a href="https://github.com/rohitchelat2"><img src="https://avatars.githubusercontent.com/u/157241551?v=4" width="100" height="100" alt=""/><br /><sub><b>Rohit Chelat</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   </tr>
 </table>
 
