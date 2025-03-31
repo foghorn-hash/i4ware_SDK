@@ -4,8 +4,6 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 A project to demonstrate usage of basic react.js hooks
 
-Join my YouTube Channel Gold Level Member to get personal trading, teaching and Full-Stack Developer help by MARK HAMILTON: https://www.youtube.com/watch?v=6SfdOKwuBDk
-
 ### Leave a feedback
 If you found this project useful, then make sure to star the project.
 
