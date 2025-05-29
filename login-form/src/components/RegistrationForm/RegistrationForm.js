@@ -196,7 +196,7 @@ function RegistrationForm(props) {
         }
 
       })
-  },[])
+  },[]);
 
   const sendDetailsToServer = (values, formProps) => {
     setLoading(true);

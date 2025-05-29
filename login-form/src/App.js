@@ -1,4 +1,4 @@
-import React, {useState, useContext} from "react";
+import React, {useEffect, useState, useContext} from "react";
 import { render } from "react-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
@@ -31,6 +31,7 @@ import ErrorBoundary from "./contexts/ErrorBoundry";
 import LOGO from "./52311-logo-transparent.png";
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
+import request from "./utils/Request";
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
 
@@ -62,6 +63,10 @@ function App() {
   const [title, updateTitle] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [show, setShow] = useState(false);
+  const [setting, setSetting] = React.useState({
+      disable_license_details: false
+    });
+  
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -81,6 +86,29 @@ function App() {
   } else {
     strings.setLanguage(localization);
   }
+
+  useEffect(()=>{
+      // setLoading(true);
+      request()
+        .get("/api/settings")
+        .then(res => {
+          if(res.status == 200 ){
+            // setLoading(false);
+              const obj = {};
+              for (let i = 0; i < res.data.data.length; i++) {
+                  const element = res.data.data[i];
+                  if(element.setting_value == "1"){
+                      obj[element.setting_key] = true 
+                  }
+                  if(element.setting_value == "0"){
+                      obj[element.setting_key] = false 
+                  }
+              }
+              setSetting(obj);
+          }
+  
+        })
+    },[]);
 
   return (
     <Router>
@@ -155,6 +183,8 @@ function App() {
             </Switch>
           </Container>
         </AuthProvider>
+        {!setting.disable_license_details &&
+        <>
         <Offcanvas style={{ width: "350px"}} show={show} onHide={handleClose} placement="end">
           <Offcanvas.Header>
             <Button variant="close" aria-label="Close" onClick={handleClose}></Button>
@@ -170,9 +200,12 @@ function App() {
         <Button className="App-license-button" variant="primary" onClick={handleShow}>
           {strings.license}
         </Button>
+        </>
+        }
       </div>
       </ErrorBoundary>
     </Router>
+    
   );
 }
 
