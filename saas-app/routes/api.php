@@ -103,7 +103,6 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 });
 
 Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router) {
-	Route::get('/test-netvisor', [NetvisorController::class, 'test']);
 	Route::get('/invoices', [NetvisorController::class, 'getSalesInvoices']);
 });
 

@@ -62,10 +62,10 @@ class NetvisorAPIService
         $parameters = array_map('strval', $parameters);
 
         // Encode all parameters to ISO-8859-15
-        // $encodedParameters = array_map(function($param) {
-        // $encodedParam = mb_convert_encoding($param, 'ISO-8859-15', 'UTF-8');
-        // return $encodedParam;
-        // }, $parameters);
+        //$encodedParameters = array_map(function($param) {
+            //$encodedParam = mb_convert_encoding($param, 'ISO-8859-15', 'UTF-8');
+            //return $encodedParam;
+        //}, $parameters);
 
         // Concatenate the encoded parameters into a single string
         $sha256string = implode('&', $parameters);
@@ -161,44 +161,27 @@ class NetvisorAPIService
         return $this->sendRequest('GET', '/salesinvoicelist.nv');
     }
 
-    public function getSomeData()
+    public function addCustomer()
     {
-        try {
-            $url = $this->baseUrl . '/customerlist.nv';
-            
-            $headers = $this->getHeaders($url);
-            // Log the MAC explicitly in getSomeData
-            $mac = $this->getMAC($url);
-            Log::info('MAC used in getSomeData: ' . $mac);
-            Log::info('Netvisor API request headers', $headers);
-    
-            $response = $this->client->get($url, [
-                'headers' => $headers,
-            ]);
-    
-            $body = $response->getBody()->getContents();
-            $statusCode = $response->getStatusCode();
-            $responseHeaders = $response->getHeaders();
-    
-            Log::info('Netvisor API response', [
-                'url' => $url,
-                'status_code' => $statusCode,
-                'headers' => $responseHeaders,
-                'body' => $body
-            ]);
-    
-        // Convert the XML response to a PHP array
-            $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA);
-            $json = json_encode($xml);
-            $dataArray = json_decode($json, true);
-
-            Log::info('Data retrieved from Netvisor API: ' . json_encode($dataArray));
-
-            return $dataArray;
-        } catch (RequestException $e) {
-            Log::error('Netvisor API request failed', ['message' => $e->getMessage()]);
-            return ['error' => 'Failed to connect to Netvisor API'];
-        }
+        return $this->sendRequest('POST', '/customer.nv', [
+            'customer' => [
+                'customerbaseinformation' => [
+                    'internalidentifier' => '', 
+                    'externalidentifier' => '',
+                    'organizationunitnumber' => 1,
+                    'name' => 'New Customer',
+                    'nameextension' => 'NewCust',
+                    'streetaddress' => 'NewCust',
+                    'additionaladdressline' => '',
+                    'country' => 'FI',
+                    'postnumber' => '00100',
+                    'city' => 'Helsinki',
+                    'email' => '',
+                    'phone' => '',
+                    ]
+                ]
+            ]        
+        );
     }
     
     // Add more methods as needed for other API endpoints
