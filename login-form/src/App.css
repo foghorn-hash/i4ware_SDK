@@ -52,57 +52,6 @@ body {
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
-.animated-card 
-{
-	position: relative;
-	background: #1c1c1c;
-  width: 82vh;
-  min-height: 62vh;
-	border-radius: 8px;
-	overflow: hidden;
-}
-
-.animated-card::before 
-{
-	content: '';
-	z-index: 1;
-	position: absolute;
-	top: -50%;
-	left: -50%;
-  width: 62vh;
-  min-height: 62vh;
-	transform-origin: bottom right;
-	background: linear-gradient(0deg,transparent,#45f3ff,#45f3ff);
-	animation: animate 6s linear infinite;
-}
-
-.animated-card::after 
-{
-	content: '';
-	z-index: 1;
-	position: absolute;
-	top: -50%;
-	left: -50%;
-  width: 62vh;
-  min-height: 62vh;
-	transform-origin: bottom right;
-	background: linear-gradient(0deg,transparent,#45f3ff,#45f3ff);
-	animation: animate 6s linear infinite;
-	animation-delay: -3s;
-}
-
-@keyframes animate 
-{
-	0%
-	{
-		transform: rotate(0deg);
-	}
-	100%
-	{
-		transform: rotate(360deg);
-	}
-}
-
 .loading-screen {
   position: fixed;
   top: 0;

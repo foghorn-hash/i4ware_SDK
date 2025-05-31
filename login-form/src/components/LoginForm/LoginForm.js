@@ -155,7 +155,6 @@ function LoginForm(props) {
   return (
     <>
     <div className="d-flex justify-content-center">
-      <div className="animated-card"> 
         <div className="card col-12 col-lg-4 login-card mt-2 hv-center">
           {error && (
             <div
@@ -222,7 +221,6 @@ function LoginForm(props) {
         </div>
         <div className="login-form-spacer"></div>
       </div>
-    </div>
     <div className="login-form-spacer"></div>
     </>
   );

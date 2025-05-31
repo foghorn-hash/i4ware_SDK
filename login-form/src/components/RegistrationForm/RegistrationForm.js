@@ -13,6 +13,7 @@ import "./../../captcha.css";
 import LocalizedStrings from 'react-localization';
 import ErrorRegistration from "./ErrorRegistration";
 import axios from "axios";
+import Button from "react-bootstrap/esm/Button";
 
 let strings = new LocalizedStrings({
   en:{
@@ -58,8 +59,8 @@ let strings = new LocalizedStrings({
     neverShareCity: "We'll never share your city with anyone else.",
     zipCode: "Zip code",
     neverShareZipCode: "We'll never share your zip code with anyone else.",
-    vatId: "VAT ID",
-    neverShareVatId: "We'll never share your VAT ID with anyone else.",
+    vatId: "Corporate ID",
+    neverShareVatId: "We'll never share your Corporate ID with anyone else.",
     language: "Language",
     finnish: "Finnish",
     swedish: "Swedish",
@@ -223,6 +224,16 @@ function RegistrationForm(props) {
     disable_registeration_from_others: false
   });
 
+  const redirectToEula = () => {
+    props.updateTitle("EULA");
+    props.history.push("/eula");
+  };
+
+  const redirectToPrivacy = () => {
+    props.updateTitle("Privacy Policy");
+    props.history.push("/privacy-policy");
+  };
+
   useEffect(()=>{
     // setLoading(true);
     request()
@@ -332,7 +343,6 @@ function RegistrationForm(props) {
   return (
     <div className={"registeration d-flex justify-content-center " }>
         {/* {loading && <div className={"loading-view"} ></div>} */}
-      <div className="animated-card">
         <div className="card col-12 col-lg-6 register-card mt-2">
           <div
             className="alert alert-success mt-2"
@@ -439,16 +449,6 @@ function RegistrationForm(props) {
                     </small>
                   </div>
                   <div className="form-group text-left">
-                    <TextInput
-                      label={strings.county}
-                      placeholder="Finlan"
-                      name="vatId"
-                    />
-                    <small id="domainHelp" className="form-text text-muted">
-                      {strings.neverShareVatId}
-                    </small>
-                  </div>
-                  <div className="form-group text-left">
                     <label for="gender" className="select-gender-label">
                       {strings.gender}
                     </label>
@@ -550,8 +550,8 @@ function RegistrationForm(props) {
                     }} />
                     <label className="form-check-label" for="term">
                       {strings.agreedOn}{" "}
-                      <a href="https://www.i4ware.fi/privacy-policy/" target="_blank">{strings.privacyPolicy}</a>{" "}
-                      {strings.and} <a href="https://www.i4ware.fi/data-processing-agreement/" target="_blank"> {strings.dataProcessingAgreement} </a>
+                      <span className="loginText" onClick={redirectToPrivacy}>{strings.privacyPolicy}</span>{" "}
+                      {strings.and} <span className="loginText" onClick={redirectToEula}>{strings.dataProcessingAgreement}</span>
                     </label>
                   </div>
 
@@ -572,7 +572,6 @@ function RegistrationForm(props) {
               {strings.loginHere}
             </span>
           </div>
-        </div>
       </div>
     <ErrorRegistration 
     show={modalIsOpen} 
