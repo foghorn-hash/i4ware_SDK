@@ -13,7 +13,6 @@ class CreateTransactionsTable extends Migration
             $table->string('timestamp');
             $table->string('language');
             $table->string('transaction_id');
-            $table->string('mac');
             $table->timestamps();
         });
     }

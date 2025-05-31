@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {withRouter} from "react-router-dom";
 import {ACCESS_TOKEN_NAME, API_BASE_URL, API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
 import axios from "axios";
@@ -7,6 +7,8 @@ import request from "../../utils/Request";
 import {AuthContext} from "../../contexts/auth.contexts";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../tube-spinner.svg";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import LocalizedStrings from 'react-localization';
 
 let strings = new LocalizedStrings({
@@ -39,6 +41,12 @@ function Settings() {
   const [setting, setSetting] = React.useState({
     show_captcha: false
   });
+  const [showModal, setShowModal] = useState(false);
+
+  const handleShowModal = () => setShowModal(true);
+  const handleCloseModal = () => {
+    setShowModal(false);
+  }  
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -181,6 +189,8 @@ function Settings() {
             {strings.enableNetvisor}
           </label>
         </div>
+        <br />
+        <Button>Connect to Netvisor Test</Button>
       </div>
       </PermissionGate>
 	  }

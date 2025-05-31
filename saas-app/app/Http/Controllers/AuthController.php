@@ -23,18 +23,22 @@ use Illuminate\Support\Carbon;
 use Mail;
 use Illuminate\Support\Facades\View;
 use Storage;
+use App\Services\NetvisorAPIService;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
 
 	//private $apiToken;
 	protected $user;
+	protected $netvisorAPI;
 
-	public function __construct()
+	public function __construct(NetvisorAPIService $netvisorAPI)
 	{
 		//$this->apiToken = uniqid(base64_encode(Str::random(40)));
 		$this->middleware("auth:api", ["except" => ["showResetPasswordForm", "submitForgetPasswordForm", "login", "register", "logout", "verifyAccount", "checkIfEmailVerified", "me", "submitResetPasswordForm"]]);
 		$this->user = new User;
+		$this->netvisorAPI = $netvisorAPI;
 	}
 
 	/**
@@ -143,42 +147,44 @@ class AuthController extends Controller
 
 					if (is_null($verifyUser) || $verifyUser->verified == 1 ) {
 
-						if (
-							DB::table('domains')
-								->select('domain', 'valid_before')
-								->where('domain', $user->domain)
-								->whereDate('valid_before_at', '<=', Carbon::now())
-								->count()
-						) {
-							return response()->json([
-								'success' => false,
-								'data' => 'Username and password do not match or domain subscription is not valid or expired!'
-							], 200);
-
-						} else {
-							// Login and "remember" the given user...
-							//Auth::login($user, true);
-							//Setting login response
-							$accessToken = auth()->user()->createToken('authToken')->accessToken;
-							/*$success['token'] = $this->apiToken;
-							$success['name'] =  $user->name;
-							return response()->json([
-							'success' => true,
-							'data' => $success
-							], 200);*/
-							$user = auth()->user();
-							if(is_null($user->role_id)){
+						// Skip domain validity check if user's domain is the admin domain
+						if ($user->domain !== env('APP_DOMAIN_ADMIN')) {
+							if (
+								DB::table('domains')
+									->select('domain', 'valid_before')
+									->where('domain', $user->domain)
+									->whereDate('valid_before_at', '<=', Carbon::now())
+									->count()
+							) {
 								return response()->json([
 									'success' => false,
-									'data' => 'Role is not assign to your account.'
+									'data' => 'Username and password do not match or domain subscription is not valid or expired!'
 								], 200);
 							}
-							
-							
-							$responseMessage = "Login Successful";
-							
-							return $this->respondWithToken($accessToken, $responseMessage, auth()->user());
 						}
+
+						// Login and "remember" the given user...
+						//Auth::login($user, true);
+						//Setting login response
+						$accessToken = auth()->user()->createToken('authToken')->accessToken;
+						/*$success['token'] = $this->apiToken;
+						$success['name'] =  $user->name;
+						return response()->json([
+						'success' => true,
+						'data' => $success
+						], 200);*/
+						$user = auth()->user();
+						if(is_null($user->role_id)){
+							return response()->json([
+								'success' => false,
+								'data' => 'Role is not assign to your account.'
+							], 200);
+						}
+						
+						
+						$responseMessage = "Login Successful";
+						
+						return $this->respondWithToken($accessToken, $responseMessage, auth()->user());
 
 					} else {
 						return response()->json([
@@ -367,6 +373,91 @@ class AuthController extends Controller
 
 				DB::commit();
 
+				$customerBaseInfo = [ // Base information about the customer is aggregated in a single 'customerbaseinformation' key
+					//'internalidentifier' => '', // automatic (if given and customer code is left empty, the next free customer number is used automatically)
+					'externalidentifier' => $request->vatId, // Business ID or private customer's social security number
+					'organizationunitnumber' => '', // OVT identifier (Receiver's OVT identifier, if the information differs from the company's business ID)
+					'name' => $request->company,
+					//'nameextension' => 'NewCust',
+					'streetaddress' => $request->address1,
+					'additionaladdressline' => $request->address2,
+					'city' => $request->city,
+					'postnumber' => $request->zipCode,
+					'country' => 'FI', // Country code (if not provided, Finland is the default) and country code format is ISO-3166
+					//'customergroupname' => '', // Customer group name, customer is linked to the group by name. If the group does not exist, it is created.
+					'phonenumber' => $request->phone,
+					//'faxnumber' => '',
+					'email' => $request->email,
+					'homepageuri' => '',
+					'isactive' => 1, // 1 = active, 0 = inactive
+					'isprivatecustomer' => 0, // 1 = private customer, 0 = business customer
+					'emailinvoicingaddress' => $request->email, // Email invoicing address, must be a valid email address. Can be provided as a list separated by ;
+				];
+
+				$finvoiceDetails = [ // Aggregated in a single 'customerfinvoicedetails' key
+					'finvoiceaddress' => '',
+					'finvoiceroutercode' => '',
+					
+				];
+
+				$deliveryDetails = [ // Aggregated in a single 'customerdeliverydetails' key
+					'deliveryname' => '',
+					'deliverystreetaddress' => '',
+					'deliverycity' => '',
+					'deliverypostnumber' => '',
+					'deliverycountry' => '', // Country code format, always ISO-3166
+				];
+
+				$contactDetails = [ //  	Aggregated in a single 'customercontactdetails' key
+					'contactname' => '',
+					'contactperson' => '',
+					'contactpersonemail' => '',
+					'contactpersonphone' => '',
+					'deliverycountry' => '',
+					'defaultsellername' => '',
+				];
+
+				$defaultsalesperson = [ // Aggregated in a single 'defaultsalesperson' key
+					'salespersonid' => '', // Salesperson ID, if not provided, the default salesperson is used
+				];
+
+				$additionalInfo = [
+					'comment' => '',
+					'customeragreementIdentifier' => '',
+					'usecreditorreferencenumber' => 0, // Use RF reference for invoicing, 1=on 0=off
+					'useorderreferencenumber' => 0, // Use order reference number for invoicing, 1=on 0=off
+					'invoicinglanguage' => '', // Customer's invoicing language, FI, EN, or SE. If this information is not provided in the message, the default language for the invoice is Finnish
+					'invoiceprintchannelformat' => 2, // Invoice print format, 1 = Invoice + bank transfer, 2 = Invoice
+					'yourdefaultreference' => '',
+					'defaulttextbeforeinvoicelines' => '',
+					'defaulttextafterinvoicelines' => '',
+					'defaultpaymentterm' => ' 	14 days net',
+					'defaultsecondname' => '',
+					'paymentinterest' => '',
+					'balancelimit' => '',
+					'receivablesmanagementautomationrule' => '',
+					'FactoringAccount' => '',
+					'taxhandlingtype' => '',
+					'eustandardfinvoice' => '',
+					'defaultsalesperson' => $defaultsalesperson, // Default salesperson information
+				];
+
+				$dimensionDetails = [
+					'dimension' => [
+						'dimensionname' => '',
+						'dimensionitem' => '',
+					]
+				];
+				
+				try {
+					$response = $this->netvisorAPI->addCustomer($customerBaseInfo, $finvoiceDetails, $deliveryDetails, $contactDetails, $additionalInfo, $dimensionDetails);
+					Log::info('Customer added successfully: ' . json_encode($response));
+					return response()->json($response, 201);
+				} catch (\Exception $e) {
+					Log::error('Error adding customer: ' . $e->getMessage());
+					return response()->json(['error' => 'Failed to add customer'], 500);
+				}
+
 				try {
 
 					$id = DB::table('users')
@@ -376,9 +467,9 @@ class AuthController extends Controller
 
 					$token = Str::random(64);
 
-				DB::table('users_verify')->insert([
-					['user_id' => $id, 'token' => $token, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]
-				]);
+					DB::table('users_verify')->insert([
+						['user_id' => $id, 'token' => $token, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]
+					]);
 
 				try {
 					Mail::send('emails.userverify', ['token' => $token], function ($message) use ($request) {
@@ -457,10 +548,12 @@ class AuthController extends Controller
 				'email_verified_at' => now()
 			]);
 		}
+
 		return response()->json([
 			'success' => true,
 			'data' => $message
 		], 200);
+		
 	}
 
 	/**

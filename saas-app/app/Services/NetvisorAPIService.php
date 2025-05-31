@@ -55,8 +55,6 @@ class NetvisorAPIService
             $this->customerKey,
             $this->partnerKey,
         );
-        
-        Log::info('Original parameters: ', $parameters);
 
         // Ensure all parameters are string type
         $parameters = array_map('strval', $parameters);
@@ -69,8 +67,6 @@ class NetvisorAPIService
 
         // Concatenate the encoded parameters into a single string
         $sha256string = implode('&', $parameters);
-
-        Log::info('Concatenated and encoded string for MAC: ' . $sha256string);
         
         // Calculate the HMAC using SHA-256
         $h_mac = hash("sha256", $sha256string);
@@ -106,34 +102,36 @@ class NetvisorAPIService
             'timestamp' => $this->timestamp,
             'language' => $this->language,
             'transaction_id' => $this->transactionId,
-            'mac' => $this->getMAC($this->baseUrl)
         ]);
     }
 
-    public function sendRequest($method, $endpoint, $data = [])
+    public function sendRequest($method, $endpoint, $data = [], $sendAsXml = false)
     {
         $url = $this->baseUrl . $endpoint;
 
         try {
             $mac = $this->getMAC($url);
-            Log::info('MAC used in sendRequest: ' . $mac);
-            Log::info('Sending request to Netvisor API', ['method' => $method, 'url' => $url, 'data' => $data]);
-            $response = $this->client->request($method, $url, [
-                'headers' => $this->getHeaders($url),
-                'json' => $data,
-            ]);
+            $headers = $this->getHeaders($url);
+            $options = ['headers' => $headers];
+
+            if ($sendAsXml) {
+                $xmlBody = ArrayToXml::convert($data, 'root', true, 'UTF-8'); // You can change 'root' to 'customer' if needed
+                $options['body'] = $xmlBody;
+                $options['headers']['Content-Type'] = 'text/xml';
+            } else {
+                $options['json'] = $data;
+            }
+
+            $response = $this->client->request($method, $url, $options);
 
             $this->saveTransaction();
         
             $body = $response->getBody()->getContents();
-            Log::info('Raw response body: ' . $body);
     
              // Parse the XML response
             $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA);
             $json = json_encode($xml);
             $responseArray = json_decode($json, true);
-
-            Log::info('Parsed Sales invoices response: ' . json_encode($responseArray));
 
             return $responseArray;
             // return json_decode($response->getBody(), true);
@@ -153,7 +151,7 @@ class NetvisorAPIService
     
     public function getProducts()
     {
-        return $this->sendRequest('GET', '/productlist.nv');
+        return $this->sendtRequest('GET', '/productlist.nv');
     }
 
     public function getSalesInvoices()
@@ -161,26 +159,25 @@ class NetvisorAPIService
         return $this->sendRequest('GET', '/salesinvoicelist.nv');
     }
 
-    public function addCustomer()
+    public function addCustomer(array $customerBaseInfo, array $finvoiceDetails = [], array $deliveryDetails = [], array $contactDetails = [], array $additionalInfo = [], array $dimensionDetails = [])
     {
-        return $this->sendRequest('POST', '/customer.nv', [
-            'customer' => [
-                'customerbaseinformation' => [
-                    'internalidentifier' => '', 
-                    'externalidentifier' => '',
-                    'organizationunitnumber' => 1,
-                    'name' => 'New Customer',
-                    'nameextension' => 'NewCust',
-                    'streetaddress' => 'NewCust',
-                    'additionaladdressline' => '',
-                    'country' => 'FI',
-                    'postnumber' => '00100',
-                    'city' => 'Helsinki',
-                    'email' => '',
-                    'phone' => '',
+        return $this->sendRequest('POST', '/customer.nv?method=add', [
+            'customer' => [ // Customer details is aggregated in a single 'customer' key
+                'customerbaseinformation' => $customerBaseInfo, // Base information about the customer
+                ],[
+                'customerfinvoicedetails' => $finvoiceDetails, // Aggregated in a single 'customerfinvoicedetails' key
+                ],[
+                'customerdeliverydetails' => $deliveryDetails
+                ],[
+                'customercontactdetails' => $contactDetails
+                ],[
+                'customeradditionalinformation' => $additionalInfo
+                ],[
+                'customerdimensiondetails' => [
+                        $dimensionDetails
                     ]
-                ]
-            ]        
+                ],
+            ]          
         );
     }
     

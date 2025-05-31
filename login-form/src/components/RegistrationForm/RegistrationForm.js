@@ -47,7 +47,23 @@ let strings = new LocalizedStrings({
     tooShort: "Too Short!",
     invalidEmail: "Invalid email",
     invalidDomain: "Domain is invalid",
-    passwordsDontMatch: "Password and Confirm password should be same."
+    passwordsDontMatch: "Password and Confirm password should be same.",
+    company: "Company",
+    neverShareCompany: "We'll never share your company name with anyone else.",
+    address1: "Address line 1",
+    neverShareAddress1: "We'll never share your address with anyone else.",
+    address2: "Address line 2",
+    neverShareAddress2: "We'll never share your address with anyone else.",
+    city: "City",
+    neverShareCity: "We'll never share your city with anyone else.",
+    zipCode: "Zip code",
+    neverShareZipCode: "We'll never share your zip code with anyone else.",
+    vatId: "VAT ID",
+    neverShareVatId: "We'll never share your VAT ID with anyone else.",
+    language: "Language",
+    finnish: "Finnish",
+    swedish: "Swedish",
+    english: "English",
   },
   fi: {
     email:"Sähköposti",
@@ -81,7 +97,23 @@ let strings = new LocalizedStrings({
     tooShort: "Liian lyhyt!",
     invalidEmail: "Virheellinen sähköpostiosoite",
     invalidDomain: "Verkkotunnus on virheellinen",
-    passwordsDontMatch: "Salasanan ja vahvistetun salasanan tulee olla sama."
+    passwordsDontMatch: "Salasanan ja vahvistetun salasanan tulee olla sama.",
+    company: "Yritys",
+    neverShareCompany: "Emme koskaan jaa yrityksesi nimeä kenenkään muun kanssa.",
+    address1: "Katuosoite",
+    neverShareAddress1: "Emme koskaan jaa osoitettasi kenenkään muun kanssa.",
+    address2: "Osoiterivi 2",
+    neverShareAddress2: "Emme koskaan jaa osoiteriviä 2 kenenkään muun kanssa.",
+    city: "Kaupunki",
+    neverShareCity: "Emme koskaan jaa kaupunkiasi kenenkään muun kanssa.",
+    zipCode: "Postinumero",
+    neverShareZipCode: "Emme koskaan jaa postinumeroasi kenenkään muun kanssa.",
+    vatId: "Y-tunnus",
+    neverShareVatId: "Emme koskaan jaa Y-tunnustasi kenenkään muun kanssa.",
+    language: "Kieli",
+    finnish: "Suomi",
+    swedish: "Ruotsi",
+    english: "Englanti",
   },
   sv: {
     email: "E-post",
@@ -115,7 +147,23 @@ let strings = new LocalizedStrings({
     tooShort: "För kort!",
     invalidEmail: "Ogiltig e-postadress",
     invalidDomain: "Ogiltig domän",
-    passwordsDontMatch: "Lösenorden matchar inte."
+    passwordsDontMatch: "Lösenorden matchar inte.",
+    company: "Företag",
+    neverShareCompany: "Vi delar aldrig ditt företagsnamn med någon annan.",
+    address1: "Adressrad 1",
+    neverShareAddress1: "Vi delar aldrig din adress med någon annan.",
+    address2: "Adressrad 2",
+    neverShareAddress2: "Vi delar aldrig din adressrad 2 med någon annan.",
+    city: "Stad",
+    neverShareCity: "Vi delar aldrig din stad med någon annan.",
+    zipCode: "Postnummer",
+    neverShareZipCode: "Vi delar aldrig ditt postnummer med någon annan.",
+    vatId: "Momsnummer",
+    neverShareVatId: "Vi delar aldrig ditt momsnummer med någon annan.",
+    language: "Språk",
+    finnish: "Finska",
+    swedish: "Svenska",
+    english: "Engelska",
 }
  });
 
@@ -323,6 +371,81 @@ function RegistrationForm(props) {
                     />
                     <small id="domainHelp" className="form-text text-muted">
                       {strings.neverShareName}
+                    </small>
+                  </div>
+                  <div className="form-group text-left">
+                    <TextInput
+                      label={strings.company}
+                      placeholder="Company Ltd"
+                      name="company"
+                    />
+                    <small id="domainHelp" className="form-text text-muted">
+                      {strings.neverShareCompany}
+                    </small>
+                  </div>
+                  <div className="form-group text-left">
+                    <TextInput
+                      label={strings.vatId}
+                      placeholder="1234567-8"
+                      name="vatId"
+                    />
+                    <small id="domainHelp" className="form-text text-muted">
+                      {strings.neverShareVatId}
+                    </small>
+                  </div>
+                  <div className="form-group text-left">
+                    <TextInput
+                      label={strings.address1}
+                      placeholder="Street 123"
+                      name="addressLine1"
+                    />
+                    <small id="domainHelp" className="form-text text-muted">
+                      {strings.neverShareAddress1}
+                    </small>
+                  </div>
+                  <div className="form-group text-left">
+                    <TextInput
+                      label={strings.address2}
+                      placeholder="Apartment 456"
+                      name="addressLine2"
+                    />
+                    <small id="domainHelp" className="form-text text-muted">
+                      {strings.neverShareAddress2}
+                    </small>
+                  </div>
+                  <div className="form-group text-left">
+                    <TextInput
+                      label={strings.city}
+                      placeholder="Tampere"
+                      name="city"
+                    />
+                    <small id="domainHelp" className="form-text text-muted">
+                      {strings.neverShareCity}
+                    </small>
+                  </div>
+                  <div className="form-group text-left">
+                    <label for="language" className="select-gender-label">
+                      {strings.language}
+                    </label>
+                    <br />
+                    <Field className="select-gender" as="select" name="language">
+                      <option value="FI">{strings.finnish}</option>
+                      <option value="SE">{strings.swedish}</option>
+                      <option value="SE">{strings.english}</option>
+                    </Field>
+                    <br />
+                    <small id="domainHelp" className="form-text text-muted">
+                      {strings.neverShareGender}
+                    </small>
+                  </div>
+                  <div className="form-group text-left">
+                    <TextInput
+                      label={strings.county}
+                      placeholder="Finlan"
+                      name="vatId"
+                    />
+                    <small id="domainHelp" className="form-text text-muted">
+                      {strings.neverShareVatId}
                     </small>
                   </div>
                   <div className="form-group text-left">
