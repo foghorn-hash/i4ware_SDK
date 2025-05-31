@@ -373,7 +373,7 @@ class AuthController extends Controller
 
 				DB::commit();
 
-				$customerBaseInfo = [ // Base information about the customer is aggregated in a single 'customerbaseinformation' key
+				/*$customerBaseInfo = [ // Base information about the customer is aggregated in a single 'customerbaseinformation' key
 					//'internalidentifier' => '', // automatic (if given and customer code is left empty, the next free customer number is used automatically)
 					'externalidentifier' => $request->vatId, // Business ID or private customer's social security number
 					'organizationunitnumber' => '', // OVT identifier (Receiver's OVT identifier, if the information differs from the company's business ID)
@@ -456,7 +456,7 @@ class AuthController extends Controller
 				} catch (\Exception $e) {
 					Log::error('Error adding customer: ' . $e->getMessage());
 					return response()->json(['error' => 'Failed to add customer'], 500);
-				}
+				}*/
 
 				try {
 
