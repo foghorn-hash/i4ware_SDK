@@ -1,13 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {withRouter} from "react-router-dom";
-import {ACCESS_TOKEN_NAME, API_BASE_URL, API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
-import axios from "axios";
-import UserDataComponent from "../../components/UserDataComponent/UserDataComponent";
+import {API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
 import request from "../../utils/Request";
-import {AuthContext} from "../../contexts/auth.contexts";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../tube-spinner.svg";
-import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import LocalizedStrings from 'react-localization';
 
@@ -36,17 +32,10 @@ let strings = new LocalizedStrings({
 });
 
 function Settings() {
-  const {authState, authActions} = React.useContext(AuthContext);
   const [message, setMessage] = React.useState(null);
   const [setting, setSetting] = React.useState({
     show_captcha: false
-  });
-  const [showModal, setShowModal] = useState(false);
-
-  const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => {
-    setShowModal(false);
-  }  
+  }); 
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -62,14 +51,14 @@ function Settings() {
     request()
       .get("/api/settings")
       .then(res => {
-        if(res.status == 200 ){
+        if(res.status === 200 ){
             const obj = {};
             for (let i = 0; i < res.data.data.length; i++) {
                 const element = res.data.data[i];
-                if(element.setting_value == "1"){
+                if(element.setting_value === "1"){
                     obj[element.setting_key] = true 
                 }
-                if(element.setting_value == "0"){
+                if(element.setting_value === "0"){
                     obj[element.setting_key] = false 
                 }
             }
@@ -190,7 +179,7 @@ function Settings() {
           </label>
         </div>
         <br />
-        <Button>Connect to Netvisor Test</Button>
+        <Button>Verrify Netvisor</Button>
       </div>
       </PermissionGate>
 	  }
