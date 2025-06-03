@@ -61,6 +61,8 @@ let strings = new LocalizedStrings({
     rohto_expectation_label: "Expectation (what kind of answer do you expect?)",
     rohto_expectation_placeholder: "Short, long, step-by-step, technical, etc.",
     rohto_for_prompt: "My question is",
+    rohto_disable: "Disable ROHTO",
+    rohto_enable: "Enable ROHTO",
   },
   fi: {
     send: "Lähetä",
@@ -105,6 +107,8 @@ let strings = new LocalizedStrings({
     rohto_expectation_label: "Odotus (millaista vastausta odotat?)",
     rohto_expectation_placeholder: "Lyhyt, pitkä, vaiheittainen, tekninen jne.",
     rohto_for_prompt: "Kysymykseni on",
+    rohto_disable: "Poista ROHTO käytöstä",
+    rohto_enable: "Ota ROHTO käyttöön",
   },
   sv: {
     send: "Skicka",
@@ -149,6 +153,8 @@ let strings = new LocalizedStrings({
     rohto_expectation_label: "Förväntning (vilken typ av svar förväntar du dig?)",
     rohto_expectation_placeholder: "Kort, långt, steg-för-steg, tekniskt, etc.",
     rohto_for_prompt: "Min fråga är",
+    rohto_disable: "Inaktivera ROHTO",
+    rohto_enable: "Aktivera ROHTO",
   }
 });
 
@@ -730,7 +736,7 @@ const saveMessageToDatabase = async (message) => {
       <Form.Check
         className='rohto-checkbox'
         type="checkbox"
-        label={isRohtoEnabled ? "Disable ROHTO" : "Enable ROHTO"}
+        label={isRohtoEnabled ? strings.rohto_disable : strings.rohto_enable}
         checked={isRohtoEnabled}
         onChange={toggleRohto}
         style={{ float: 'right', marginRight: 10, marginBottom: 10 }}
@@ -756,7 +762,7 @@ const saveMessageToDatabase = async (message) => {
         </div>
       </div>
       <Form className="message-form">
-      <Form.Group>
+        <Form.Group>
           <Form.Check // prettier-ignore
             type="radio"
             className="message-ai"
