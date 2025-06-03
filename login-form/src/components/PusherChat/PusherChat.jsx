@@ -15,6 +15,7 @@ import { Mic, Camera, CameraVideo, Upload } from 'react-bootstrap-icons';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA, API_DEFAULT_LANGUAGE, API_PUSHER_KEY, API_PUSHER_CLUSTER } from "../../constants/apiConstants";
 import LocalizedStrings from 'react-localization';
 import { CloseButton } from 'react-bootstrap';
+import Offcanvas from 'react-bootstrap/Offcanvas';
 
 let strings = new LocalizedStrings({
   en: {
@@ -48,6 +49,18 @@ let strings = new LocalizedStrings({
     please_capture_video: "Please capture a video to upload",
     please_write_message: "Please write a message to send",
     generate_image: "Generate Image",
+    // ROHTO engineering form fields
+    rohto_role_label: "Role (who am I / who am I asking you to be?)",
+    rohto_role_placeholder: "E.g. 'Act as an AI assistant' or 'I am a lawyer...'",
+    rohto_problem_label: "Problem (what is the problem?)",
+    rohto_problem_placeholder: "Describe your problem or question",
+    rohto_history_label: "History (what is the background of the situation?)",
+    rohto_history_placeholder: "Provide background information, e.g. what you have already tried",
+    rohto_goal_label: "Goal (what do you want to achieve?)",
+    rohto_goal_placeholder: "Describe what you hope to achieve",
+    rohto_expectation_label: "Expectation (what kind of answer do you expect?)",
+    rohto_expectation_placeholder: "Short, long, step-by-step, technical, etc.",
+    rohto_for_prompt: "My question is",
   },
   fi: {
     send: "Lähetä",
@@ -80,6 +93,18 @@ let strings = new LocalizedStrings({
     please_capture_video: "Olehyvä ja kaappaa video ladataksesi",
     please_write_message: "Olehyvä ja kirjoita viesti lähettääksesi",
     generate_image: "Luo kuva",
+    // ROHTO engineering form fields
+    rohto_role_label: "Rooli (kuka minä olen / ketä pyydän olemaan?)",
+    rohto_role_placeholder: "Esim. 'Toimi tekoälyavustajana' tai 'Olen lakimies...'",
+    rohto_problem_label: "Ongelma (mikä on ongelma?)",
+    rohto_problem_placeholder: "Kuvaa ongelmasi tai kysymyksesi",
+    rohto_history_label: "Historia (mikä tausta tilanteella on?)",
+    rohto_history_placeholder: "Anna taustatietoa, esim. mitä olet jo kokeillut",
+    rohto_goal_label: "Tavoite (mitä haluat saavuttaa?)",
+    rohto_goal_placeholder: "Kerro mitä toivot tulokseksi",
+    rohto_expectation_label: "Odotus (millaista vastausta odotat?)",
+    rohto_expectation_placeholder: "Lyhyt, pitkä, vaiheittainen, tekninen jne.",
+    rohto_for_prompt: "Kysymykseni on",
   },
   sv: {
     send: "Skicka",
@@ -112,6 +137,18 @@ let strings = new LocalizedStrings({
     please_capture_video: "Vänligen ta en video för att ladda upp",
     please_write_message: "Vänligen skriv ett meddelande att skicka",
     generate_image: "Generera bild",
+    // ROHTO engineering form fields
+    rohto_role_label: "Roll (vem är jag / vem ber jag dig vara?)",
+    rohto_role_placeholder: "T.ex. 'Agera som AI-assistent' eller 'Jag är jurist...'",
+    rohto_problem_label: "Problem (vad är problemet?)",
+    rohto_problem_placeholder: "Beskriv ditt problem eller din fråga",
+    rohto_history_label: "Historia (vad är bakgrunden till situationen?)",
+    rohto_history_placeholder: "Ge bakgrundsinformation, t.ex. vad du redan har försökt",
+    rohto_goal_label: "Mål (vad vill du uppnå?)",
+    rohto_goal_placeholder: "Beskriv vad du hoppas uppnå",
+    rohto_expectation_label: "Förväntning (vilken typ av svar förväntar du dig?)",
+    rohto_expectation_placeholder: "Kort, långt, steg-för-steg, tekniskt, etc.",
+    rohto_for_prompt: "Min fråga är",
   }
 });
 
@@ -145,6 +182,12 @@ const PusherChat = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [error, setError] = useState('');
   const [highlight, setHighlight] = useState({ button: false, textarea: false });
+  const [role, setRole] = useState('');
+  const [problem, setProblem] = useState('');
+  const [history, setHistory] = useState('');
+  const [goal, setGoal] = useState('');
+  const [expectation, setExpectation] = useState('');
+  const [showPromptOverlay, setShowPromptOverlay] = useState(false);
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -589,18 +632,33 @@ const PusherChat = () => {
 };
 
 const generateResponse = async () => {
+  const fullPrompt = `
+    ${strings.rohto_role_label}: ${role}
+    ${strings.rohto_problem_label}: ${problem}
+    ${strings.rohto_history_label}: ${history}
+    ${strings.rohto_goal_label}: ${goal}
+    ${strings.rohto_expectation_label}: ${expectation}
+    ${strings.rohto_for_prompt}: ${message}
+  `.trim();
   try {
-    const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-response`, { prompt: message }, {
+    const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-response`, { prompt: fullPrompt }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     });
-    const highlightedHTML = response.data.response;
+    // 1. Generate the Word file in backend
+      const resp = await Axios.post(`${API_BASE_URL}/api/chat/word/send`, { prompt: message, generate: false }, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
+    });
+    // Optionally, save the message to DB as before
+    const highHTML = resp.data.message;
     const aiResponseMessage = {
       username: 'AI',
-      message: highlightedHTML,
       generate: false,
+      message: highHTML,
       created_at: new Date().toISOString(),
+      filename: resp.data.filename || 'generated.docx', // Assuming backend returns a filename
+      type: 'docx',
     };
-    await saveMessageToDatabase(aiResponseMessage);
+    await saveMessageToDatabase(aiResponseMessage, 'docx');
     setIsThinking(false);
     await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
@@ -649,6 +707,11 @@ const saveMessageToDatabase = async (message) => {
   return (
     <>
     <div className="chat-container">
+      <Button
+        variant="outline-secondary"
+        style={{ float: 'right', marginBottom: 10 }}
+        onClick={() => setShowPromptOverlay(true)}
+      >ROHTO</Button>
       <Button variant="primary" className='message-upload-button' onClick={handleShowModal}>
          <Upload /> {strings.upload_image_with_message}
       </Button>
@@ -669,8 +732,6 @@ const saveMessageToDatabase = async (message) => {
           {isThinking && <div className="typing-indicator">{strings.aiTypingIndicator}</div>}
         </div>
       </div>
-
-
       <Form className="message-form">
       <Form.Group>
           <Form.Check // prettier-ignore
@@ -708,6 +769,70 @@ const saveMessageToDatabase = async (message) => {
         <Button variant='primary' onClick={submitMessage}>{strings.send}</Button>
       </Form>
     </div>
+    {/* ROHTO Prompt Overlay */}
+    <Offcanvas
+      show={showPromptOverlay}
+      onHide={() => setShowPromptOverlay(false)}
+      placement="end"
+    >
+      <Offcanvas.Header closeButton>
+        <Offcanvas.Title>ROHTO AI Prompt</Offcanvas.Title>
+      </Offcanvas.Header>
+      <Offcanvas.Body>
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Label>{strings.rohto_role_label}</Form.Label>
+            <Form.Control
+              className='prompt-textarea'
+              as="textarea"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder={strings.rohto_role_placeholder}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>{strings.rohto_problem_label}</Form.Label>
+            <Form.Control
+              className='prompt-textarea'
+              as="textarea"
+              value={problem}
+              onChange={(e) => setProblem(e.target.value)}
+              placeholder={strings.rohto_problem_placeholder}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>{strings.rohto_history_label}</Form.Label>
+            <Form.Control
+              className='prompt-textarea'
+              as="textarea"
+              value={history}
+              onChange={(e) => setHistory(e.target.value)}
+              placeholder={strings.rohto_history_placeholder}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>{strings.rohto_goal_label}</Form.Label>
+            <Form.Control
+              className='prompt-textarea'
+              as="textarea"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              placeholder={strings.rohto_goal_placeholder}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>{strings.rohto_expectation_label}</Form.Label>
+            <Form.Control
+              className='prompt-textarea'
+              as="textarea"
+              value={expectation}
+              onChange={(e) => setExpectation(e.target.value)}
+              placeholder={strings.rohto_expectation_placeholder}
+            />
+          </Form.Group>
+        </Form>
+      </Offcanvas.Body>
+    </Offcanvas>
     <Modal show={showModal} onHide={handleCloseModal}>
       <Modal.Header className='message-upload-modal' closeButton>
         <Modal.Title className='massage-upload-title'>{strings.upload_image_with_message}</Modal.Title>

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import Axios from 'axios';
 import HighlightedResponse from './HighlightedResponse';
-import { PlayFill, StopFill } from 'react-bootstrap-icons';
+import { PlayFill, StopFill, Download } from 'react-bootstrap-icons';
 import CustomModal from './CustomModal'; // Import the custom modal component
 import LocalizedStrings from 'react-localization';
 
@@ -204,6 +204,17 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
             <button className="message-TTS" onClick={() => handleToggleSpeech(msg.message, msg.gender, msg.id)}>
               {currentMessageId === msg.id ? <StopFill /> : <PlayFill />}
             </button>
+            {msg.download_link && (
+              <a
+                href={msg.download_link}
+                className="message-download-btn"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginLeft: '10px' }}
+              >
+                <Download />
+              </a>
+            )}
           </div>
           <div className='massage-container'>
             <img src={msg.profilePicUrl || msg.defaultImg} className='message-avatar' alt={`Profile of ${msg.username}`} />

@@ -148,4 +148,30 @@ class OpenAIService
 
         return $result['text'] ?? '';
     }
+
+    public function askChatGPT(string $prompt): string
+    {
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => 'You are a helpful assistant. Respond with plain text only, suitable for direct inclusion in a Word document. Do not use markdown, code blocks, or any special formatting.'
+            ],
+            [
+                'role' => 'user',
+                'content' => $prompt
+            ],
+        ];
+
+        $response = $this->client->post('/v1/chat/completions', [
+            'json' => [
+                'model' => 'gpt-4o',
+                'messages' => $messages,
+                'max_tokens' => $this->maxTokens ?? 1024,
+            ],
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+
+        return $result['choices'][0]['message']['content'] ?? '';
+    }
 }

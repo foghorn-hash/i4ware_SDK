@@ -15,6 +15,10 @@
 	display: flex;
   }
 
+  .prompt-textarea {
+	width: 100%;
+}
+
   .message-ai {
 	margin-left: 10px;
 	margin-right: 10px;
