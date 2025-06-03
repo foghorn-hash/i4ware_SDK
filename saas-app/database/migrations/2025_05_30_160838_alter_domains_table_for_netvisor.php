@@ -34,7 +34,7 @@ class AlterDomainsTableForNetvisor extends Migration
             $table->string('contact_person_phone')->nullable()->after('contact_person');
             $table->string('contact_person_email')->nullable()->after('contact_person_phone');
             $table->boolean('private_customer')->default(false)->after('contact_person_email');
-            $table->timestamp('last_synced_at')->nullable()->after('vat_number');
+            $table->timestamp('last_synced_at')->nullable()->after('vat_id');
             $table->boolean('is_synced')->default(false)->after('last_synced_at');
         });
     }
