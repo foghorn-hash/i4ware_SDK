@@ -188,6 +188,11 @@ const PusherChat = () => {
   const [goal, setGoal] = useState('');
   const [expectation, setExpectation] = useState('');
   const [showPromptOverlay, setShowPromptOverlay] = useState(false);
+  const [isRohtoEnabled, setIsRohtoEnabled] = useState(true); // Add this state
+
+  const enableRohto = () => setIsRohtoEnabled(true);
+  const disableRohto = () => setIsRohtoEnabled(false);
+  const toggleRohto = () => setIsRohtoEnabled((prev) => !prev);
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -632,20 +637,26 @@ const PusherChat = () => {
 };
 
 const generateResponse = async () => {
-  const fullPrompt = `
-    ${strings.rohto_role_label}: ${role}
-    ${strings.rohto_problem_label}: ${problem}
-    ${strings.rohto_history_label}: ${history}
-    ${strings.rohto_goal_label}: ${goal}
-    ${strings.rohto_expectation_label}: ${expectation}
-    ${strings.rohto_for_prompt}: ${message}
-  `.trim();
+  let fullPrompt;
+  if (isRohtoEnabled) {
+    fullPrompt = `
+      ${strings.rohto_role_label}: ${role}
+      ${strings.rohto_problem_label}: ${problem}
+      ${strings.rohto_history_label}: ${history}
+      ${strings.rohto_goal_label}: ${goal}
+      ${strings.rohto_expectation_label}: ${expectation}
+      ${strings.rohto_for_prompt}: ${message}
+    `.trim();
+  } else {
+    // If ROHTO is disabled, just send the message as the prompt
+    fullPrompt = message;
+  }
   try {
     const response = await Axios.post(`${API_BASE_URL}/api/chat/generate-response`, { prompt: fullPrompt }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     });
     // 1. Generate the Word file in backend
-      const resp = await Axios.post(`${API_BASE_URL}/api/chat/word/send`, { prompt: message, generate: false }, {
+      const resp = await Axios.post(`${API_BASE_URL}/api/chat/word/send`, { prompt: fullPrompt, generate: false }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     });
     // Optionally, save the message to DB as before
@@ -708,10 +719,22 @@ const saveMessageToDatabase = async (message) => {
     <>
     <div className="chat-container">
       <Button
+        className='rohto-button'
         variant="outline-secondary"
         style={{ float: 'right', marginBottom: 10 }}
         onClick={() => setShowPromptOverlay(true)}
-      >ROHTO</Button>
+        disabled={!isRohtoEnabled}
+      >
+        ROHTO
+      </Button>
+      <Form.Check
+        className='rohto-checkbox'
+        type="checkbox"
+        label={isRohtoEnabled ? "Disable ROHTO" : "Enable ROHTO"}
+        checked={isRohtoEnabled}
+        onChange={toggleRohto}
+        style={{ float: 'right', marginRight: 10, marginBottom: 10 }}
+      />
       <Button variant="primary" className='message-upload-button' onClick={handleShowModal}>
          <Upload /> {strings.upload_image_with_message}
       </Button>
@@ -788,6 +811,7 @@ const saveMessageToDatabase = async (message) => {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               placeholder={strings.rohto_role_placeholder}
+              disabled={!isRohtoEnabled}
             />
           </Form.Group>
           <Form.Group className="mb-3">
@@ -798,6 +822,7 @@ const saveMessageToDatabase = async (message) => {
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
               placeholder={strings.rohto_problem_placeholder}
+              disabled={!isRohtoEnabled}
             />
           </Form.Group>
           <Form.Group className="mb-3">
@@ -808,6 +833,7 @@ const saveMessageToDatabase = async (message) => {
               value={history}
               onChange={(e) => setHistory(e.target.value)}
               placeholder={strings.rohto_history_placeholder}
+              disabled={!isRohtoEnabled}
             />
           </Form.Group>
           <Form.Group className="mb-3">
@@ -818,6 +844,7 @@ const saveMessageToDatabase = async (message) => {
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder={strings.rohto_goal_placeholder}
+              disabled={!isRohtoEnabled}
             />
           </Form.Group>
           <Form.Group className="mb-3">
@@ -828,6 +855,7 @@ const saveMessageToDatabase = async (message) => {
               value={expectation}
               onChange={(e) => setExpectation(e.target.value)}
               placeholder={strings.rohto_expectation_placeholder}
+              disabled={!isRohtoEnabled}
             />
           </Form.Group>
         </Form>
