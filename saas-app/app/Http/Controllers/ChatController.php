@@ -402,27 +402,29 @@ class ChatController extends Controller
         // Generate unique filename
         $filename = 'chatgpt_output_' . uniqid() . '.docx';
         $path = storage_path("app/public/$filename");
-
+        $lines = explode("\n", $aiResponse);
         // Create Word file
         $phpWord = new PhpWord();
         $section = $phpWord->addSection();
-        foreach (preg_split('/\r\n|\r|\n/', $aiResponse) as $line) {
-            $trimmed = trim($line);
-            if ($trimmed === '') {
-                $section->addTextBreak();
-            } elseif (preg_match('/^\d+\./', $trimmed)) {
-                // Numbered list
-                $section->addListItem($trimmed, 0, null, 'number');
-            } elseif (preg_match('/^- /', $trimmed)) {
-                // Bullet list
-                $section->addListItem(substr($trimmed, 2), 0, null, 'bullet');
-            } elseif (preg_match('/^[A-Z][A-Za-z ]+:$/', $trimmed)) {
-                // Heading (e.g., "Contact Information:")
-                $section->addText($trimmed, ['bold' => true]);
+
+        $titleStyle = ['bold' => true, 'size' => 16];
+        $headingStyle = ['bold' => true, 'size' => 14];
+        $normalStyle = ['size' => 12];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+
+            if (preg_match('/^\*\*(.*?)\*\*$/', $line, $matches)) {
+                $section->addText($text, $headingStyle);
+            } elseif (!empty($line)) {
+                // Paragraph
+                $section->addText($line, $normalStyle);
             } else {
-                $section->addText($trimmed);
+                // Line break
+                $section->addTextBreak();
             }
         }
+        // Save the Word file
         IOFactory::createWriter($phpWord, 'Word2007')->save($path);
 
         // Return filename to frontend
