@@ -5,7 +5,11 @@ import * as Yup from "yup";
 import Axios from "axios";
 import Cropper from "./../ImageCropper/ImageCropper";
 import { getCroppedImg } from "./../ImageCropper/cropImage";
-import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import {
+  API_BASE_URL,
+  ACCESS_TOKEN_NAME,
+  API_DEFAULT_LANGUAGE,
+} from "../../constants/apiConstants";
 import request from "../../utils/Request";
 import TextInput from "./../common/TextInput";
 import { AuthContext } from "../../contexts/auth.contexts";
@@ -15,8 +19,8 @@ import DefaultMaleImage from "../../male-default-profile-picture.png";
 import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import ImageCropper from "./../ImageCropper/ImageCropper";
 import WebcamCapture from "../../components/WebcamCapture/WebcamCapture";
-import Webcam from 'react-webcam';
-import LocalizedStrings from 'react-localization';
+import Webcam from "react-webcam";
+import LocalizedStrings from "react-localization";
 
 let strings = new LocalizedStrings({
   en: {
@@ -69,7 +73,7 @@ let strings = new LocalizedStrings({
     genderRequired: "Kön är obligatoriskt",
     loading: "Laddar...",
     saved: "Din profilinformation har sparats.",
-  }
+  },
 });
 
 function MyProfile(props) {
@@ -78,7 +82,7 @@ function MyProfile(props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedArea, setCroppedArea] = useState(null);
-  const [croppedImageFile, setCroppedImageFile] = useState('a');
+  const [croppedImageFile, setCroppedImageFile] = useState("a");
   const [imageSrc, setImageSrc] = useState(null);
   const profileRef = useRef();
   const [showCropper, setShowCropper] = useState(false);
@@ -89,7 +93,7 @@ function MyProfile(props) {
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+  var localization = urlParams.get("lang");
 
   if (localization == null) {
     strings.setLanguage(API_DEFAULT_LANGUAGE);
@@ -113,7 +117,7 @@ function MyProfile(props) {
   };
 
   const onCropComplete = useCallback((croppedArea) => {
-    if(croppedArea){
+    if (croppedArea) {
       console.log(croppedArea);
       setCroppedArea(croppedArea);
     }
@@ -135,7 +139,6 @@ function MyProfile(props) {
       });
   }, []);
 
-  
   const SignupSchema = Yup.object().shape({
     name: Yup.string().required(strings.nameRequired),
     gender: Yup.string().required(strings.genderRequired),
@@ -143,11 +146,11 @@ function MyProfile(props) {
 
   const handleSubmit = async (values, formProps) => {
     const formData = new FormData();
-    if(croppedImageFile){
-      formData.append('file', croppedImageFile );
+    if (croppedImageFile) {
+      formData.append("file", croppedImageFile);
     }
-    formData.append('fullname', values.name);
-    formData.append('gender', values.gender);
+    formData.append("fullname", values.name);
+    formData.append("gender", values.gender);
     formProps.setSubmitting(true);
 
     request()
@@ -155,34 +158,35 @@ function MyProfile(props) {
       .then((res) => {
         console.log(formProps);
         // setIsSubmitting(false);
-        debugger
-        formProps.setSubmitting(false)
-        if(res.status === 200){
-          if(res.data.success === true ){
+        debugger;
+        formProps.setSubmitting(false);
+        if (res.status === 200) {
+          if (res.data.success === true) {
             setData(res.data.user);
-            setShowMessage(strings.saved)
-            setTimeout(()=>{
-              setShowMessage(null)
-            },2500)
+            setShowMessage(strings.saved);
+            setTimeout(() => {
+              setShowMessage(null);
+            }, 2500);
           }
         }
-      }).catch((err)=>{
-        console.log('aa');
-        debugger
+      })
+      .catch((err) => {
+        console.log("aa");
+        debugger;
       });
-  }
+  };
 
   const loadUserData = async (e) => {
     request()
-    .get(API_BASE_URL + "/api/users/userdata", {
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
-      },
-    })
-    .then((res) => {
-      setData(res.data);
-    });
-  }
+      .get(API_BASE_URL + "/api/users/userdata", {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+        },
+      })
+      .then((res) => {
+        setData(res.data);
+      });
+  };
 
   function CustomTextInput(props) {
     const [field, meta] = useField(props);
@@ -211,14 +215,18 @@ function MyProfile(props) {
   const closeWebcam = () => {
     setIsWebcamOpen(false);
   };
-  
+
   if (!data) {
-    return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
+    return (
+      <div className="loading-screen">
+        <img src={LOADING} alt="Loading..." />
+      </div>
+    );
   }
 
   var defaultImage;
 
-  if (data.gender=="male") {
+  if (data.gender == "male") {
     defaultImage = DefaultMaleImage;
   } else {
     defaultImage = DefaultFemaleImage;
@@ -226,45 +234,86 @@ function MyProfile(props) {
 
   return (
     <div className="mt-2">
-        {showMessage && <div className="alert alert-success" >{showMessage}</div>}
-        <h3 className="my-2">{strings.myDetails}</h3>
-        {!imageSrc && <img className="max-height-profile-pic" src={data.profile_picture_path?(API_BASE_URL + data.profile_picture_path):defaultImage} />}
-        <br />
-        {imageSrc && (
-            <ImageCropper
-              imageSrc={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}
-              showCropper={showCropper}
-              setShowCropper={setShowCropper}
-              onCropChange={onCropChange}
-              onCropComplete={onCropComplete}
-              onZoomChange={onZoomChange}
-              setCroppedImageFile={setCroppedImageFile}
-              cropShape="round"
-            />
-        )}
-        {!imageSrc && <button className="btn btn-info " onClick={()=>{
-          profileRef.current.click();
-        }} > {strings.uploadImage} </button>}
-        {imageSrc && <button className="btn btn-danger " onClick={()=>{
-          setImageSrc(null)
-        }} > {strings.removeImage} </button>}
-        {imageSrc && <button className="btn btn-info mx-2 " onClick={()=>{
-          setShowCropper(true)
-        }} > {strings.cropImage} </button>}
-      <input className="btn btn-primary" style={{display: "none"}} type="file" ref={profileRef} onChange={onFileChange} />
+      {showMessage && <div className="alert alert-success">{showMessage}</div>}
+      <h3 className="my-2">{strings.myDetails}</h3>
+      {!imageSrc && (
+        <img
+          className="max-height-profile-pic"
+          src={
+            data.profile_picture_path
+              ? API_BASE_URL + data.profile_picture_path
+              : defaultImage
+          }
+        />
+      )}
+      <br />
+      {imageSrc && (
+        <ImageCropper
+          imageSrc={imageSrc}
+          crop={crop}
+          zoom={zoom}
+          aspect={1}
+          showCropper={showCropper}
+          setShowCropper={setShowCropper}
+          onCropChange={onCropChange}
+          onCropComplete={onCropComplete}
+          onZoomChange={onZoomChange}
+          setCroppedImageFile={setCroppedImageFile}
+          cropShape="round"
+        />
+      )}
+      {!imageSrc && (
+        <button
+          className="btn btn-info "
+          onClick={() => {
+            profileRef.current.click();
+          }}
+        >
+          {" "}
+          {strings.uploadImage}{" "}
+        </button>
+      )}
+      {imageSrc && (
+        <button
+          className="btn btn-danger "
+          onClick={() => {
+            setImageSrc(null);
+          }}
+        >
+          {" "}
+          {strings.removeImage}{" "}
+        </button>
+      )}
+      {imageSrc && (
+        <button
+          className="btn btn-info mx-2 "
+          onClick={() => {
+            setShowCropper(true);
+          }}
+        >
+          {" "}
+          {strings.cropImage}{" "}
+        </button>
+      )}
+      <input
+        className="btn btn-primary"
+        style={{ display: "none" }}
+        type="file"
+        ref={profileRef}
+        onChange={onFileChange}
+      />
       <br />
       <br />
       {isWebcamOpen && (
-      <WebcamCapture 
+        <WebcamCapture
           onClose={closeWebcam} // Pass the closeWebcam function to handle closing the webcam overlay
           onCapture={capture} // Pass the capture function if needed
           loadUserData={loadUserData}
-      />
+        />
       )}
-      <button className="btn btn-primary" onClick={openWebcam}>{strings.capturePhoto}</button>
+      <button className="btn btn-primary" onClick={openWebcam}>
+        {strings.capturePhoto}
+      </button>
       <br />
       <br />
       <div className="userForm">
@@ -289,11 +338,18 @@ function MyProfile(props) {
                 />
               </div>
               <div className="col-12">
-                <label for="gender" className="select-gender-label-myprofile">
+                <label
+                  htmlFor="gender"
+                  className="select-gender-label-myprofile"
+                >
                   {strings.gender}
                 </label>
                 <br />
-                <Field className="select-gender-myprofile" as="select" name="gender">
+                <Field
+                  className="select-gender-myprofile"
+                  as="select"
+                  name="gender"
+                >
                   <option value="male">{strings.male}</option>
                   <option value="female">{strings.female}</option>
                 </Field>
@@ -319,4 +375,3 @@ function MyProfile(props) {
 }
 
 export default withRouter(MyProfile);
-

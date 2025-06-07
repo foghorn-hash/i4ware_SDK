@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
-import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import {
+  API_BASE_URL,
+  ACCESS_TOKEN_NAME,
+  API_DEFAULT_LANGUAGE,
+} from "../../constants/apiConstants";
 import { AuthContext } from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import Button from "react-bootstrap/Button";
@@ -25,17 +29,19 @@ import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import { render } from "react-dom";
 import { ReactGrid, Column, Row } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
-import InfiniteScroll from 'react-infinite-scroller';
-import axios from 'axios'; // Import Axios
+import InfiniteScroll from "react-infinite-scroller";
+import axios from "axios"; // Import Axios
 import Dropdown from "react-bootstrap/Dropdown";
-import LocalizedStrings from 'react-localization';
+import LocalizedStrings from "react-localization";
 
 let strings = new LocalizedStrings({
   en: {
     areYouSure: "Are you sure?",
-    wantToChangeUserStatus: "Are you sure about that you want to change this user status?",
+    wantToChangeUserStatus:
+      "Are you sure about that you want to change this user status?",
     wantToVerifyUser: "Are you sure about that you want to verify this user?",
-    wantToActivateUser: "Are you sure about that you want to activate this user?",
+    wantToActivateUser:
+      "Are you sure about that you want to activate this user?",
     yes: "Yes",
     no: "No",
     close: "Close",
@@ -147,22 +153,21 @@ let strings = new LocalizedStrings({
     passwordsMustMatch: "Lösenorden måste matcha",
     confirmPasswordRequired: "Bekräfta lösenord är obligatoriskt",
     notAssigned: "inte tilldelad",
-  }
+  },
 });
 
 var query = window.location.search.substring(1);
 var urlParams = new URLSearchParams(query);
-var localization = urlParams.get('lang');
+var localization = urlParams.get("lang");
 
-if (localization===null) {
+if (localization === null) {
   strings.setLanguage(API_DEFAULT_LANGUAGE);
 } else {
   strings.setLanguage(localization);
 }
 
 const validationSchema = Yup.object().shape({
-  name: Yup.string()
-    .required(strings.nameRequired),
+  name: Yup.string().required(strings.nameRequired),
   email: Yup.string()
     .email(strings.invalidEmail)
     .required(strings.emailRequired),
@@ -170,8 +175,8 @@ const validationSchema = Yup.object().shape({
     .min(8, strings.passwordMin)
     .required(strings.passwordRequired),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], strings.passwordsMustMatch)
-    .required(strings.confirmPassword)
+    .oneOf([Yup.ref("password"), null], strings.passwordsMustMatch)
+    .required(strings.confirmPassword),
 });
 
 function ManageAdmin() {
@@ -195,15 +200,14 @@ function ManageAdmin() {
   const [menuOpen, setMenuOpen] = useState([]);
 
   const handleToggle = (index) => {
-    setMenuOpen(prevState => {
+    setMenuOpen((prevState) => {
       const newState = [...prevState];
       newState[index] = !newState[index];
       return newState;
     });
   };
-  
+
   useEffect(() => {
-  
     const fetchRolesForAdd = async () => {
       try {
         const res = await request().get("/api/manage/roles/foradd");
@@ -212,7 +216,7 @@ function ManageAdmin() {
         console.error(error);
       }
     };
-  
+
     const fetchAllRoles = async () => {
       try {
         const res = await request().get("/api/manage/roles/all");
@@ -221,7 +225,7 @@ function ManageAdmin() {
         console.error(error);
       }
     };
-  
+
     fetchRolesForAdd();
     fetchAllRoles();
   }, []);
@@ -229,20 +233,22 @@ function ManageAdmin() {
   const fetchUsers = async () => {
     try {
       setIsLoading(true); // Set isLoading to true when starting the request
-      const response = await axios.get(`${API_BASE_URL}/api/manage/users?page=${page}`, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
-        },
-      });
+      const response = await axios.get(
+        `${API_BASE_URL}/api/manage/users?page=${page}`,
+        {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+          },
+        }
+      );
       const newUsers = response.data;
       setUsers((prevUsers) => [...prevUsers, ...newUsers]);
       // Check if there are more pages to load
       if (newUsers.length < 10) {
         setHasMore(false);
-      }
-      else {
-      // Increment the page number
-      setPage(prevPage => prevPage + 1);
+      } else {
+        // Increment the page number
+        setPage((prevPage) => prevPage + 1);
       }
     } catch (error) {
       console.error(error);
@@ -309,7 +315,7 @@ function ManageAdmin() {
     request()
       .post("/api/manage/users/change-password", {
         id: modalStatePassword,
-        ...values
+        ...values,
       })
       .then((res) => {
         setModalStatePassword(null);
@@ -324,7 +330,7 @@ function ManageAdmin() {
   const handleRoleChange = (event) => {
     setSelectedRole(event.target.value);
     alert(event.target.value);
-  }
+  };
 
   return (
     <>
@@ -332,7 +338,7 @@ function ManageAdmin() {
         {
           <div>
             <h1>{strings.addUser}</h1>
-            <Formik 
+            <Formik
               initialValues={{
                 name: "",
                 gender: "male",
@@ -342,97 +348,114 @@ function ManageAdmin() {
                 confirmPassword: "",
               }}
               validationSchema={validationSchema}
-              onSubmit={(values)=>{
-                console.log(values)
+              onSubmit={(values) => {
+                console.log(values);
                 request()
-                .post("/api/manage/users/add-user", {
-                  ...values
-                })
-                .then((res) => {
-                  setModalState(false);
-                  request()
-                    .get("/api/manage/users")
-                    .then((res) => {
-                      setUsers(res.data.data);
-                    });
-                });
+                  .post("/api/manage/users/add-user", {
+                    ...values,
+                  })
+                  .then((res) => {
+                    setModalState(false);
+                    request()
+                      .get("/api/manage/users")
+                      .then((res) => {
+                        setUsers(res.data.data);
+                      });
+                  });
               }}
             >
-             {({ errors,submitForm })=>(
-               <form className="row" >
-               <div className="col-12">
-                 <TextInput
-                   placeholder={strings.fullName}
-                   label={strings.fullName}
-                   name="name"
-                 />
-               </div>
-               <div className="col-12 mt-2">
-                <label for="validationCustom03" className={"form-label"}>
-                   {strings.gender}
-                </label>
-                <br />
-                <Field className="select-role" as="select" name="gender">
-                    <option value="male">{strings.male}</option>
-                  <option value="female">{strings.female}</option>
-                </Field>
-              </div>
-               <div className="col-12 mt-2">
-                 <TextInput
-                   label={strings.email}
-                   placeholder="Email"
-                   name="email"
-                 />
-               </div>
-               <div className="col-12 mt-2">
-                <label for="validationCustom03" className={"form-label"}>
-                   {strings.role}
-                </label>
-                <br />
-                <Field className="select-role" as="select" name="role">
-                      <option key="0" value="NULL">{strings.notAssigned}</option>
-                  {rolesforusers.map((item, index) => {
-                    return (
-                      <option key={item.id} value={item.id}>{item.name}</option>
-                    );
-                  })}
-                </Field>
-              </div>
-               <div className="form-group  mt-2 text-left">
-                 <label for="validationCustom03" className={"form-label"}>
-                   {strings.password}
-                 </label>
-                 <PassWordInput
-                   label={"Password"}
-                   placeholder=""
-                   name="password"
-                   type="password"
-                 />
-               </div>
-               <div className="form-group  mt-2 text-left">
-                 <label for="validationCustom03" className={"form-label"}>
-                   {strings.confirmPassword}
-                 </label>
-                 <PassWordInput
-                   label={"Confirm Password"}
-                   placeholder=""
-                   name="confirmPassword"
-                   type="password"
-                 />
-               </div>
-               <div className="spacer"></div>
-            <div>
-              <div className="float-left">
-                <Button onClick={submitForm} >{strings.addUser}</Button>
-              </div>
-              <div className="float-right">
-                <Button onClick={() => setModalState(false)} >{strings.close}</Button>
-              </div>
-            </div>
-             </form>
-             )}
+              {({ errors, submitForm }) => (
+                <form className="row">
+                  <div className="col-12">
+                    <TextInput
+                      placeholder={strings.fullName}
+                      label={strings.fullName}
+                      name="name"
+                    />
+                  </div>
+                  <div className="col-12 mt-2">
+                    <label
+                      htmlFor="validationCustom03"
+                      className={"form-label"}
+                    >
+                      {strings.gender}
+                    </label>
+                    <br />
+                    <Field className="select-role" as="select" name="gender">
+                      <option value="male">{strings.male}</option>
+                      <option value="female">{strings.female}</option>
+                    </Field>
+                  </div>
+                  <div className="col-12 mt-2">
+                    <TextInput
+                      label={strings.email}
+                      placeholder="Email"
+                      name="email"
+                    />
+                  </div>
+                  <div className="col-12 mt-2">
+                    <label
+                      htmlFor="validationCustom03"
+                      className={"form-label"}
+                    >
+                      {strings.role}
+                    </label>
+                    <br />
+                    <Field className="select-role" as="select" name="role">
+                      <option key="0" value="NULL">
+                        {strings.notAssigned}
+                      </option>
+                      {rolesforusers.map((item, index) => {
+                        return (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        );
+                      })}
+                    </Field>
+                  </div>
+                  <div className="form-group  mt-2 text-left">
+                    <label
+                      htmlFor="validationCustom03"
+                      className={"form-label"}
+                    >
+                      {strings.password}
+                    </label>
+                    <PassWordInput
+                      label={"Password"}
+                      placeholder=""
+                      name="password"
+                      type="password"
+                    />
+                  </div>
+                  <div className="form-group  mt-2 text-left">
+                    <label
+                      htmlFor="validationCustom03"
+                      className={"form-label"}
+                    >
+                      {strings.confirmPassword}
+                    </label>
+                    <PassWordInput
+                      label={"Confirm Password"}
+                      placeholder=""
+                      name="confirmPassword"
+                      type="password"
+                    />
+                  </div>
+                  <div className="spacer"></div>
+                  <div>
+                    <div className="float-left">
+                      <Button onClick={submitForm}>{strings.addUser}</Button>
+                    </div>
+                    <div className="float-right">
+                      <Button onClick={() => setModalState(false)}>
+                        {strings.close}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              )}
             </Formik>
-            
           </div>
         }
       </Modal>
@@ -440,16 +463,16 @@ function ManageAdmin() {
         {
           <div>
             <h1>{strings.areYouSure}</h1>
-            <div>
-              {strings.wantToChangeUserStatus}
-            </div>
+            <div>{strings.wantToChangeUserStatus}</div>
             <div className="spacer"></div>
             <div>
               <div className="float-left">
                 <Button onClick={userStatusHandler}>{strings.yes}</Button>
               </div>
               <div className="float-right">
-                <Button onClick={() => setModalStateApproval(null)}>{strings.no}</Button>
+                <Button onClick={() => setModalStateApproval(null)}>
+                  {strings.no}
+                </Button>
               </div>
             </div>
           </div>
@@ -459,16 +482,16 @@ function ManageAdmin() {
         {
           <div>
             <h1>{strings.areYouSure}</h1>
-            <div>
-              {strings.wantToVerifyUser}
-            </div>
+            <div>{strings.wantToVerifyUser}</div>
             <div className="spacer"></div>
             <div>
               <div className="float-left">
                 <Button onClick={userVerifyHandler}>{strings.yes}</Button>
               </div>
               <div className="float-right">
-                <Button onClick={() => setModalStateVerify(null)}>{strings.no}</Button>
+                <Button onClick={() => setModalStateVerify(null)}>
+                  {strings.no}
+                </Button>
               </div>
             </div>
           </div>
@@ -485,18 +508,24 @@ function ManageAdmin() {
                 <Button>{strings.yes}</Button>
               </div>
               <div className="float-right">
-                <Button onClick={() => setModalStateActivate(false)}>{strings.no}</Button>
+                <Button onClick={() => setModalStateActivate(false)}>
+                  {strings.no}
+                </Button>
               </div>
             </div>
           </div>
         }
       </ModalActivate>
       <ModalPasswordChange show={modalStatePassword}>
-        <ChangePassword closeModel={()=>{
-          setModalStatePassword(null);
-        }} onSubmit={(values)=>{
-          userPasswordHandler(values)
-        }} userId={modalStatePassword} />
+        <ChangePassword
+          closeModel={() => {
+            setModalStatePassword(null);
+          }}
+          onSubmit={(values) => {
+            userPasswordHandler(values);
+          }}
+          userId={modalStatePassword}
+        />
       </ModalPasswordChange>
       {
         <PermissionGate permission={"users.addUser"}>
@@ -512,49 +541,57 @@ function ManageAdmin() {
           </div>
         </PermissionGate>
       }
-      
-        <div className="mt-3">
-          <div className="table-header">
-            <div className="column">#</div>
-            <div className="column">ID</div>
-            <div className="column">{strings.avatar}</div>
-            <div className="column">{strings.columnName}</div>
-            <div className="column">{strings.columnVerified}</div>
-            <div className="column">{strings.email}</div>
-            <div className="column">{strings.role}</div>
-            <div className="column">{strings.columnDomain}</div>
-            <div className="column">{strings.columnStatus}</div>
-            <div className="column">{strings.columnActions}</div>
-          </div>
 
-          <div className="table-body" >
-            <InfiniteScroll
-              pageStart={1}
-              loadMore={loadMore}
-              hasMore={hasMore}
-              loader={<div className="loading-screen"><img src={LOADING} alt="Loading..." key={0} /></div>}
-            >
+      <div className="mt-3">
+        <div className="table-header">
+          <div className="column">#</div>
+          <div className="column">ID</div>
+          <div className="column">{strings.avatar}</div>
+          <div className="column">{strings.columnName}</div>
+          <div className="column">{strings.columnVerified}</div>
+          <div className="column">{strings.email}</div>
+          <div className="column">{strings.role}</div>
+          <div className="column">{strings.columnDomain}</div>
+          <div className="column">{strings.columnStatus}</div>
+          <div className="column">{strings.columnActions}</div>
+        </div>
+
+        <div className="table-body">
+          <InfiniteScroll
+            pageStart={1}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            loader={
+              <div className="loading-screen">
+                <img src={LOADING} alt="Loading..." key={0} />
+              </div>
+            }
+          >
             {users.map((item, index) => {
-                const profilePicUrl = item.profile_picture_path
-                  ? API_BASE_URL + item.profile_picture_path.replaceAll('public/uploads', '/storage/uploads')
-                  : null;
-                const defaultImg =
-                  item.gender === 'male' ? DefaultMaleImage : DefaultFemaleImage;
+              const profilePicUrl = item.profile_picture_path
+                ? API_BASE_URL +
+                  item.profile_picture_path.replaceAll(
+                    "public/uploads",
+                    "/storage/uploads"
+                  )
+                : null;
+              const defaultImg =
+                item.gender === "male" ? DefaultMaleImage : DefaultFemaleImage;
 
-                return (
-                  <div className="mobile-table-body">
-                    <div className="mobile-table-header">
-                      <div className="column">#</div>
-                      <div className="column">ID</div>
-                      <div className="column">{strings.avatar}</div>
-                      <div className="column">{strings.columnName}</div>
-                      <div className="column">{strings.columnVerified}</div>
-                      <div className="column">{strings.email}</div>
-                      <div className="column">{strings.role}</div>
-                      <div className="column">{strings.columnDomain}</div>
-                      <div className="column">{strings.columnStatus}</div>
-                      <div className="column">{strings.columnActions}</div>
-                    </div>
+              return (
+                <div className="mobile-table-body">
+                  <div className="mobile-table-header">
+                    <div className="column">#</div>
+                    <div className="column">ID</div>
+                    <div className="column">{strings.avatar}</div>
+                    <div className="column">{strings.columnName}</div>
+                    <div className="column">{strings.columnVerified}</div>
+                    <div className="column">{strings.email}</div>
+                    <div className="column">{strings.role}</div>
+                    <div className="column">{strings.columnDomain}</div>
+                    <div className="column">{strings.columnStatus}</div>
+                    <div className="column">{strings.columnActions}</div>
+                  </div>
 
                   <div key={index + 1} className="table-row">
                     <div className="column">{index + 1}</div>
@@ -568,11 +605,13 @@ function ManageAdmin() {
                     </div>
                     <div className="column">{item.name}</div>
                     <div className="column">
-                      {item.email_verified_at != null && 'true'}{' '}
-                      {item.email_verified_at == null && 'false'}
+                      {item.email_verified_at != null && "true"}{" "}
+                      {item.email_verified_at == null && "false"}
                     </div>
                     <div className="column">{item.email}</div>
-                    <div className="column">{item.roles ? item.roles : 'not-assigned'}</div>
+                    <div className="column">
+                      {item.roles ? item.roles : "not-assigned"}
+                    </div>
                     <div className="column">{item.domain}</div>
                     <div className="column">
                       <FormCheck
@@ -583,59 +622,77 @@ function ManageAdmin() {
                         onClick={() => {
                           console.log(item.id);
                         }}
-                        style={{ display: 'flex',
-                          alignItems: 'center', justifyContent: 'right'}}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "right",
+                        }}
                       />
                     </div>
                     <div className="column">
-                    <Dropdown show={menuOpen[index]} onToggle={() => handleToggle(index)}>
-                      <Dropdown.Toggle variant="success" id="dropdown-basic">
-                        {strings.actions}
-                      </Dropdown.Toggle>
-
-                      <Dropdown.Menu 
-                        className={`mobile-dropdown ${menuOpen[index] ? 'visible' : ''}`}
+                      <Dropdown
+                        show={menuOpen[index]}
+                        onToggle={() => handleToggle(index)}
                       >
-                        <PermissionGate permission={'users.changePassword'}>
-                          <Dropdown.Item
-                            onClick={() => {
-                              setModalStatePassword(item.id);
-                            }}
-                          >
-                            {strings.changePassword}
-                          </Dropdown.Item>
-                        </PermissionGate>
-                        <PermissionGate permission={'users.changeRole'}>
-                          <Dropdown.Item onClick={() => {
-                            setModalStateChangeRole(true);
-                            setChangeRoleUserId(item.id);
-                          }}>
-                            {strings.changeRole}
-                          </Dropdown.Item>
-                        </PermissionGate>
-                        <PermissionGate permission={'users.statusChange'}>
-                          <Dropdown.Item onClick={() => {
-                            setModalStateApproval(item.id);
-                          }}>{item.is_active === 1 ? strings.deactivateUser : strings.activateUser}
-                          </Dropdown.Item>
-                        </PermissionGate>
-                        <PermissionGate permission={'users.verifyUser'}>
-                          <Dropdown.Item onClick={() => {
-                            setModalStateVerify(item.id);
-                          }}>{strings.verifyUser}
-                          </Dropdown.Item>
-                        </PermissionGate>
-                      </Dropdown.Menu>
-                    </Dropdown>
+                        <Dropdown.Toggle variant="success" id="dropdown-basic">
+                          {strings.actions}
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu
+                          className={`mobile-dropdown ${
+                            menuOpen[index] ? "visible" : ""
+                          }`}
+                        >
+                          <PermissionGate permission={"users.changePassword"}>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setModalStatePassword(item.id);
+                              }}
+                            >
+                              {strings.changePassword}
+                            </Dropdown.Item>
+                          </PermissionGate>
+                          <PermissionGate permission={"users.changeRole"}>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setModalStateChangeRole(true);
+                                setChangeRoleUserId(item.id);
+                              }}
+                            >
+                              {strings.changeRole}
+                            </Dropdown.Item>
+                          </PermissionGate>
+                          <PermissionGate permission={"users.statusChange"}>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setModalStateApproval(item.id);
+                              }}
+                            >
+                              {item.is_active === 1
+                                ? strings.deactivateUser
+                                : strings.activateUser}
+                            </Dropdown.Item>
+                          </PermissionGate>
+                          <PermissionGate permission={"users.verifyUser"}>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setModalStateVerify(item.id);
+                              }}
+                            >
+                              {strings.verifyUser}
+                            </Dropdown.Item>
+                          </PermissionGate>
+                        </Dropdown.Menu>
+                      </Dropdown>
                     </div>
                   </div>
-                  </div>
-                );
-              })}
-              </InfiniteScroll>
-          </div>
-          <div className="spacer"></div>
+                </div>
+              );
+            })}
+          </InfiniteScroll>
         </div>
+        <div className="spacer"></div>
+      </div>
       <Modal show={modalStateChangeRole}>
         {
           <div className="">
@@ -658,7 +715,9 @@ function ManageAdmin() {
                         setFieldValue("roleId", e.target.value);
                       }}
                     >
-                      <option key="0" value="NULL">{strings.notAssigned}</option>
+                      <option key="0" value="NULL">
+                        {strings.notAssigned}
+                      </option>
                       {roles.map((item) => {
                         return <option value={item.id}>{item.name}</option>;
                       })}
