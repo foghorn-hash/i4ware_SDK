@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
 {
@@ -65,32 +66,43 @@ class ChatController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function getMessages()
+    
+    public function getMessages(Request $request)
     {
-        // Get the authenticated user's ID
         $user = Auth::user();
 
-        // Select messages including those with user_id = 0 but only if the domain matches
+        // Select messages with user info
         $messages = MessageModel::select('messages.*', 'users.profile_picture_path', 'users.gender')
-            ->leftJoin('users', 'messages.user_id', '=', 'users.id') // Left join with 'users' table
+            ->leftJoin('users', 'messages.user_id', '=', 'users.id')
             ->where(function ($query) use ($user) {
                 $query->where('messages.domain', '=', $user->domain)
                     ->orWhere(function ($query) use ($user) {
-                        $query->where('messages.user_id', '=', null)
-                                ->where('messages.domain', '=', $user->domain);
-                    }); // Include messages with user_id = NULL only if domain matches
+                        $query->whereNull('messages.user_id')
+                            ->where('messages.domain', '=', $user->domain);
+                    });
             })
-            ->orderBy('messages.created_at', 'desc')
+            ->orderBy('messages.id', 'desc')
             ->get()
             ->map(function ($message) {
-                // Format the created_at datetime field to a custom format
-                $message->formatted_created_at = $message->created_at->format('Y-m-d H:i:s'); // Customize this format as needed
-
+                $message->formatted_created_at = $message->created_at->format('Y-m-d H:i:s');
                 return $message;
             });
 
-        return response()->json($messages);
+        $perPage = 5;
+        $page = $request->input('page', 1);
+        $offset = ($page - 1) * $perPage;
+
+        $paginated = $messages->slice($offset, $perPage)->values(); // slice returns a Collection
+
+        return response()->json([
+            'messages' => $paginated,
+            'current_page' => (int) $page,
+            'per_page' => $perPage,
+            'total' => $messages->count(),
+            'last_page' => ceil($messages->count() / $perPage),
+        ]);
     }
+
 
     public function userTyping(Request $request)
     {

@@ -10,8 +10,10 @@ import { PlayFill, StopFill, Download } from "react-bootstrap-icons";
 import CustomModal from "./CustomModal"; // Import the custom modal component
 import LocalizedStrings from "react-localization";
 import { Modal, Button } from "react-bootstrap";
-import { Pagination } from "react-bootstrap";
+import InfiniteScroll from "react-infinite-scroller";
+import LOADING from "../../tube-spinner.svg";
 
+import { Virtuoso } from "react-virtuoso";
 //let currentDate;
 let prevDate;
 
@@ -35,7 +37,18 @@ let strings = new LocalizedStrings({
   },
 });
 
-const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
+const MessageList = ({
+  messages,
+  DefaultMaleImage,
+  DefaultFemaleImage,
+  // loadMore,
+  // hasMore,
+  // isLoading,
+  virtuosoRef,
+  firstItemIndex, // for two-way loading
+  loadOlderMessages,
+  loadNewerMessages,
+}) => {
   const messagesEndRef = useRef(null);
   const [currentMessageId, setCurrentMessageId] = useState(null);
   const [currentAudio, setCurrentAudio] = useState(null);
@@ -73,19 +86,6 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
         };
       })
     : [];
-
-  // PAGINATION
-  const [currentPage, setCurrentPage] = useState(1);
-  const messagesPerPage = 10;
-  // Calculate paginated messages
-  const indexOfLastMessage = currentPage * messagesPerPage;
-  const indexOfFirstMessage = indexOfLastMessage - messagesPerPage;
-  const paginatedMessages = processedMessages.slice(
-    indexOfFirstMessage,
-    indexOfLastMessage
-  );
-  // Total number of pages
-  const totalPages = Math.ceil(processedMessages.length / messagesPerPage);
 
   const handleImageClick = (content, isVideoContent) => {
     setModalContent(content);
@@ -156,17 +156,6 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
     }
     return null;
   };
-
-  // const scrollToBottom = () => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
-
-  useEffect(() => {
-    const container = document.querySelector(".messages-list");
-    if (container) {
-      container.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [currentPage]);
 
   useEffect(() => {
     return () => {
@@ -252,52 +241,19 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
 
   return (
     <div className="messages-list">
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="d-flex justify-content-end mt-4">
-          <Pagination>
-            <Pagination.First
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-            />
-            <Pagination.Prev
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            />
-
-            {Array.from({ length: totalPages }, (_, i) => (
-              <Pagination.Item
-                key={i + 1}
-                active={i + 1 === currentPage}
-                onClick={() => setCurrentPage(i + 1)}
-              >
-                {i + 1}
-              </Pagination.Item>
-            ))}
-
-            <Pagination.Next
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            />
-            <Pagination.Last
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-            />
-          </Pagination>
-        </div>
-      )}
-
-      {[...paginatedMessages]
-        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-        .reverse()
-        .map((msg, index) => {
-          // Word count for message
+      <Virtuoso
+        ref={virtuosoRef}
+        style={{ height: "500px" }}
+        data={processedMessages} // Already sorted ASC from backend or .reverse() once
+        firstItemIndex={firstItemIndex}
+        initialTopMostItemIndex={messages.length - 1}
+        startReached={loadOlderMessages} // Scroll up to load older
+        followOutput="auto"
+        itemContent={(index, msg) => {
           const wordCount = msg.message.trim().split(/\s+/).length;
 
           return (
-            <div key={index} className="message">
+            <div key={msg.id || index} className="message">
               <div className="date-line">
                 {checkDate(
                   new Date(msg.formatted_created_at).toLocaleDateString()
@@ -325,9 +281,8 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
                   >
                     <Download />
                   </a>
-                )}{" "}
+                )}
               </div>
-              {/* ... other message content ... */}
 
               <div
                 className="massage-container"
@@ -369,16 +324,15 @@ const MessageList = ({ messages, DefaultMaleImage, DefaultFemaleImage }) => {
                   </span>
                 )}
 
-                {/* Render image or video if any */}
                 {renderMessageImageOrVideo(msg)}
                 <div className="message-clear" />
               </div>
             </div>
           );
-        })}
+        }}
+      />
       {/* Scroll to this ref to show the latest message */}
       <div ref={messagesEndRef} />
-
       <CustomModal
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}

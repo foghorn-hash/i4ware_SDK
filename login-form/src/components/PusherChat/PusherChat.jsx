@@ -23,6 +23,9 @@ import {
 import LocalizedStrings from "react-localization";
 import { CloseButton } from "react-bootstrap";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import InfiniteScroll from "react-infinite-scroller";
+
+import LOADING from "../../tube-spinner.svg";
 
 let strings = new LocalizedStrings({
   en: {
@@ -218,6 +221,11 @@ const PusherChat = () => {
   const [showPromptOverlay, setShowPromptOverlay] = useState(false);
   const [isRohtoEnabled, setIsRohtoEnabled] = useState(true); // Add this state
 
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [firstItemIndex, setFirstItemIndex] = useState(0);
+  const virtuosoRef = useRef(null);
+
   const enableRohto = () => setIsRohtoEnabled(true);
   const disableRohto = () => setIsRohtoEnabled(false);
   const toggleRohto = () => setIsRohtoEnabled((prev) => !prev);
@@ -400,18 +408,62 @@ const PusherChat = () => {
     }
   };
 
-  const fetchMessages = () => {
-    Axios.get(`${API_BASE_URL}/api/chat/messages`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
-      },
-    })
-      .then((response) => {
-        setMessages(response.data);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch messages", error);
-      });
+  useEffect(() => {
+    (async () => {
+      const res = await fetchMessages(1); // newest page (backend should paginate DESC)
+      const initialMessages = res.messages.reverse(); // reverse to ASC order
+      setMessages(initialMessages);
+      setFirstItemIndex(0);
+      setPage(1);
+      setHasMore(res.current_page < res.last_page);
+    })();
+  }, []);
+
+  const loadOlderMessages = async () => {
+    if (!hasMore) return;
+    const nextPage = page + 1;
+    const res = await fetchMessages(nextPage);
+    const newMessages = res.messages.reverse();
+
+    if (newMessages.length === 0) {
+      setHasMore(false);
+      return;
+    }
+    setMessages((prev) => [...newMessages, ...prev]);
+    setPage(nextPage);
+    setFirstItemIndex((prev) => prev - newMessages.length);
+  };
+
+  // const loadNewerMessages = async () => {
+  //   if (!hasNewer) return;
+  //   const pageToFetch = newestPage + 1;
+  //   const res = await fetchMessages(pageToFetch);
+  //   const newMessages = res.messages;
+
+  //   if (newMessages.length === 0) {
+  //     setHasNewer(false);
+  //     return;
+  //   }
+
+  //   setMessages((prev) => [...prev, ...newMessages]);
+  //   setNewestPage(pageToFetch);
+  // };
+
+  const fetchMessages = async (pageNumber) => {
+    try {
+      const response = await Axios.get(
+        `${API_BASE_URL}/api/chat/messages?page=${pageNumber}`,
+        {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch messages", error);
+      throw error;
+    }
   };
 
   const handleFileChange = (event) => {
@@ -903,6 +955,10 @@ const PusherChat = () => {
         <div className="message-area">
           <MessageList
             messages={messages}
+            virtuosoRef={virtuosoRef}
+            firstItemIndex={firstItemIndex}
+            loadOlderMessages={loadOlderMessages}
+            //loadNewerMessages={loadNewerMessages}
             DefaultMaleImage={DefaultMaleImage}
             DefaultFemaleImage={DefaultFemaleImage}
           />
@@ -1067,7 +1123,7 @@ const PusherChat = () => {
               {strings.browse}
             </label>
             {imageUploading && (
-              <img className="imageUpload" src={imageUploading} />
+              <img className="imageUpload" alt="Upload" src={imageUploading} />
             )}
             <textarea
               name="message"
@@ -1121,7 +1177,9 @@ const PusherChat = () => {
           >
             {strings.capturePhoto}
           </button>
-          {imageSrc && <img className="Webcam-message" src={imageSrc} />}
+          {imageSrc && (
+            <img className="Webcam-message" alt="Webcam" src={imageSrc} />
+          )}
           <form className="upload-form">
             <textarea
               name="message"
@@ -1191,7 +1249,7 @@ const PusherChat = () => {
             {strings.duration}: {formatDuration(videoDuration)}
           </div>
           {imageVideoSrc && (
-            <img className="Webcam-message" src={imageVideoSrc} />
+            <img className="Webcam-message" alt="Webcam" src={imageVideoSrc} />
           )}
           <form className="upload-form">
             <textarea
