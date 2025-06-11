@@ -30,8 +30,8 @@ let strings = new LocalizedStrings({
 const MessageList = ({  messages,
   DefaultMaleImage,
   DefaultFemaleImage,
-  // loadMore,
-  // hasMore,
+  //loadMore,
+  //hasMore,
   // isLoading,
   virtuosoRef,
   firstItemIndex, // for two-way loading

@@ -200,6 +200,11 @@ const PusherChat = () => {
   const [hasMore, setHasMore] = useState(true);
   const [firstItemIndex, setFirstItemIndex] = useState(0);
   const virtuosoRef = useRef(null);
+  const pageRef = useRef(1);
+
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
 
   const enableRohto = () => setIsRohtoEnabled(true);
   const disableRohto = () => setIsRohtoEnabled(false);
@@ -318,21 +323,15 @@ const PusherChat = () => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Initialize Pusher and fetch initial messages
-  useEffect(() => {
-    fetchUsername();
-    const cleanup = initializePusher();
-    fetchMessages(); // Fetch messages on component mount
-    return cleanup;
-  }, []);
-
   const initializePusher = () => {
     const pusher = new Pusher(API_PUSHER_KEY, { cluster: API_PUSHER_CLUSTER });
     const channel = pusher.subscribe(authArray.domain + '_chat');
 
-    channel.bind('message', (newMessage) => {
-        //setMessages((prevMessages) => [newMessage, ...prevMessages]);
-        fetchMessages();
+    channel.bind('message', () => {
+      setPage((currentPage) => {
+        fetchMessages(currentPage || 1); // fallback to 1 if undefined
+        return currentPage;
+      });
     });
 
     channel.bind('user-typing', ({ username: typingUsername, isTyping }) => {
@@ -376,21 +375,30 @@ const PusherChat = () => {
       console.error("Error fetching user data", error);
     }
   };
-
+  
   useEffect(() => {
-    (async () => {
-      const res = await fetchMessages(1); // newest page (backend should paginate DESC)
-      const initialMessages = res.messages.reverse(); // reverse to ASC order
-      setMessages(initialMessages);
-      setFirstItemIndex(0);
-      setPage(1);
-      setHasMore(res.current_page < res.last_page);
-    })();
+      fetchUsername();
+
+      const cleanup = initializePusher(); // this should not be awaited, it's not async
+
+      (async () => {
+        const res = await fetchMessages(1);
+        const initialMessages = res.messages.reverse();
+        setMessages(initialMessages);
+        setFirstItemIndex(0);
+        setPage(1);
+        pageRef.current = 1; // sync the ref
+        setHasMore(res.current_page < res.last_page);
+      })();
+
+      return () => {
+        cleanup();
+      };
   }, []);
 
   const loadOlderMessages = async () => {
     if (!hasMore) return;
-    const nextPage = page + 1;
+    const nextPage = pageRef.current + 1;
     const res = await fetchMessages(nextPage);
     const newMessages = res.messages.reverse();
 
@@ -398,8 +406,10 @@ const PusherChat = () => {
       setHasMore(false);
       return;
     }
+
     setMessages((prev) => [...newMessages, ...prev]);
     setPage(nextPage);
+    pageRef.current = nextPage;
     setFirstItemIndex((prev) => prev - newMessages.length);
   };
 
@@ -418,21 +428,13 @@ const PusherChat = () => {
   //   setNewestPage(pageToFetch);
   // };
 
-  const fetchMessages = async (pageNumber) => {
-    try {
-      const response = await Axios.get(
-        `${API_BASE_URL}/api/chat/messages?page=${pageNumber}`,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch messages", error);
-      throw error;
-    }
+  const fetchMessages = async (page = 1) => {
+    if (!page || isNaN(page)) page = 1;
+    const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+    const { data } = await Axios.get(`${API_BASE_URL}/api/chat/messages?page=${page}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    return data;
   };
 
   const handleFileChange = (event) => {
@@ -494,7 +496,7 @@ const PusherChat = () => {
         });
         await generateImage();
       } else {
-        fetchMessages(); // Fetch messages after sending user message
+        fetchMessages(page); // Fetch messages after sending user message
       }
     } catch (error) {
       console.error('Failed to send message', error);
@@ -568,7 +570,7 @@ const PusherChat = () => {
         text: strings.image_upload_successful,  
       }).then((result) => {
         if (result.isConfirmed) {
-          fetchMessages();
+          fetchMessages(page);
         }
       });
     } catch (error) {
@@ -621,7 +623,7 @@ const PusherChat = () => {
         text: strings.capture_successful,  
       }).then((result) => {
         if (result.isConfirmed) {
-          fetchMessages();
+          fetchMessages(page);
         }
       });
     } catch (error) {
@@ -682,7 +684,7 @@ const PusherChat = () => {
             if (result.isConfirmed) {
               setUploadProgress(0);
               //handleCaptureVideoCloseModal();
-              fetchMessages();
+              fetchMessages(page);
             }
           });
         })
@@ -731,7 +733,7 @@ const generateResponse = async () => {
     await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     });
-    fetchMessages(); // Fetch messages after generating AI response
+    fetchMessages(page); // Fetch messages after generating AI response
   } catch (error) {
     console.error('Error:', error);
     setIsThinking(false);
@@ -755,7 +757,7 @@ const generateImage = async () => {
     await Axios.post(`${API_BASE_URL}/api/chat/thinking`, { username: "AI", isThinking: false }, {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}` },
     });
-    fetchMessages(); // Fetch messages after generating AI response
+    fetchMessages(page); // Fetch messages after generating AI response
   } catch (error) {
     console.error('Error:', error);
     setIsThinking(false);
