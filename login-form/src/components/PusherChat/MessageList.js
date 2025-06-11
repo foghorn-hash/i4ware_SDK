@@ -110,12 +110,10 @@ const MessageList = ({  messages,
     return null;
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -186,16 +184,16 @@ const MessageList = ({  messages,
 
 
   const checkDate = (currentDate) => {
-  if(currentDate !== prevDate){
-    prevDate = currentDate
-    return currentDate
-  }
-  else{
-    return null
+    if(currentDate !== prevDate){
+      prevDate = currentDate
+      return currentDate
+    }
+    else{
+      return null
+    }
+  
   }
 
-
-  }
   return (
     <div className="messages-list">
       <Virtuoso
@@ -205,12 +203,12 @@ const MessageList = ({  messages,
         firstItemIndex={firstItemIndex}
         initialTopMostItemIndex={messages.length - 1}
         startReached={loadOlderMessages} // Scroll up to load older
-        followOutput="auto"
+        followOutput={true}
         itemContent={(index, msg) => {
           return ( 
               // Render each message
               // Check if the date has changed to display the date line
-              <div key={index} className="message">
+              <div key={msg.id} className="message">
 
                 <div className='date-line'>{checkDate(new Date(msg.formatted_created_at).toLocaleDateString())}</div>
 
