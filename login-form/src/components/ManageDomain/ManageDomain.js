@@ -1,16 +1,16 @@
-import React, {useState} from "react";
-import {useEffect} from "react";
+import React, { useState } from "react";
+import { useEffect } from "react";
 import "./ManageDomain.css";
 import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
-import {AuthContext} from "../../contexts/auth.contexts";
+import { AuthContext } from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
-import {Button} from "react-bootstrap";
-import {withRouter} from "react-router-dom";
+import { Button } from "react-bootstrap";
+import { withRouter } from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../tube-spinner.svg";
-import InfiniteScroll from 'react-infinite-scroller';
-import LocalizedStrings from 'react-localization';
+import InfiniteScroll from "react-infinite-scroller";
+import LocalizedStrings from "react-localization";
 
 let strings = new LocalizedStrings({
   en: {
@@ -32,7 +32,7 @@ let strings = new LocalizedStrings({
     paid: "Paid",
     trial: "Trial",
     previous: "Previous",
-    next: "Next"
+    next: "Next",
   },
   fi: {
     actions: "Toiminnot",
@@ -53,7 +53,7 @@ let strings = new LocalizedStrings({
     paid: "Makssullinen",
     trial: "Kokeilu",
     previous: "Edellinen",
-    next: "Seuraava"
+    next: "Seuraava",
   },
   sv: {
     actions: "Åtgärder",
@@ -74,15 +74,15 @@ let strings = new LocalizedStrings({
     paid: "Betald",
     trial: "Prov",
     previous: "Föregående",
-    next: "Nästa"
-  }
+    next: "Nästa",
+  },
 });
 
-function Menu({id, domainActionApi, index}) {
+function Menu({ id, domainActionApi, index }) {
   const [menuOpen, setMenuOpen] = useState([]);
 
   const handleToggle = (index) => {
-    setMenuOpen(prevState => {
+    setMenuOpen((prevState) => {
       const newState = [...prevState];
       newState[index] = !newState[index];
       return newState;
@@ -90,12 +90,19 @@ function Menu({id, domainActionApi, index}) {
   };
 
   return (
-    <Dropdown drop="up" align={window.innerWidth > 900 ? "end" : "start"} show={menuOpen[index]} onToggle={() => handleToggle(index)}>
+    <Dropdown
+      drop="up"
+      align={window.innerWidth > 900 ? "end" : "start"}
+      show={menuOpen[index]}
+      onToggle={() => handleToggle(index)}
+    >
       <Dropdown.Toggle variant="success" id="dropdown-basic">
         {strings.actions}
       </Dropdown.Toggle>
 
-      <Dropdown.Menu className={`mobile-dropdown ${menuOpen[index] ? 'visible' : ''}`}>
+      <Dropdown.Menu
+        className={`mobile-dropdown ${menuOpen[index] ? "visible" : ""}`}
+      >
         <Dropdown.Item
           onClick={() => {
             domainActionApi(id, "extend-trial");
@@ -103,22 +110,33 @@ function Menu({id, domainActionApi, index}) {
         >
           {strings.extendTrial30Days}{" "}
         </Dropdown.Item>
-        <Dropdown.Item onClick={() => {
-          domainActionApi(id, "make-paid");
-        }}>
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "make-paid");
+          }}
+        >
           {strings.makePaidSubscription}
         </Dropdown.Item>
-        <Dropdown.Item onClick={() => {
-          domainActionApi(id, "down-to-trial");
-        }}>{strings.downgradeToTrial}</Dropdown.Item>
-        <Dropdown.Item onClick={() => {
-          domainActionApi(id, "extend-one-year");
-        }} >
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "down-to-trial");
+          }}
+        >
+          {strings.downgradeToTrial}
+        </Dropdown.Item>
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "extend-one-year");
+          }}
+        >
           {strings.extendTrialOneYear}
         </Dropdown.Item>
-        <Dropdown.Item onClick={() => {
-          domainActionApi(id, "terminate");
-        }} style={{background: "#ffbfbf"}} >
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "terminate");
+          }}
+          style={{ background: "#ffbfbf" }}
+        >
           {strings.terminateDomain}
         </Dropdown.Item>
       </Dropdown.Menu>
@@ -134,7 +152,7 @@ function ManageDomain(props) {
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+  var localization = urlParams.get("lang");
 
   if (localization == null) {
     strings.setLanguage(API_DEFAULT_LANGUAGE);
@@ -142,7 +160,7 @@ function ManageDomain(props) {
     strings.setLanguage(localization);
   }
 
-  const {authState, authActions} = React.useContext(AuthContext);
+  const { authState, authActions } = React.useContext(AuthContext);
 
   useEffect(() => {
     loadMore();
@@ -152,86 +170,98 @@ function ManageDomain(props) {
     if (isLoading || !hasMore) return;
 
     setIsLoading(true);
-    request().get(`/api/manage/domains?page=${page}`)
-      .then(res => {
+    request()
+      .get(`/api/manage/domains?page=${page}`)
+      .then((res) => {
         const newDomains = res.data;
         if (newDomains && newDomains.length > 0) {
-          setDomains(prevDomains => [...new Set([...prevDomains, ...newDomains])]);
-          setPage(prevPage => prevPage + 1);
+          setDomains((prevDomains) => [
+            ...new Set([...prevDomains, ...newDomains]),
+          ]);
+          setPage((prevPage) => prevPage + 1);
         } else {
           setHasMore(false);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error loading more domains:", error);
       })
       .finally(() => {
         setIsLoading(false);
       });
-};
+  };
 
-  const domainUpdateApi = data => {
+  const domainUpdateApi = (data) => {
     request()
       .post("/api/manage/updateDomainRecord", data)
-      .then(res => {
+      .then((res) => {
         request()
           .get("/api/manage/domains")
-          .then(res => {
+          .then((res) => {
             setDomains(res.data);
-          })
-      })
+          });
+      });
   };
 
   if (domains.length === 0 && !isLoading) {
-    return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
+    return (
+      <div className="loading-screen">
+        <img src={LOADING} alt="Loading..." />
+      </div>
+    );
   }
 
   return (
     <>
       <div className="mt-3">
-          <div className="table-header-domains">
-            <div className="column_domains">#</div>
-            <div className="column_domains">{strings.domain}</div>
-            <div className="column_domains">{strings.validBeforeAt}</div>
-            <div className="column_domains">{strings.type}</div>
-            <div className="column_domains">{strings.company}</div>
-            <div className="column_domains">{strings.vatId}</div>
-            <div className="column_domains"></div>
-            <div className="column_domains"></div>
-          </div>
-          <div className="table-body-domains">
-            <InfiniteScroll
-              pageStart={0}
-              loadMore={loadMore}
-              hasMore={!isLoading && hasMore}
-              loader={<div className="loader">Loading...</div>}
-            >
-              {domains.map((item, index) => (
-                 <div className="mobile-table-body-domains">
-                  <div className="mobile-table-header-domains">
-                    <div className="column_domains">#</div>
-                    <div className="column_domains">{strings.domain}</div>
-                    <div className="column_domains">{strings.validBeforeAt}</div>
-                    <div className="column_domains">{strings.type}</div>
-                    <div className="column_domains">{strings.company}</div>
-                    <div className="column_domains">{strings.vatId}</div>
-                    <div className="column_domains"></div>
-                    <div className="column_domains"></div>
-                  </div>
+        <div className="table-header-domains">
+          <div className="column_domains">#</div>
+          <div className="column_domains">{strings.domain}</div>
+          <div className="column_domains">{strings.validBeforeAt}</div>
+          <div className="column_domains">{strings.type}</div>
+          <div className="column_domains">{strings.company}</div>
+          <div className="column_domains">{strings.vatId}</div>
+          <div className="column_domains"></div>
+          <div className="column_domains"></div>
+        </div>
+        <div className="table-body-domains">
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={loadMore}
+            hasMore={!isLoading && hasMore}
+            loader={<div className="loader">Loading...</div>}
+          >
+            {domains.map((item, index) => (
+              <div className="mobile-table-body-domains">
+                <div className="mobile-table-header-domains">
+                  <div className="column_domains">#</div>
+                  <div className="column_domains">{strings.domain}</div>
+                  <div className="column_domains">{strings.validBeforeAt}</div>
+                  <div className="column_domains">{strings.type}</div>
+                  <div className="column_domains">{strings.company}</div>
+                  <div className="column_domains">{strings.vatId}</div>
+                  <div className="column_domains"></div>
+                  <div className="column_domains"></div>
+                </div>
                 <div key={item.id || index} className="table-row-domains">
                   <div className="column_domains">{index + 1}</div>
                   <div className="column_domains">{item.domain}</div>
                   <div className="column_domains">{item.valid_before_at}</div>
                   <div className="column_domains">
-                    {item.type === "paid" && <li className="badge bg-success">{strings.paid}</li>}
-                    {item.type === "trial" && <li className="badge bg-primary">{strings.trial}</li>}
+                    {item.type === "paid" && (
+                      <li className="badge bg-success">{strings.paid}</li>
+                    )}
+                    {item.type === "trial" && (
+                      <li className="badge bg-primary">{strings.trial}</li>
+                    )}
                   </div>
                   <div className="column_domains">{item.company_name}</div>
                   <div className="column_domains">{item.vat_id}</div>
                   <div className="column_domains">
                     <PermissionGate permission={"domain.edit"}>
                       <Button
-                        className="btn-info" size="sm"
+                        className="btn-info"
+                        size="sm"
                         onClick={() => {
                           props.history.push({
                             pathname: "/manage-domains/edit",
@@ -262,11 +292,10 @@ function ManageDomain(props) {
                   </div>
                 </div>
               </div>
-              ))}
-            </InfiniteScroll>
-            <div className="spacer"></div>
+            ))}
+          </InfiniteScroll>
+          <div className="spacer"></div>
         </div>
-  
       </div>
     </>
   );
