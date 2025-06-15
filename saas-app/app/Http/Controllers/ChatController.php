@@ -43,24 +43,36 @@ class ChatController extends Controller
      */
     public function message(Request $request)
     {
-
-        // Get the authenticated user's ID
         $user = Auth::user();
 
-        // Create a new message using the authenticated user's ID
         $message = new MessageModel();
-        $message->user_id = $user->id; // Assign the user_id to the message
+        $message->user_id = $user->id;
         $message->domain = $user->domain;
         $message->username = $request->input('username');
         $message->message = $request->input('message');
+        $message->type = $request->input('type');
         $message->save();
 
-        // Trigger an event for the new message
-        event(new Message($request->input('username'), $request->input('message')));
+        // Load the user relationship so the broadcast has full info
+        $message->load('users');
 
-        return response()->json(['status' => 'Message sent successfully!'], 200);
+        // ✅ Trigger the broadcast
+        event(new Message($message));
+
+        return response()->json([
+            'status' => 'Message sent successfully!',
+            'message' => [
+                'id' => $message->id,
+                'username' => $message->username,
+                'message' => $message->message,
+                'formatted_created_at' => $message->created_at->format('Y-m-d H:i:s'),
+                'profile_picture_path' => $user->profile_picture_path,
+                'gender' => $user->gender,
+                'image_path' => null,
+            ]
+        ], 200);
     }
-
+    
     /**
      * Retrieve the latest chat messages.
      *
