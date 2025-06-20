@@ -120,9 +120,10 @@ class ChatController extends Controller
     {
         $username = $request->username;
         $isTyping = $request->isTyping;
-    
+        if (!$username || !isset($isTyping)) {
+            return response()->json(['error' => 'Invalid typing data'], 400);
+        }
         broadcast(new UserTyping($username, $isTyping))->toOthers();
-    
         return response()->json(['status' => 'success']);
     }
 
@@ -173,7 +174,7 @@ class ChatController extends Controller
         $message->save();
 
         // Trigger an event for the new message
-        event(new Message($user->name, $request->input('message')));
+        event(new Message($message));
 
         return response()->json(['message' => 'Image uploaded successfully'], 201);
     }
@@ -202,7 +203,7 @@ class ChatController extends Controller
             $message->save();
 
             // Trigger an event for the new message
-            event(new Message($user->name, $request->input('message')));
+            event(new Message($message));
 
             return response()->json([
                 'success' => true,
@@ -256,18 +257,14 @@ class ChatController extends Controller
     }
 
     public function saveMessageToDatabase(Request $request)
-    {       
+    {
         $user = Auth::user();
-        $request = $request->all();
-        
-        $generate = $request['generate'];
-
+        $data = $request->all();
+        $generate = $data['generate'];
         $message = new MessageModel();
 
-        if ($generate===true) {
-
-            // Generate a unique filename
-            $file = file_get_contents($request['message']['data'][0]['url']);
+        if ($generate === true) {
+            $file = file_get_contents($data['message']['data'][0]['url']);
             $fileName = 'ai_images/' . uniqid() . '.png';
             Storage::disk('public')->put($fileName, $file);
 
@@ -275,36 +272,30 @@ class ChatController extends Controller
             $message->user_id = null;
             $message->domain = $user->domain;
             $message->image_path = 'storage/' . $fileName;
-            $message->message = $request['message']['data'][0]['revised_prompt'];
+            $message->message = $data['message']['data'][0]['revised_prompt'];
             $message->type = "image";
             $message->gender = "male";
-
         } else {
-        
-            // Create new message
-            $prompt = $request['message'];
-            $filename = $request['filename'] ?? null; // filename should be sent from frontend after Word file is generated
-            $highlightedMessage = $prompt; // No syntax highlighting needed
-            $type = $request['type'] ?? 'text'; // Default to text if not specified
+            $prompt = $data['message'];
+            $filename = $data['filename'] ?? null;
+            $type = $data['type'] ?? 'text';
+
             $message->username = "AI";
             $message->user_id = null;
             $message->domain = $user->domain;
-            $message->message = $highlightedMessage;
+            $message->message = $prompt;
             $message->gender = "male";
-            $message->file_path = 'storage/' . $filename; // Store the file path for the Word document
-            $message->download_link = url('/storage/' . $filename); // No image path for Word documents
+            $message->file_path = 'storage/' . $filename;
+            $message->download_link = url('/storage/' . $filename);
             $message->type = $type;
-
         }
-
         $message->save();
 
-        // Trigger an event for the new message
-        event(new Message("AI", $request['message']));
+        // FIXED: Pass the full model to the event
+        event(new Message($message));
 
         return response()->json(['success' => 'Message saved successfully'], 200);
-    }
-
+}
     public function thinking(Request $request)
     {
         $user = "AI";
@@ -354,7 +345,7 @@ class ChatController extends Controller
             $message->save();
 
             // Trigger an event for the new message
-            event(new Message($user->name, $request->input('message')));
+             event(new Message($message));
 
             return response()->json(['message' => 'Media uploaded successfully'], 200);
         }

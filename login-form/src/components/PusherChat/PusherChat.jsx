@@ -529,7 +529,6 @@ const PusherChat = () => {
         : isGenerateEnabled
         ? "generate_image"
         : null;
-
       // Send the actual message to the backend
       const response = await Axios.post(
         `${API_BASE_URL}/api/chat/messages`,
@@ -541,16 +540,13 @@ const PusherChat = () => {
           },
         }
       );
-      const savedMessage = response.data.message;
+      //const savedMessage = response.data.message;
       //console.log("Backend message:", savedMessage);
-
       // Use the backend-confirmed message (with id, gender, etc.)
-      setMessages((prevMessages) => [...prevMessages, savedMessage]);
+      //setMessages((prevMessages) => [...prevMessages, savedMessage]);
       // Clear the message box
       setMessage("");
-
       sendTypingStatus(false);
-
       if (isAiEnabled) {
         setIsThinking(true);
         await Axios.post(
@@ -628,7 +624,6 @@ const PusherChat = () => {
       imageUploading,
       message
     );
-
     if (errorMsg) {
       setError(errorMsg);
       setHighlight({ button: highlightButton, textarea: highlightTextarea });
@@ -637,7 +632,6 @@ const PusherChat = () => {
       }, 3000); // Clear highlighting after 3 seconds
       return;
     }
-
     setError(""); // Clear any existing error
     setHighlight({ button: false, textarea: false }); // Remove highlighting
 
@@ -782,9 +776,9 @@ const PusherChat = () => {
         },
       })
         .then((response) => {
-          console.log(response);
+          //console.log(response);
           setvideoUploading(false);
-          console.log("Video uploaded successfully");
+          //console.log("Video uploaded successfully");
           Swal.fire({
             icon: "success",
             title: strings.upload_successful,
