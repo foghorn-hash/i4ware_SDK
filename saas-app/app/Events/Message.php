@@ -15,12 +15,11 @@ class Message implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $username;
+    // public $username;
     public $message;
 
-    public function __construct($username, $message)
+    public function __construct($message)
     {
-        $this->username = $username;
         $this->message = $message;
     }
 
@@ -33,5 +32,23 @@ class Message implements ShouldBroadcast
     public function broadcastAs()
     {
         return 'message';
+    }
+
+    public function broadcastWith()
+    {
+        if (is_string($this->message)) {
+            return ['message' => $this->message];
+        }
+
+        return [
+            'id' => $this->message->id,
+            'username' => $this->message->username,
+            'message' => $this->message->message,
+            'formatted_created_at' => optional($this->message->created_at)->format('Y-m-d H:i:s'),
+            'profile_picture_path' => optional($this->message->users)->profile_picture_path,
+            'gender' => optional($this->message->users)->gender,
+            'image_path' => $this->message->image_path,
+            'type' => $this->message->type,
+        ];
     }
 }
