@@ -1,29 +1,37 @@
-## Login forms using react.js hooks 
+## Login forms using react.js hooks
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+
 A project to demonstrate usage of basic react.js hooks
 
 ### Leave a feedback
+
 If you found this project useful, then make sure to star the project.
 
 ### Connect with me on the web:
+
 🦜 Twitter: https://twitter.com/saurabhnative  
-💼 LinkedIn: https://www.linkedin.com/in/saurabh-mhatre   
+💼 LinkedIn: https://www.linkedin.com/in/saurabh-mhatre  
 🖥 Github: https://github.com/smhatre59  
 🎬 Youtube: https://www.youtube.com/channel/UCtWzTuAO-uEnGhrktGNPi0g  
-📃 Website: https://coderwhodreams.com   
-📝 Medium: https://medium.com/@smhatre59 
+📃 Website: https://coderwhodreams.com  
+📝 Medium: https://medium.com/@smhatre59
 
 ### Connect with Matti Kiviharju on the web:
-💼 LinkedIn: https://www.linkedin.com/in/walkout/  
-🎬 Youtube: https://www.youtube.com/channel/UCOujpZraDeTY9Jj8YOzFMMw    
-📃 Website: https://mattikiviharju.i4ware.fi/    
 
-### Starting with the project   
-1. Clone this repo  
-2. Run `npm install` or `yarn install`  
-3. And then use `npm run start` or `yarn start` command to start the project in browser. 
+💼 LinkedIn: https://www.linkedin.com/in/walkout/  
+🎬 Youtube: https://www.youtube.com/channel/UCOujpZraDeTY9Jj8YOzFMMw  
+📃 Website: https://mattikiviharju.i4ware.fi/
+
+### Starting with the project
+
+1. Clone this repo
+2. Run `npm install` or `yarn install`
+3. And then use `npm run start` or `yarn start` command to start the project in browser.
 
 ## Loading Indicator SVG file credits:
 
@@ -53,6 +61,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
@@ -131,9 +140,10 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 ## Contributors ✨
 
 ### Connect with Matti Kiviharju on the web:
-💼 LinkedIn: https://www.linkedin.com/in/walkout/   
-🎬 Youtube: https://www.youtube.com/channel/UCOujpZraDeTY9Jj8YOzFMMw    
-📃 Website: https://mattikiviharju.i4ware.fi/    
+
+💼 LinkedIn: https://www.linkedin.com/in/walkout/  
+🎬 Youtube: https://www.youtube.com/channel/UCOujpZraDeTY9Jj8YOzFMMw  
+📃 Website: https://mattikiviharju.i4ware.fi/
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
@@ -148,11 +158,13 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <td align="center"><a href="https://github.com/blackberry2024"><img src="https://avatars.githubusercontent.com/u/163501390?v=4" width="100" height="100" alt=""/><br /><sub><b>Halit Berat</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   <td align="center"><a href="https://github.com/Makuzaza"><img src="https://avatars.githubusercontent.com/u/142216993?v=4" width="100" height="100" alt=""/><br /><sub><b>Maria Kuznetsova</b></sub></a><br /><a href="#" title="Code">💻</a></td>
 	  <td align="center"><a href="https://github.com/rohitchelat2"><img src="https://avatars.githubusercontent.com/u/157241551?v=4" width="100" height="100" alt=""/><br /><sub><b>Rohit Chelat</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/dohonglong"><img src="https://avatars.githubusercontent.com/u/46486856?v=4" width="100" height="100" alt=""/><br /><sub><b>Long Do</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Development Environment
