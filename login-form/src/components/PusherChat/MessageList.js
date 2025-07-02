@@ -10,6 +10,7 @@ import { PlayFill, StopFill, Download } from "react-bootstrap-icons";
 import CustomModal from "./CustomModal"; // Import the custom modal component
 import LocalizedStrings from "react-localization";
 import { Virtuoso } from "react-virtuoso";
+import { Button } from "react-bootstrap";
 let currentDate;
 let prevDate;
 
@@ -38,7 +39,8 @@ const MessageList = ({
   DefaultMaleImage,
   DefaultFemaleImage,
   // loadMore,
-  // hasMore,
+  hasMore,
+  loadingOlder,
   // isLoading,
   virtuosoRef,
   firstItemIndex, // for two-way loading
@@ -136,14 +138,14 @@ const MessageList = ({
                     controls={false}
                   >
                     <source src={imageUrl} type="video/mp4" />
-                    {strings.your_browser_does_not_support_video_tag}
+                    {strings.your_browser_not_support_video_tag}
                   </video>,
                   true
                 )
               }
             >
               <source src={imageUrl} type="video/mp4" />
-              {strings.your_browser_does_not_support_video_tag}
+              {strings.your_browser_not_support_video_tag}
             </video>
           </>
         );
@@ -250,8 +252,33 @@ const MessageList = ({
         data={processedMessages} // Already sorted ASC from backend or .reverse() once
         firstItemIndex={firstItemIndex}
         initialTopMostItemIndex={messages.length - 1}
-        startReached={loadOlderMessages} // Scroll up to load older
+        //startReached={loadOlderMessages} // Scroll up to load older
         followOutput="auto"
+        components={{
+          Header: () => {
+            if (!hasMore) return null;
+            return (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "5px",
+                }}
+              >
+                <Button
+                  variant="outline-secondary"
+                  onClick={loadOlderMessages}
+                  disabled={loadingOlder || !hasMore}
+                >
+                  {loadingOlder
+                    ? "Loading..."
+                    : hasMore
+                    ? "Load older messages"
+                    : "No More Messages"}
+                </Button>
+              </div>
+            );
+          },
+        }}
         itemContent={(index, msg) => {
           return (
             // Render each message

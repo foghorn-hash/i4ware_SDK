@@ -100,7 +100,7 @@ class ChatController extends Controller
                 return $message;
             });
 
-        $perPage = 5;
+        $perPage = 6;
         $page = $request->input('page', 1);
         $offset = ($page - 1) * $perPage;
 
@@ -384,7 +384,7 @@ class ChatController extends Controller
     public function transcribe(Request $request)
     {
         $request->validate([
-            'audio' => 'required|file|mimes:ogg,mp3,wav',
+            'audio' => 'required|file|mimes:ogg,mp3,wav,webm',
         ]);
 
         $user = Auth::user();
@@ -392,10 +392,8 @@ class ChatController extends Controller
         $audioFile = $request->file('audio');
         $audioPath = $audioFile->store('audio', 'public');
 
-        // Ensure the audioPath is correctly processed
         $transcription = $this->openAiService->transcribeSpeech($audioPath);
 
-        // Create a new record in the database
         $message = new MessageModel();
         $message->username = $user->name;
         $message->user_id = $user->id;
@@ -403,10 +401,13 @@ class ChatController extends Controller
         $message->message = $transcription ?? '';
         $message->save();
 
-        // Trigger an event for the new message
-        event(new Message($user->name, $transcription));
+        // Important: trigger event with the whole $message
+        event(new Message($message));
 
-        return response()->json(['success' => true, 'transcription' => $transcription]);
+        return response()->json([
+            'success' => true,
+            'message' => $message,  // now frontend has full info
+        ]);
     }
 
     public function generateWordFile(Request $request)

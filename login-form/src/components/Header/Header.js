@@ -8,80 +8,40 @@ import {
 } from "../../constants/apiConstants";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
+//import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
+//import NavDropdown from "react-bootstrap/NavDropdown";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
 import "./Header.css";
 import PermissionGate from "../../contexts/PermissionGate";
 // ES6 module syntax
-import LocalizedStrings from "react-localization";
+//import LocalizedStrings from "react-localization";
 import icon_menu from "../../icon_menu.png";
-import { Link, useHistory, useLocation } from "react-router-dom";
-
-let strings = new LocalizedStrings({
-  en: {
-    login: "Login",
-    logout: "Logout",
-    myProfile: "My Profile",
-    stlViewer: "3D Viewer",
-    manageUsers: "Manage Users",
-    manageDomains: "Manage Domains",
-    manageRoles: "Manage Roles",
-    settings: "Settings",
-    welcome: "Welcome",
-    videoPhoto: "Video/Photo",
-    chat: "Chat",
-    revenueReport: "Revenues",
-  },
-  fi: {
-    login: "Kirjaudu sisään",
-    logout: "Kirjaudu ulos",
-    myProfile: "Oma Profiili",
-    stlViewer: "3D-katseluohjelma",
-    manageUsers: "Käyttäjät",
-    manageDomains: "Domainit",
-    manageRoles: "Roolit",
-    settings: "Asetukset",
-    welcome: "Tervetuloa",
-    videoPhoto: "Video/Kuva",
-    chat: "Chatti",
-    revenueReport: "Liikevaihtod",
-  },
-  sv: {
-    login: "Logga in",
-    logout: "Logga ut",
-    myProfile: "Min Profil",
-    stlViewer: "3D-visningsprogram",
-    manageUsers: "Hantera användare",
-    manageDomains: "Hantera domäner",
-    manageRoles: "Hantera roller",
-    settings: "Inställningar",
-    welcome: "Välkommen",
-    videoPhoto: "Video/Foto",
-    chat: "Chatt",
-    revenueReport: "Intäkter",
-  },
-});
+//import { Link, useHistory, useLocation } from "react-router-dom";
+import { LanguageContext } from "../../LanguageContext";
 
 function Header(props) {
   const { authState, authActions } = useContext(AuthContext);
-  const [lang, setLang] = useState(API_DEFAULT_LANGUAGE);
+  //const [lang, setLang] = useState(API_DEFAULT_LANGUAGE);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
 
-  const history = useHistory();
-  const location = useLocation();
+  const { language, setLanguage, strings } = useContext(LanguageContext);
+
+  // const history = useHistory();
+  // const location = useLocation();
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
   var localization = urlParams.get("lang");
 
   if (localization === null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
+    setLanguage(API_DEFAULT_LANGUAGE); // Update React state that controls the current language.
+    strings.setLanguage(API_DEFAULT_LANGUAGE); // Translation strings to switch language internally
   } else {
+    setLanguage(localization);
     strings.setLanguage(localization);
   }
 
@@ -150,12 +110,6 @@ function Header(props) {
   };
 
   const renderLogout = () => {
-    if (localization === null) {
-      var language = API_DEFAULT_LANGUAGE;
-    } else {
-      var language = localization;
-    }
-
     return (
       <div
         className="ml-auto"
@@ -169,6 +123,7 @@ function Header(props) {
         <select
           id="language-selector"
           className="language-selector"
+          value={language}
           onChange={handleLocalization}
         >
           <option value="fi">Finnish</option>
