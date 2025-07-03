@@ -227,6 +227,8 @@ const PusherChat = () => {
   const disableRohto = () => setIsRohtoEnabled(false);
   const toggleRohto = () => setIsRohtoEnabled((prev) => !prev);
 
+  const [loadingOlder, setLoadingOlder] = useState(false);
+
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
   var localization = urlParams.get("lang");
@@ -418,6 +420,9 @@ const PusherChat = () => {
 
   const loadOlderMessages = async () => {
     if (!hasMore) return;
+
+    setLoadingOlder(true);
+
     const nextPage = page + 1;
     const res = await fetchMessages(nextPage);
     const newMessages = res.messages.reverse();
@@ -436,6 +441,8 @@ const PusherChat = () => {
     });
     setPage(nextPage);
     setFirstItemIndex((prev) => prev - newMessages.length);
+
+    setLoadingOlder(false);
   };
 
   // const loadNewerMessages = async () => {
@@ -968,6 +975,8 @@ const PusherChat = () => {
             messages={messages}
             virtuosoRef={virtuosoRef}
             firstItemIndex={firstItemIndex}
+            hasMore={hasMore}
+            loadingOlder={loadingOlder}
             loadOlderMessages={loadOlderMessages}
             //loadNewerMessages={loadNewerMessages}
             DefaultMaleImage={DefaultMaleImage}
