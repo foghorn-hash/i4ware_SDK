@@ -168,16 +168,16 @@ function Settings() {
                 id="defaultCheck4"
                 onClick={(e) => {
                   settingUpdate({
-                    setting_key: "ensable_netvisor",
+                    setting_key: "enable_netvisor",
                     setting_value: e.target.checked,
                   });
 
                   setSetting({
                     ...setting,
-                    ensable_netvisor: e.target.checked,
+                    enable_netvisor: e.target.checked,
                   });
                 }}
-                checked={setting.ensable_netvisor}
+                checked={setting.enable_netvisor}
               />
               <label className="form-check-label" htmlFor="defaultCheck4">
                 {strings.enableNetvisor}
