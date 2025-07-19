@@ -1,11 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { withRouter } from "react-router-dom";
-import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import {
+  API_DEFAULT_LANGUAGE,
+  ACCESS_TOKEN_NAME,
+  API_BASE_URL,
+} from "../../constants/apiConstants";
 import request from "../../utils/Request";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../tube-spinner.svg";
-import Button from "react-bootstrap/Button";
 import LocalizedStrings from "react-localization";
+import VerifyNetvisorButton from "./VerifyNetvisorButton";
 
 let strings = new LocalizedStrings({
   en: {
@@ -32,11 +36,18 @@ let strings = new LocalizedStrings({
   },
 });
 
-function Settings() {
-  const [message, setMessage] = React.useState(null);
-  const [setting, setSetting] = React.useState({
+const getDefaultSettings = () => {
+  return {
     show_captcha: false,
-  });
+    disable_registeration_from_others: false,
+    disable_license_details: false,
+    enable_netvisor: false,
+  };
+};
+
+function Settings() {
+  const [message, setMessage] = useState(null);
+  const [setting, setSetting] = useState(getDefaultSettings);
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -53,7 +64,7 @@ function Settings() {
       .get("/api/settings")
       .then((res) => {
         if (res.status === 200) {
-          const obj = {};
+          const obj = getDefaultSettings();
           for (let i = 0; i < res.data.data.length; i++) {
             const element = res.data.data[i];
             if (element.setting_value === "1") {
@@ -100,7 +111,7 @@ function Settings() {
                 type="checkbox"
                 value=""
                 id="defaultCheck1"
-                onClick={(e) => {
+                onChange={(e) => {
                   settingUpdate({
                     setting_key: "show_captcha",
                     setting_value: e.target.checked,
@@ -122,7 +133,7 @@ function Settings() {
                 type="checkbox"
                 value=""
                 id="defaultCheck2"
-                onClick={(e) => {
+                onChange={(e) => {
                   settingUpdate({
                     setting_key: "disable_registeration_from_others",
                     setting_value: e.target.checked,
@@ -144,7 +155,7 @@ function Settings() {
                 type="checkbox"
                 value=""
                 id="defaultCheck3"
-                onClick={(e) => {
+                onChange={(e) => {
                   settingUpdate({
                     setting_key: "disable_license_details",
                     setting_value: e.target.checked,
@@ -166,7 +177,7 @@ function Settings() {
                 type="checkbox"
                 value=""
                 id="defaultCheck4"
-                onClick={(e) => {
+                onChange={(e) => {
                   settingUpdate({
                     setting_key: "enable_netvisor",
                     setting_value: e.target.checked,
@@ -184,7 +195,10 @@ function Settings() {
               </label>
             </div>
             <br />
-            <Button>Verrify Netvisor</Button>
+            <VerifyNetvisorButton
+              API_BASE_URL={API_BASE_URL}
+              token={localStorage.getItem(ACCESS_TOKEN_NAME)}
+            />
           </div>
         </PermissionGate>
       }
