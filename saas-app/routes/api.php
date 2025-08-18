@@ -102,6 +102,7 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/generate-image', [ChatController::class, 'generateImage']);
 	Route::post('/speech', [ChatController::class, 'speech']);
 	Route::post('/word/send', [ChatController::class, 'generateWordFile'])->name('chatgpt.generate.word');
+	Route::post('/analyze-pdf', [ChatController::class, 'uploadPDF'])->name('pdf.upload');
 });
 
 Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router) {

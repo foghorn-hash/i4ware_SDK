@@ -20,6 +20,9 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
+use App\Exports\PdfExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Smalot\PdfParser\Parser;
 
 class ChatController extends Controller
 {
@@ -56,7 +59,7 @@ class ChatController extends Controller
         // Load the user relationship so the broadcast has full info
         $message->load('users');
 
-        // ✅ Trigger the broadcast
+        // Trigger the broadcast
         event(new Message($message));
 
         return response()->json([
@@ -448,6 +451,44 @@ class ChatController extends Controller
             'success' => true,
             'filename' => $filename,
             'message' => $aiResponse
+        ]);
+    }
+
+    public function uploadPDF(Request $request, OpenAIService $openAI)
+    {
+
+        $user = Auth::user();
+        $request->validate([
+            'pdf' => 'required|mimes:pdf|max:5120',
+        ]);
+
+        // Extract text from PDF
+        $pdfFile = $request->file('pdf');
+        $prompt = $request->input('message', 'Please analyze this PDF document.');
+        $filename = 'chatgpt_input_' . uniqid() . '_analysis.pdf';
+        $do = $pdfFile->storeAs('public', $filename);
+
+        // Send to OpenAI for analysis
+        $analysis = $openAI->analyzeText($prompt, Storage::url($do));
+
+        $path = "public/$filename"; // this goes into storage/app/public/
+        $pathUrl = "storage/$filename"; // this goes into storage/app/public/        
+
+        // Optionally return the file URL so frontend can fetch it
+        $url = Storage::url($filename); // gives /storage/chatgpt_output_xxx_analysis.xlsx
+
+        // Create a new record in the database
+        $message = new MessageModel();
+        $message->username = "AI";
+        $message->user_id = null;
+        $message->domain = $user->domain;
+        $message->type = 'pdf';
+        $message->message = 'PDF analysis: ' . $filename. ' generated successfully. '.$analysis;
+        $message->file_path = $pathUrl; // Adjust image path for public access
+        $message->save();
+
+        return response()->json([
+            'success' => true,
         ]);
     }
 

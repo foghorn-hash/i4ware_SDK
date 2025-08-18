@@ -229,6 +229,8 @@ const PusherChat = () => {
 
   const [loadingOlder, setLoadingOlder] = useState(false);
 
+  const fileInputRef = useRef(null);
+
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
   var localization = urlParams.get("lang");
@@ -238,6 +240,91 @@ const PusherChat = () => {
   } else {
     strings.setLanguage(localization);
   }
+
+   // Handle PDF selection
+  const handlePdfChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      alert("Please select a valid PDF file");
+      return;
+    }
+
+    // Show "AI is thinking" indicator via Pusher
+    setIsThinking(true);
+    await Axios.post(
+      `${API_BASE_URL}/api/chat/thinking`,
+      { username: "AI", isThinking: true },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+        },
+      }
+    );
+
+    // send to backend
+    const formData = new FormData();
+    formData.append("pdf", file);
+    formData.append("message", message);
+
+    try {
+      const response = await Axios.post(
+          `${API_BASE_URL}/api/chat/analyze-pdf`,
+          formData, // <-- body goes here directly
+          {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+              "Content-Type": "multipart/form-data", // important for file upload
+            },
+          }
+        );
+
+      if (response.data.success === false) {
+        throw new Error("Failed to upload PDF");
+      } else {
+        // Show success message
+        fetchMessages(); // Refresh messages after successful upload
+        Swal.fire({
+          icon: "success",
+          title: strings.upload_successful,
+          text: strings.image_upload_successful,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            setIsThinking(false);
+            Axios.post(
+              `${API_BASE_URL}/api/chat/thinking`,
+              { username: "AI", isThinking: false },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+                },
+              }
+            );
+            fetchMessages(); // Refresh messages after successful upload            
+          }
+        });
+      }
+
+  
+    } catch (err) {
+      console.error(err);
+      alert("Error analyzing PDF");
+      setIsThinking(false);
+      Axios.post(
+        `${API_BASE_URL}/api/chat/thinking`,
+        { username: "AI", isThinking: false },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+          },
+        }
+      );
+    }
+  };
 
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => {
@@ -1044,6 +1131,21 @@ const PusherChat = () => {
           <Button variant="primary" onClick={submitMessage}>
             {strings.send}
           </Button>
+          {/* Upload PDF Button */}
+            <Button
+              className="upload-pdf-button"
+              variant="primary"
+              onClick={() => fileInputRef.current.click()}
+            >
+              Upload PDF
+            </Button>
+            <input
+              type="file"
+              accept="application/pdf"
+              ref={fileInputRef}
+              onChange={handlePdfChange}
+              style={{ display: "none" }}
+            />
         </Form>
       </div>
       {/* ROHTO Prompt Overlay */}

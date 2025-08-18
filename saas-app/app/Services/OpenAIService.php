@@ -4,25 +4,29 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use Storage;
+use OpenAI;
+use Illuminate\Support\Facades\Log;
 
 class OpenAIService
 {
     protected $client;
+    protected $clientGuzzle;
     protected $apiKey;
     protected $maxTokens;
 
     public function __construct()
     {
+        $this->client = OpenAI::client(env('OPENAI_API_KEY'));
         $this->apiKey = env('OPENAI_API_KEY');
         $this->maxTokens = (integer) env('OPENAI_MAX_TOKENS');
-        $this->client = new Client([
+        $this->clientGuzzle = new Client([
             'base_uri' => 'https://api.openai.com',
             'headers' => [
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $this->apiKey,
             ],
         ]);
-        $this->server = new Client([
+        $this->serverGuzzle = new Client([
             'base_uri' => 'https://api.openai.com',
             'headers' => [
                 'Content-Type' => 'multipart/form-data',
@@ -48,7 +52,7 @@ class OpenAIService
             ]
         ];
 
-        $response = $this->client->post('/v1/chat/completions', [
+        $response = $this->clientGuzzle->post('/v1/chat/completions', [
             'json' => [
                 'model' => 'gpt-4o-mini',
                 'messages' => $messages,
@@ -64,7 +68,7 @@ class OpenAIService
         // Assuming 'transcription' is a variable containing user input or text
         $transcription = $prompt;
 
-        $response = $this->client->post('v1/images/generations', [
+        $response = $this->clientGuzzle->post('v1/images/generations', [
             'json' => [
                 'model' => 'dall-e-3',
                 'prompt' => $transcription,
@@ -109,7 +113,7 @@ class OpenAIService
                 throw new \Exception('Invalid voice parameter.');
         }
 
-        $response = $this->client->post('/v1/audio/speech', [
+        $response = $this->clientGuzzle->post('/v1/audio/speech', [
             'json' => [
                 'model' => $model,
                 'input' => $text,
@@ -130,7 +134,7 @@ class OpenAIService
             throw new \Exception('File does not exist at path: ' . $audioContentPath);
         }
 
-        $response = $this->server->post('/v1/audio/transcriptions', [
+        $response = $this->serverGuzzle->post('/v1/audio/transcriptions', [
             'multipart' => [
                 [
                     'name' => 'file',
@@ -162,7 +166,7 @@ class OpenAIService
             ],
         ];
 
-        $response = $this->client->post('/v1/chat/completions', [
+        $response = $this->clientGuzzle->post('/v1/chat/completions', [
             'json' => [
                 'model' => 'gpt-4o',
                 'messages' => $messages,
@@ -173,5 +177,29 @@ class OpenAIService
         $result = json_decode($response->getBody(), true);
 
         return $result['choices'][0]['message']['content'] ?? '';
+    }
+
+    public function analyzeText($prompt, $fileUrl)
+    {
+        $response = $this->clientGuzzle->post('/v1/responses', [
+            'json' => [
+                'model' => 'gpt-5',
+                'input' => [
+                    [
+                        'role' => 'user',
+                        'content' => [
+                            ['type' => 'input_text', 'text' => $prompt],
+                            ['type' => 'input_file', 'file_url' => env("APP_NGROK_URL").$fileUrl],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $data = json_decode($response->getBody(), true);
+
+        $outputText = $data['output'][1]['content'][0]['text'] ?? null;
+
+        return $outputText;
     }
 }

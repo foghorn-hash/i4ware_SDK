@@ -9,6 +9,16 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
+.upload-pdf-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background-color: #0d6efd;
+  color: #ffffff;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
 .message-area {
   width: 100%;
   display: flex;
