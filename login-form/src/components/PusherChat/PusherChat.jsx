@@ -74,6 +74,7 @@ let strings = new LocalizedStrings({
     rohto_for_prompt: "My question is",
     rohto_disable: "Disable ROHTO",
     rohto_enable: "Enable ROHTO",
+    upload_pdf: "Upload PDF",
   },
   fi: {
     send: "Lähetä",
@@ -124,6 +125,7 @@ let strings = new LocalizedStrings({
     rohto_for_prompt: "Kysymykseni on",
     rohto_disable: "Poista ROHTO käytöstä",
     rohto_enable: "Ota ROHTO käyttöön",
+    upload_pdf: "Lataa PDF",
   },
   sv: {
     send: "Skicka",
@@ -174,6 +176,7 @@ let strings = new LocalizedStrings({
     rohto_for_prompt: "Min fråga är",
     rohto_disable: "Inaktivera ROHTO",
     rohto_enable: "Aktivera ROHTO",
+    upload_pdf: "Ladda upp PDF",
   },
 });
 
@@ -285,7 +288,6 @@ const PusherChat = () => {
         throw new Error("Failed to upload PDF");
       } else {
         // Show success message
-        fetchMessages(); // Refresh messages after successful upload
         Swal.fire({
           icon: "success",
           title: strings.upload_successful,
@@ -303,7 +305,8 @@ const PusherChat = () => {
                 },
               }
             );
-            fetchMessages(); // Refresh messages after successful upload            
+            fetchMessages(); // Refresh messages after successful upload     
+            setMessage("");       
           }
         });
       }
@@ -1137,7 +1140,7 @@ const PusherChat = () => {
               variant="primary"
               onClick={() => fileInputRef.current.click()}
             >
-              Upload PDF
+              {strings.upload_pdf}
             </Button>
             <input
               type="file"

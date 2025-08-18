@@ -483,9 +483,11 @@ class ChatController extends Controller
         $message->user_id = null;
         $message->domain = $user->domain;
         $message->type = 'pdf';
-        $message->message = 'PDF analysis: ' . $filename. ' generated successfully. '.$analysis;
+        $message->message = $analysis;
         $message->file_path = $pathUrl; // Adjust image path for public access
         $message->save();
+
+        event(new Message($message));
 
         return response()->json([
             'success' => true,
