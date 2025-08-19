@@ -75,6 +75,8 @@ let strings = new LocalizedStrings({
     rohto_disable: "Disable ROHTO",
     rohto_enable: "Enable ROHTO",
     upload_pdf: "Upload PDF",
+    upload_failure: "Upload Failure",
+    pdf_upload_failure: "Failed to upload PDF. Please try again.",
   },
   fi: {
     send: "Lähetä",
@@ -126,6 +128,8 @@ let strings = new LocalizedStrings({
     rohto_disable: "Poista ROHTO käytöstä",
     rohto_enable: "Ota ROHTO käyttöön",
     upload_pdf: "Lataa PDF",
+    upload_failure: "Lataus epäonnistui",
+    pdf_upload_failure: "PDF:n lataus epäonnistui. Ole hyvä ja yritä uudestaan.",
   },
   sv: {
     send: "Skicka",
@@ -177,6 +181,8 @@ let strings = new LocalizedStrings({
     rohto_disable: "Inaktivera ROHTO",
     rohto_enable: "Aktivera ROHTO",
     upload_pdf: "Ladda upp PDF",
+    upload_failure: "Uppladdning misslyckades",
+    pdf_upload_failure: "Misslyckades med att ladda upp PDF. Försök igen.",
   },
 });
 
@@ -273,6 +279,20 @@ const PusherChat = () => {
     formData.append("message", message);
 
     try {
+
+      const responseSubmit = await Axios.post(
+        `${API_BASE_URL}/api/chat/messages`,
+        { username, message, type: null },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+          },
+        }
+      );
+
+      setMessage(""); 
+
       const response = await Axios.post(
           `${API_BASE_URL}/api/chat/analyze-pdf`,
           formData, // <-- body goes here directly
@@ -315,6 +335,11 @@ const PusherChat = () => {
     } catch (err) {
       console.error(err);
       alert("Error analyzing PDF");
+      Swal.fire({
+          icon: "failure",
+          title: strings.upload_failure,
+          text: strings.pdf_upload_failure,
+      });
       setIsThinking(false);
       Axios.post(
         `${API_BASE_URL}/api/chat/thinking`,
