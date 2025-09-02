@@ -106,7 +106,7 @@ try:
     import os
 
     # Get absolute Laravel project root, no matter where script is run from
-    laravel_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    laravel_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
     # Build absolute paths
     stl_path = os.path.join(laravel_root, 'storage', 'app', 'public', 'stl-files', f'{filename}.stl')
