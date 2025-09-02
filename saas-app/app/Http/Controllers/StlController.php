@@ -45,7 +45,7 @@ class StlController extends Controller
             error_log("Validation failed: 'file' and 'screenshot' parameters are required.");
             // Return a response with an error message
             return response()->json(['error' => 'Validation failed: file and screenshot parameters are required.'], 400);
-            }
+        }
 
         $uploadedFile = $request->file('file');
         $time = time(); // $time will be used again with the screenshot filename
@@ -211,5 +211,63 @@ class StlController extends Controller
         } else {
             return response()->json(['message' => 'File not found'], 404);
         }
-}
+    }
+
+    public function generateSpaceship(Request $request)
+    {
+        $filename = 'spaceship_' . time();
+        $pythonPath = 'C:\Users\matti\Miniconda3\envs\pyoccenv\python.exe'; // your Python path
+        $pythonScript = base_path('scripts/spaceship.py');
+        $command = "\"$pythonPath\" \"$pythonScript\" $filename";
+
+        // Capture output and exit code
+        exec($command, $output, $exitCode);
+
+        // Debug: Log all output
+        Log::info("Raw Python output", ['output' => $output, 'exit_code' => $exitCode]);
+
+        // Find the last line that looks like valid JSON
+        $jsonOutput = null;
+        foreach (array_reverse($output) as $line) {
+            $decoded = json_decode($line, true);
+            if (is_array($decoded)) {
+                $jsonOutput = $decoded;
+                break;
+            }
+        }
+
+        if (!$jsonOutput || !isset($jsonOutput['stl_filename'])) {
+            Log::error("Python script returned invalid result", ['json' => $jsonOutput, 'full_output' => $output]);
+            return response()->json([
+                'error' => 'Failed to generate model',
+                'details' => 'Invalid response from script'
+            ], 500);
+        }
+
+        // Optional: fail if script returned error explicitly
+        if (isset($jsonOutput['success']) && $jsonOutput['success'] === false) {
+            Log::error("Python generation failed", [
+                'error' => $jsonOutput['error'] ?? 'unknown',
+                'traceback' => $jsonOutput['traceback'] ?? null
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to generate model',
+                'details' => $jsonOutput['error'] ?? 'Unknown error'
+            ], 500);
+        }
+
+        // Success: build response with base64 screenshot
+        $screenshotPath = "public/stl-screenshots/screenshot_{$filename}.png";
+        $screenshotBase64 = Storage::exists($screenshotPath)
+            ? base64_encode(Storage::get($screenshotPath))
+            : null;
+
+        return response()->json([
+            'stl_filename' => $jsonOutput['stl_filename'],
+            'stl_url' => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64,
+        ]);
+    }
+
 }

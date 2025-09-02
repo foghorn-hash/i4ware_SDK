@@ -15,6 +15,7 @@
 
 .STL-controls {
     margin-bottom: 20px;
+    width: 100%;
 }
 
 .STLViewerComponent-clear {
@@ -23,6 +24,13 @@
 
 .STL-file-uploader {
     margin-top: 20px;
+}
+
+.STL-generate-button {
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    float: right;
 }
 
 .STLViewerComponent-large-modal .modal-dialog {

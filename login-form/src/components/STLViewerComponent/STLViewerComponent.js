@@ -45,6 +45,7 @@ function STLViewerComponent() {
   const [isLoading, setIsLoading] = useState(false); 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -174,9 +175,68 @@ const removeItem = async (fileName) => {
     //console.log(file.stl_filename);
   });
 
+  const handleGenerateSpaceship = async () => {
+    try {
+      setIsGenerating(true);
+
+      const response = await axios.post(
+        API_BASE_URL + '/api/stl/generate-spaceship',
+        {},
+        {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME), 
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      // Adjust depending on array or object
+      const newItem = Array.isArray(response.data) ? response.data[0] : response.data;
+      const fileName = newItem?.stl_filename;
+
+      if (!fileName) {
+        throw new Error("Invalid filename in response.");
+      }
+
+      if (!hasMore) {
+        try {
+          setIsLoading(true);
+          const fetchResponse = await axios.get(`${API_BASE_URL}/api/stl/stl-item?fileName=${fileName}`, {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+            },
+          });
+
+          if (fetchResponse.data) {
+            setStlItems((prev) => [...prev, fetchResponse.data]);
+          }
+        } catch (error) {
+          console.error('Error fetching STL file:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+    } catch (error) {
+      console.error("AI STL generation failed:", error.response?.data || error.message);
+      alert(error.response?.data?.details || "Failed to generate AI model.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <>
       <div className="STL-controls">
+        <Button
+          className='STL-generate-button'
+          variant="success"
+          onClick={handleGenerateSpaceship}
+          disabled={isGenerating}
+          style={{ marginLeft: '10px' }}
+        >
+          {isGenerating ? 'Generating...' : 'Generate AI Spaceship'}
+        </Button>
         <FileUploadForm newItemIsUploaded={newItemIsUploaded} />
         <div className='STLViewerComponent-clear'></div>
       </div>
@@ -236,6 +296,12 @@ const removeItem = async (fileName) => {
         handleClose={closeModalDelete} 
         handleDelete={removeItem} 
         fileName={fileToDelete} />
+        {isGenerating && (
+          <div className="loading-screen">
+            <img src={LOADING} alt="Loading..." />
+            <p>Generating 3D Model & Screenshot...</p>
+          </div>
+        )}
     </>
   );
 }
