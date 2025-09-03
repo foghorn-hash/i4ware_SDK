@@ -10,7 +10,11 @@ const TransactionForm= ({handleClose}) =>{
     
     const fetchCustomers = async () =>{
 
-        const response = await axios.get(API_BASE_URL + "/api/reports/customer")
+        const response = await axios.get(API_BASE_URL + "/api/reports/customer", {
+                  headers: {
+                    Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+                  },
+                })
         const data= await response.data.data
         setCustomers(data)
           
@@ -69,7 +73,7 @@ const TransactionForm= ({handleClose}) =>{
 
             <Form.Group className="mb-3" controlId="formInvoiceVATPer">
                 <Form.Label>VAT%</Form.Label>
-                <Form.Control type="number" step="0.01" max="100" name="vatPercentage" placeholder="VAT%" />
+                <Form.Control type="text" step="0.01" max="100" name="vatPercentage" placeholder="VAT%" />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formInvoiceDueDate">
