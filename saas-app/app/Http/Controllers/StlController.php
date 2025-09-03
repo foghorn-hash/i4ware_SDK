@@ -215,7 +215,7 @@ class StlController extends Controller
 
     public function generateSpaceship(Request $request)
     {
-        $filename = 'spaceship_' . time();
+        $filename = time();
         $pythonPath = 'C:\Users\matti\Miniconda3\envs\pyoccenv\python.exe'; // your Python path
         $pythonScript = base_path('scripts/spaceship.py');
         $command = "\"$pythonPath\" \"$pythonScript\" $filename";

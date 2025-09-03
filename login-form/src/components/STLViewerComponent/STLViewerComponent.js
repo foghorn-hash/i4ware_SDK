@@ -18,6 +18,10 @@ let strings = new LocalizedStrings({
     close: "Close",
     loading: "Loading...",
     delete: "Delete",
+    isLoading: "Loading more items...",
+    generateSpaceship: "Generate Spaceship",
+    generating: "Generating...",
+    isGenerating: "Generating 3D Model & Screenshot...",
   },
   fi: {
     viewSTL: "Näytä STL",
@@ -25,6 +29,10 @@ let strings = new LocalizedStrings({
     close: "Sulje",
     loading: "Ladataan...",
     delete: "Poista",
+    isLoading: "Ladataan lisää kohteita...",
+    generateSpaceship: "Luo avaruusalus",
+    generating: "Luodaan...",
+    isGenerating: "Luodaan 3D-mallia ja kuvakaappausta...",
   },
   sv: {
     viewSTL: "Visa STL",
@@ -32,6 +40,10 @@ let strings = new LocalizedStrings({
     close: "Stäng",
     loading: "Laddar...",
     delete: "Radera",
+    isLoading: "Laddar fler objekt...",
+    generateSpaceship: "Generera rymdskepp",
+    generating: "Genererar...",
+    isGenerating: "Genererar 3D-modell och skärmdump...",
   }
 });
 
@@ -228,6 +240,7 @@ const removeItem = async (fileName) => {
   return (
     <>
       <div className="STL-controls">
+        <FileUploadForm newItemIsUploaded={newItemIsUploaded} />
         <Button
           className='STL-generate-button'
           variant="success"
@@ -235,9 +248,8 @@ const removeItem = async (fileName) => {
           disabled={isGenerating}
           style={{ marginLeft: '10px' }}
         >
-          {isGenerating ? 'Generating...' : 'Generate AI Spaceship'}
+          {isGenerating ? strings.generating : strings.generateSpaceship}
         </Button>
-        <FileUploadForm newItemIsUploaded={newItemIsUploaded} />
         <div className='STLViewerComponent-clear'></div>
       </div>
       <Container>
@@ -275,7 +287,7 @@ const removeItem = async (fileName) => {
           </Row>
         </InfiniteScroll>
       </Container>
-      {isLoading && <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
+      {isLoading && <div className="loading-screen"><img src={LOADING} alt={strings.isLoading} /></div>}
       <Modal show={showModal}
       onHide={closeModal} dialogClassName="STLViewerComponent-large-modal">
         <Modal.Header closeButton>
@@ -298,8 +310,8 @@ const removeItem = async (fileName) => {
         fileName={fileToDelete} />
         {isGenerating && (
           <div className="loading-screen">
-            <img src={LOADING} alt="Loading..." />
-            <p>Generating 3D Model & Screenshot...</p>
+            <img src={LOADING} alt={strings.isLoading} />
+            <p>{strings.isGenerating}</p>
           </div>
         )}
     </>
