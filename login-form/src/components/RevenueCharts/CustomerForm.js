@@ -1,6 +1,6 @@
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import {API_BASE_URL, API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
+import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME} from "../../constants/apiConstants";
 import axios from "axios";
 
 
@@ -16,7 +16,11 @@ const CustomerForm= ({handleClose}) =>{
         
         
         try{
-        const response = await axios.post(API_BASE_URL + "/api/reports/customer", formDataObj);
+        const response = await axios.post(API_BASE_URL + "/api/reports/customer", formDataObj, {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+          },
+        });
         if(response.status === 201 ){
             e.target.reset();
             alert("Customer added successfully!");

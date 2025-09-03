@@ -5,6 +5,7 @@ import CustomersTable from "./CustomersTable";
 import ButtonsToAdd from "./ButtonsToAdd";
 import TransactionsTableAll from "./TransactionsTableAll";
 import CumulativeChart from "./CumulativeChart";
+import MonthlyIncomeForYear from "./MonthlyIncomeForYear";
 
 const Charts = () => {
     return (
@@ -12,6 +13,7 @@ const Charts = () => {
         <ButtonsToAdd />
         
         <TransactionsTable />
+        <MonthlyIncomeForYear year={new Date().getFullYear()} />
         <TransactionsTableAll />
         <CumulativeChart />
         <CustomersTable />

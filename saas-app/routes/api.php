@@ -120,5 +120,7 @@ Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router)
 	Route::get('/customer', [AtlassianSalesController::class, 'getAllCustomer']);
 	Route::post('/customer', [AtlassianSalesController::class, 'addCustomer']);
 	Route::post('/transaction', [AtlassianSalesController::class, 'addTransaction']);
+	Route::get('/merged-monthly-sums', [AtlassianSalesController::class, 'getIncomeByMonthAllYears']);
+	Route::get('/income-years', [AtlassianSalesController::class, 'getIncomeYears']);
 
 });

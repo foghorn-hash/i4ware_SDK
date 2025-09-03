@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Table from 'react-bootstrap/Table';
 import LOADING from '../../tube-spinner.svg';
-import { API_BASE_URL,  API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import { API_BASE_URL,  API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
 
@@ -45,7 +45,11 @@ const CustomersTable = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get(API_BASE_URL + "/api/reports/customer"); // Replace with your Laravel API URL
+      const response = await axios.get(API_BASE_URL + "/api/reports/customer", {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+          },
+        }); // Replace with your Laravel API URL
       const data = response.data.data;
         console.log(data)
       

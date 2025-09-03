@@ -61,7 +61,11 @@ const TransactionsTableAll = () => {
   const fetchMergedTransactions = async () => {
     try {
       const response = await axios.get(
-        API_BASE_URL + "/api/reports/merged-sales"
+        API_BASE_URL + "/api/reports/merged-sales", {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+          },
+        }
       ); // Replace with your Laravel API URL
       const data = response.data.root;
 
