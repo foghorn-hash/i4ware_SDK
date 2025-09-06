@@ -80,6 +80,8 @@ Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/stl-file', [StlController::class, 'getStlFile'])->name('stl.stl-file');
 	Route::delete('/delete-stl', [StlController::class, 'postStlDeleteFile'])->name('stl.delete-stl'); 
 	Route::post('/generate-spaceship', [StlController::class, 'generateSpaceship']);
+	Route::post('/generate-cyborg', [StlController::class, 'generateCyborg']);
+	Route::post('/generate-car', [StlController::class, 'generateCar']);
 });
 
 Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router) {
