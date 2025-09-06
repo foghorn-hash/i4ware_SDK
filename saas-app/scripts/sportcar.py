@@ -13,6 +13,9 @@ from OCC.Core.BRep import BRep_Builder
 from OCC.Display.OCCViewer import rgb_color
 from OCC.Extend.DataExchange import write_stl_file
 
+# === Args ===
+filename = sys.argv[1] if len(sys.argv) > 1 else "futuristic_spaceship"
+
 # === Functions ===
 
 def make_ellipse_wire(width, height, x_offset):
