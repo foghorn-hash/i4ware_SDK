@@ -216,7 +216,7 @@ class StlController extends Controller
     public function generateSpaceship(Request $request)
     {
         $filename = time();
-        $pythonPath = '$HOME/miniconda3/envs/cad/bin/python'; // your Python path
+        $pythonPath = '/home/ubuntu/miniconda3/envs/cad/bin/python'; // your Python path
         $pythonScript = base_path('scripts/spaceship.py');
         $command = "\"$pythonPath\" \"$pythonScript\" $filename";
 
@@ -273,7 +273,7 @@ class StlController extends Controller
     public function generateCyborg(Request $request)
     {
         $filename = time();
-        $pythonPath = '$HOME/miniconda3/envs/cad/bin/python'; // your Python path
+        $pythonPath = '/home/ubuntu/miniconda3/envs/cad/bin/python'; // your Python path
         $pythonScript = base_path('scripts/cyborg.py');
         $command = "\"$pythonPath\" \"$pythonScript\" $filename";
 
@@ -330,7 +330,7 @@ class StlController extends Controller
     public function generateCar(Request $request)
     {
         $filename = time();
-        $pythonPath = '$HOME/miniconda3/envs/cad/bin/python'; // your Python path
+        $pythonPath = '/home/ubuntu/miniconda3/envs/cad/bin/python'; // your Python path
         $pythonScript = base_path('scripts/sportcar.py');
         $command = "\"$pythonPath\" \"$pythonScript\" $filename";
 
