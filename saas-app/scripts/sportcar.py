@@ -5,7 +5,6 @@ import json
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakePolygon
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_ThruSections
 from OCC.Core.gp import gp_Pnt, gp_Ax2, gp_Dir, gp_Elips
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEllipse
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder, BRepPrimAPI_MakeBox
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Cut
 from OCC.Display.SimpleGui import init_display
