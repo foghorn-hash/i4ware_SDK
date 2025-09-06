@@ -217,6 +217,7 @@ class StlController extends Controller
     public function generateSpaceship(Request $request)
     {
         $filename = (string) time();
+
         $process = new Process([
             '/usr/bin/xvfb-run', '-a',
             '/home/ubuntu/miniconda3/envs/cad/bin/python',
@@ -224,39 +225,57 @@ class StlController extends Controller
             $filename,
         ]);
 
-        // Optional: force software GL for headless servers
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
         ]);
 
-        $process->setTimeout(120); // seconds
+        $process->setTimeout(120);
         $process->run();
 
         if (!$process->isSuccessful()) {
-            // Log stderr to see Python tracebacks
-            \Log::error('Python failed', ['stderr' => $process->getErrorOutput(), 'stdout' => $process->getOutput()]);
-            return response()->json(['ok' => false, 'error' => trim($process->getErrorOutput())], 500);
+            Log::error('Python failed', [
+                'stderr' => $process->getErrorOutput(),
+                'stdout' => $process->getOutput(),
+            ]);
+            return response()->json([
+                'ok'    => false,
+                'error' => trim($process->getErrorOutput() ?: $process->getOutput()),
+            ], 500);
         }
 
-        // Success: build response with base64 screenshot
-        $screenshotPath = "public/stl-screenshots/screenshot_{$filename}.png";
-        $screenshotBase64 = Storage::exists($screenshotPath)
-            ? base64_encode(Storage::get($screenshotPath))
+        $raw = trim($process->getOutput());
+
+        // Safely decode JSON
+        $jsonOutput = json_decode($raw, true);
+        if (!is_array($jsonOutput) || empty($jsonOutput['stl_filename'])) {
+            Log::error('Invalid JSON from Python', ['raw' => $raw]);
+            return response()->json([
+                'ok'    => false,
+                'error' => 'Python did not return valid JSON.',
+                'raw'   => $raw,
+            ], 500);
+        }
+
+        // Read screenshot from the PUBLIC disk (storage/app/public)
+        $publicDisk = Storage::disk('public');
+        $shotRel = "stl-screenshots/screenshot_{$filename}.png"; // path relative to public disk
+        $screenshotBase64 = $publicDisk->exists($shotRel)
+            ? base64_encode($publicDisk->get($shotRel))
             : null;
 
-        // Your script prints JSON; return it directly if you like
-        $jsonOutput = json_decode($process->getOutput(), true);
         return response()->json([
-            'stl_filename' => $jsonOutput['stl_filename'],
-            'stl_url' => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
-            'screenshot_file' => $screenshotBase64,
+            'ok'            => true,
+            'stl_filename'  => $jsonOutput['stl_filename'],
+            'stl_url'       => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64, // null if not present
         ]);
     }
 
     public function generateCyborg(Request $request)
     {
         $filename = (string) time();
+
         $process = new Process([
             '/usr/bin/xvfb-run', '-a',
             '/home/ubuntu/miniconda3/envs/cad/bin/python',
@@ -264,39 +283,57 @@ class StlController extends Controller
             $filename,
         ]);
 
-        // Optional: force software GL for headless servers
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
         ]);
 
-        $process->setTimeout(120); // seconds
+        $process->setTimeout(120);
         $process->run();
 
         if (!$process->isSuccessful()) {
-            // Log stderr to see Python tracebacks
-            \Log::error('Python failed', ['stderr' => $process->getErrorOutput(), 'stdout' => $process->getOutput()]);
-            return response()->json(['ok' => false, 'error' => trim($process->getErrorOutput())], 500);
+            Log::error('Python failed', [
+                'stderr' => $process->getErrorOutput(),
+                'stdout' => $process->getOutput(),
+            ]);
+            return response()->json([
+                'ok'    => false,
+                'error' => trim($process->getErrorOutput() ?: $process->getOutput()),
+            ], 500);
         }
 
-        // Success: build response with base64 screenshot
-        $screenshotPath = "public/stl-screenshots/screenshot_{$filename}.png";
-        $screenshotBase64 = Storage::exists($screenshotPath)
-            ? base64_encode(Storage::get($screenshotPath))
+        $raw = trim($process->getOutput());
+
+        // Safely decode JSON
+        $jsonOutput = json_decode($raw, true);
+        if (!is_array($jsonOutput) || empty($jsonOutput['stl_filename'])) {
+            Log::error('Invalid JSON from Python', ['raw' => $raw]);
+            return response()->json([
+                'ok'    => false,
+                'error' => 'Python did not return valid JSON.',
+                'raw'   => $raw,
+            ], 500);
+        }
+
+        // Read screenshot from the PUBLIC disk (storage/app/public)
+        $publicDisk = Storage::disk('public');
+        $shotRel = "stl-screenshots/screenshot_{$filename}.png"; // path relative to public disk
+        $screenshotBase64 = $publicDisk->exists($shotRel)
+            ? base64_encode($publicDisk->get($shotRel))
             : null;
 
-        // Your script prints JSON; return it directly if you like
-        $jsonOutput = json_decode($process->getOutput(), true);
         return response()->json([
-            'stl_filename' => $jsonOutput['stl_filename'],
-            'stl_url' => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
-            'screenshot_file' => $screenshotBase64,
+            'ok'            => true,
+            'stl_filename'  => $jsonOutput['stl_filename'],
+            'stl_url'       => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64, // null if not present
         ]);
     }
 
     public function generateCar(Request $request)
     {
         $filename = (string) time();
+
         $process = new Process([
             '/usr/bin/xvfb-run', '-a',
             '/home/ubuntu/miniconda3/envs/cad/bin/python',
@@ -304,33 +341,50 @@ class StlController extends Controller
             $filename,
         ]);
 
-        // Optional: force software GL for headless servers
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
         ]);
 
-        $process->setTimeout(120); // seconds
+        $process->setTimeout(120);
         $process->run();
 
         if (!$process->isSuccessful()) {
-            // Log stderr to see Python tracebacks
-            \Log::error('Python failed', ['stderr' => $process->getErrorOutput(), 'stdout' => $process->getOutput()]);
-            return response()->json(['ok' => false, 'error' => trim($process->getErrorOutput())], 500);
+            Log::error('Python failed', [
+                'stderr' => $process->getErrorOutput(),
+                'stdout' => $process->getOutput(),
+            ]);
+            return response()->json([
+                'ok'    => false,
+                'error' => trim($process->getErrorOutput() ?: $process->getOutput()),
+            ], 500);
         }
 
-        // Success: build response with base64 screenshot
-        $screenshotPath = "public/stl-screenshots/screenshot_{$filename}.png";
-        $screenshotBase64 = Storage::exists($screenshotPath)
-            ? base64_encode(Storage::get($screenshotPath))
+        $raw = trim($process->getOutput());
+
+        // Safely decode JSON
+        $jsonOutput = json_decode($raw, true);
+        if (!is_array($jsonOutput) || empty($jsonOutput['stl_filename'])) {
+            Log::error('Invalid JSON from Python', ['raw' => $raw]);
+            return response()->json([
+                'ok'    => false,
+                'error' => 'Python did not return valid JSON.',
+                'raw'   => $raw,
+            ], 500);
+        }
+
+        // Read screenshot from the PUBLIC disk (storage/app/public)
+        $publicDisk = Storage::disk('public');
+        $shotRel = "stl-screenshots/screenshot_{$filename}.png"; // path relative to public disk
+        $screenshotBase64 = $publicDisk->exists($shotRel)
+            ? base64_encode($publicDisk->get($shotRel))
             : null;
 
-        // Your script prints JSON; return it directly if you like
-        $jsonOutput = json_decode($process->getOutput(), true);
         return response()->json([
-            'stl_filename' => $jsonOutput['stl_filename'],
-            'stl_url' => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
-            'screenshot_file' => $screenshotBase64,
+            'ok'            => true,
+            'stl_filename'  => $jsonOutput['stl_filename'],
+            'stl_url'       => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64, // null if not present
         ]);
     }
 
