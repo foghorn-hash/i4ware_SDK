@@ -139,6 +139,9 @@ os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
 # === Export STL ===
 write_stl_file(assembly, stl_path)
 # === Screenshot ===
+from OCC.Display.OCCViewer import OffscreenRenderer
+from OCC.Core.Quantity import Quantity_Color, Quantity_TOC_RGB
+# === Screenshot ===
 renderer = OffscreenRenderer()
 renderer.Create()
 white = Quantity_Color(1.0, 1.0, 1.0, Quantity_TOC_RGB)
