@@ -239,52 +239,44 @@ class StlController extends Controller
             return response()->json(['ok' => false, 'error' => trim($process->getErrorOutput())], 500);
         }
 
+        // Success: build response with base64 screenshot
+        $screenshotPath = "public/stl-screenshots/screenshot_{$filename}.png";
+        $screenshotBase64 = Storage::exists($screenshotPath)
+            ? base64_encode(Storage::get($screenshotPath))
+            : null;
+
         // Your script prints JSON; return it directly if you like
-        return response($process->getOutput(), 200)->header('Content-Type', 'application/json');
+        $jsonOutput = json_decode($process->getOutput(), true);
+        return response()->json([
+            'stl_filename' => $jsonOutput['stl_filename'],
+            'stl_url' => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64,
+        ]);
     }
 
     public function generateCyborg(Request $request)
     {
-        $filename = time();
-        $pythonPath = '/usr/bin/xvfb-run -a /home/ubuntu/miniconda3/envs/cad/bin/python'; // your Python path
-        $pythonScript = base_path('scripts/cyborg.py');
-        $command = "\"$pythonPath\" \"$pythonScript\" $filename";
+        $filename = (string) time();
+        $process = new Process([
+            '/usr/bin/xvfb-run', '-a',
+            '/home/ubuntu/miniconda3/envs/cad/bin/python',
+            base_path('scripts/cyborg.py'),
+            $filename,
+        ]);
 
-        // Capture output and exit code
-        exec($command, $output, $exitCode);
+        // Optional: force software GL for headless servers
+        $process->setEnv([
+            'LIBGL_ALWAYS_SOFTWARE' => '1',
+            'QT_QPA_PLATFORM'       => 'offscreen',
+        ]);
 
-        // Debug: Log all output
-        Log::info("Raw Python output", ['output' => $output, 'exit_code' => $exitCode]);
+        $process->setTimeout(120); // seconds
+        $process->run();
 
-        // Find the last line that looks like valid JSON
-        $jsonOutput = null;
-        foreach (array_reverse($output) as $line) {
-            $decoded = json_decode($line, true);
-            if (is_array($decoded)) {
-                $jsonOutput = $decoded;
-                break;
-            }
-        }
-
-        if (!$jsonOutput || !isset($jsonOutput['stl_filename'])) {
-            Log::error("Python script returned invalid result", ['json' => $jsonOutput, 'full_output' => $output]);
-            return response()->json([
-                'error' => 'Failed to generate model',
-                'details' => 'Invalid response from script'
-            ], 500);
-        }
-
-        // Optional: fail if script returned error explicitly
-        if (isset($jsonOutput['success']) && $jsonOutput['success'] === false) {
-            Log::error("Python generation failed", [
-                'error' => $jsonOutput['error'] ?? 'unknown',
-                'traceback' => $jsonOutput['traceback'] ?? null
-            ]);
-
-            return response()->json([
-                'error' => 'Failed to generate model',
-                'details' => $jsonOutput['error'] ?? 'Unknown error'
-            ], 500);
+        if (!$process->isSuccessful()) {
+            // Log stderr to see Python tracebacks
+            \Log::error('Python failed', ['stderr' => $process->getErrorOutput(), 'stdout' => $process->getOutput()]);
+            return response()->json(['ok' => false, 'error' => trim($process->getErrorOutput())], 500);
         }
 
         // Success: build response with base64 screenshot
@@ -293,6 +285,8 @@ class StlController extends Controller
             ? base64_encode(Storage::get($screenshotPath))
             : null;
 
+        // Your script prints JSON; return it directly if you like
+        $jsonOutput = json_decode($process->getOutput(), true);
         return response()->json([
             'stl_filename' => $jsonOutput['stl_filename'],
             'stl_url' => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
@@ -302,46 +296,27 @@ class StlController extends Controller
 
     public function generateCar(Request $request)
     {
-        $filename = time();
-        $pythonPath = '/usr/bin/xvfb-run -a /home/ubuntu/miniconda3/envs/cad/bin/python'; // your Python path
-        $pythonScript = base_path('scripts/sportcar.py');
-        $command = "\"$pythonPath\" \"$pythonScript\" $filename";
+        $filename = (string) time();
+        $process = new Process([
+            '/usr/bin/xvfb-run', '-a',
+            '/home/ubuntu/miniconda3/envs/cad/bin/python',
+            base_path('scripts/sportcar.py'),
+            $filename,
+        ]);
 
-        // Capture output and exit code
-        exec($command, $output, $exitCode);
+        // Optional: force software GL for headless servers
+        $process->setEnv([
+            'LIBGL_ALWAYS_SOFTWARE' => '1',
+            'QT_QPA_PLATFORM'       => 'offscreen',
+        ]);
 
-        // Debug: Log all output
-        Log::info("Raw Python output", ['output' => $output, 'exit_code' => $exitCode]);
+        $process->setTimeout(120); // seconds
+        $process->run();
 
-        // Find the last line that looks like valid JSON
-        $jsonOutput = null;
-        foreach (array_reverse($output) as $line) {
-            $decoded = json_decode($line, true);
-            if (is_array($decoded)) {
-                $jsonOutput = $decoded;
-                break;
-            }
-        }
-
-        if (!$jsonOutput || !isset($jsonOutput['stl_filename'])) {
-            Log::error("Python script returned invalid result", ['json' => $jsonOutput, 'full_output' => $output]);
-            return response()->json([
-                'error' => 'Failed to generate model',
-                'details' => 'Invalid response from script'
-            ], 500);
-        }
-
-        // Optional: fail if script returned error explicitly
-        if (isset($jsonOutput['success']) && $jsonOutput['success'] === false) {
-            Log::error("Python generation failed", [
-                'error' => $jsonOutput['error'] ?? 'unknown',
-                'traceback' => $jsonOutput['traceback'] ?? null
-            ]);
-
-            return response()->json([
-                'error' => 'Failed to generate model',
-                'details' => $jsonOutput['error'] ?? 'Unknown error'
-            ], 500);
+        if (!$process->isSuccessful()) {
+            // Log stderr to see Python tracebacks
+            \Log::error('Python failed', ['stderr' => $process->getErrorOutput(), 'stdout' => $process->getOutput()]);
+            return response()->json(['ok' => false, 'error' => trim($process->getErrorOutput())], 500);
         }
 
         // Success: build response with base64 screenshot
@@ -350,6 +325,8 @@ class StlController extends Controller
             ? base64_encode(Storage::get($screenshotPath))
             : null;
 
+        // Your script prints JSON; return it directly if you like
+        $jsonOutput = json_decode($process->getOutput(), true);
         return response()->json([
             'stl_filename' => $jsonOutput['stl_filename'],
             'stl_url' => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
