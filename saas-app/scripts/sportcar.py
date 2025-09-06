@@ -137,15 +137,14 @@ os.makedirs(os.path.dirname(stl_path), exist_ok=True)
 os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
 
 # === Export STL ===
-write_stl_file(car_body, stl_path)
-
+write_stl_file(assembly, stl_path)
 # === Screenshot ===
 renderer = OffscreenRenderer()
 renderer.Create()
 white = Quantity_Color(1.0, 1.0, 1.0, Quantity_TOC_RGB)
 renderer.View.SetBgGradientColors(white, white, 2)
 renderer.SetSize(444, 121)
-renderer.DisplayShape(car_body)
+renderer.DisplayShape(assembly)
 renderer.FitAll()
 renderer.ExportToImage(screenshot_path)
 
