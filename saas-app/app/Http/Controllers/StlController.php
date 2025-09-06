@@ -218,18 +218,27 @@ class StlController extends Controller
     {
         $filename = (string) time();
 
+        // Ensure a writable Mesa shader cache to stop the permission warning
+        $mesaCache = storage_path('app/mesa-cache');
+        if (!is_dir($mesaCache)) {
+            @mkdir($mesaCache, 0775, true);
+        }
+
         $process = new Process([
             '/usr/bin/xvfb-run', '-a',
             '/home/ubuntu/miniconda3/envs/cad/bin/python',
             base_path('scripts/spaceship.py'),
             $filename,
         ]);
-
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
+            // push Mesa cache to a writable place (prevents the first warning line)
+            'MESA_GLSL_CACHE_DIR'   => $mesaCache,
+            // optional noise reducers
+            'QT_LOGGING_RULES'      => '*.debug=false;qt.qpa.*=false',
+            'GALLIUM_DRIVER'        => 'llvmpipe',
         ]);
-
         $process->setTimeout(120);
         $process->run();
 
@@ -246,29 +255,38 @@ class StlController extends Controller
 
         $raw = trim($process->getOutput());
 
-        // Safely decode JSON
-        $jsonOutput = json_decode($raw, true);
-        if (!is_array($jsonOutput) || empty($jsonOutput['stl_filename'])) {
+        // Extract the last valid JSON object from noisy stdout
+        $jsonOutput = null;
+        foreach (array_reverse(preg_split("/\r?\n/", $raw)) as $line) {
+            $line = trim($line);
+            if ($line !== '' && $line[0] === '{' && substr($line, -1) === '}') {
+                $decoded = json_decode($line, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $jsonOutput = $decoded;
+                    break;
+                }
+            }
+        }
+
+        if (!$jsonOutput || empty($jsonOutput['stl_filename'])) {
             Log::error('Invalid JSON from Python', ['raw' => $raw]);
             return response()->json([
-                'ok'    => false,
-                'error' => 'Python did not return valid JSON.',
-                'raw'   => $raw,
+                'success'    => false,
+                'error' => 'Python did not return clean JSON',
+                'raw'   => $raw, // keep for debugging
             ], 500);
         }
 
-        // Read screenshot from the PUBLIC disk (storage/app/public)
-        $publicDisk = Storage::disk('public');
-        $shotRel = "stl-screenshots/screenshot_{$filename}.png"; // path relative to public disk
-        $screenshotBase64 = $publicDisk->exists($shotRel)
-            ? base64_encode($publicDisk->get($shotRel))
-            : null;
+        // Read screenshot via the public disk (storage/app/public)
+        $public = Storage::disk('public');
+        $shotRel = "stl-screenshots/screenshot_{$filename}.png";
+        $screenshotBase64 = $public->exists($shotRel) ? base64_encode($public->get($shotRel)) : null;
 
         return response()->json([
-            'ok'            => true,
-            'stl_filename'  => $jsonOutput['stl_filename'],
-            'stl_url'       => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
-            'screenshot_file' => $screenshotBase64, // null if not present
+            'success'              => true,
+            'stl_filename'    => $jsonOutput['stl_filename'],
+            'stl_url'         => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64, // null if screenshot failed
         ]);
     }
 
@@ -276,18 +294,27 @@ class StlController extends Controller
     {
         $filename = (string) time();
 
+        // Ensure a writable Mesa shader cache to stop the permission warning
+        $mesaCache = storage_path('app/mesa-cache');
+        if (!is_dir($mesaCache)) {
+            @mkdir($mesaCache, 0775, true);
+        }
+
         $process = new Process([
             '/usr/bin/xvfb-run', '-a',
             '/home/ubuntu/miniconda3/envs/cad/bin/python',
             base_path('scripts/cyborg.py'),
             $filename,
         ]);
-
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
+            // push Mesa cache to a writable place (prevents the first warning line)
+            'MESA_GLSL_CACHE_DIR'   => $mesaCache,
+            // optional noise reducers
+            'QT_LOGGING_RULES'      => '*.debug=false;qt.qpa.*=false',
+            'GALLIUM_DRIVER'        => 'llvmpipe',
         ]);
-
         $process->setTimeout(120);
         $process->run();
 
@@ -304,29 +331,38 @@ class StlController extends Controller
 
         $raw = trim($process->getOutput());
 
-        // Safely decode JSON
-        $jsonOutput = json_decode($raw, true);
-        if (!is_array($jsonOutput) || empty($jsonOutput['stl_filename'])) {
+        // Extract the last valid JSON object from noisy stdout
+        $jsonOutput = null;
+        foreach (array_reverse(preg_split("/\r?\n/", $raw)) as $line) {
+            $line = trim($line);
+            if ($line !== '' && $line[0] === '{' && substr($line, -1) === '}') {
+                $decoded = json_decode($line, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $jsonOutput = $decoded;
+                    break;
+                }
+            }
+        }
+
+        if (!$jsonOutput || empty($jsonOutput['stl_filename'])) {
             Log::error('Invalid JSON from Python', ['raw' => $raw]);
             return response()->json([
-                'ok'    => false,
-                'error' => 'Python did not return valid JSON.',
-                'raw'   => $raw,
+                'success'    => false,
+                'error' => 'Python did not return clean JSON',
+                'raw'   => $raw, // keep for debugging
             ], 500);
         }
 
-        // Read screenshot from the PUBLIC disk (storage/app/public)
-        $publicDisk = Storage::disk('public');
-        $shotRel = "stl-screenshots/screenshot_{$filename}.png"; // path relative to public disk
-        $screenshotBase64 = $publicDisk->exists($shotRel)
-            ? base64_encode($publicDisk->get($shotRel))
-            : null;
+        // Read screenshot via the public disk (storage/app/public)
+        $public = Storage::disk('public');
+        $shotRel = "stl-screenshots/screenshot_{$filename}.png";
+        $screenshotBase64 = $public->exists($shotRel) ? base64_encode($public->get($shotRel)) : null;
 
         return response()->json([
-            'ok'            => true,
-            'stl_filename'  => $jsonOutput['stl_filename'],
-            'stl_url'       => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
-            'screenshot_file' => $screenshotBase64, // null if not present
+            'success'              => true,
+            'stl_filename'    => $jsonOutput['stl_filename'],
+            'stl_url'         => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64, // null if screenshot failed
         ]);
     }
 
@@ -334,18 +370,27 @@ class StlController extends Controller
     {
         $filename = (string) time();
 
+        // Ensure a writable Mesa shader cache to stop the permission warning
+        $mesaCache = storage_path('app/mesa-cache');
+        if (!is_dir($mesaCache)) {
+            @mkdir($mesaCache, 0775, true);
+        }
+
         $process = new Process([
             '/usr/bin/xvfb-run', '-a',
             '/home/ubuntu/miniconda3/envs/cad/bin/python',
             base_path('scripts/sportcar.py'),
             $filename,
         ]);
-
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
+            // push Mesa cache to a writable place (prevents the first warning line)
+            'MESA_GLSL_CACHE_DIR'   => $mesaCache,
+            // optional noise reducers
+            'QT_LOGGING_RULES'      => '*.debug=false;qt.qpa.*=false',
+            'GALLIUM_DRIVER'        => 'llvmpipe',
         ]);
-
         $process->setTimeout(120);
         $process->run();
 
@@ -362,30 +407,40 @@ class StlController extends Controller
 
         $raw = trim($process->getOutput());
 
-        // Safely decode JSON
-        $jsonOutput = json_decode($raw, true);
-        if (!is_array($jsonOutput) || empty($jsonOutput['stl_filename'])) {
+        // Extract the last valid JSON object from noisy stdout
+        $jsonOutput = null;
+        foreach (array_reverse(preg_split("/\r?\n/", $raw)) as $line) {
+            $line = trim($line);
+            if ($line !== '' && $line[0] === '{' && substr($line, -1) === '}') {
+                $decoded = json_decode($line, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $jsonOutput = $decoded;
+                    break;
+                }
+            }
+        }
+
+        if (!$jsonOutput || empty($jsonOutput['stl_filename'])) {
             Log::error('Invalid JSON from Python', ['raw' => $raw]);
             return response()->json([
-                'ok'    => false,
-                'error' => 'Python did not return valid JSON.',
-                'raw'   => $raw,
+                'success'    => false,
+                'error' => 'Python did not return clean JSON',
+                'raw'   => $raw, // keep for debugging
             ], 500);
         }
 
-        // Read screenshot from the PUBLIC disk (storage/app/public)
-        $publicDisk = Storage::disk('public');
-        $shotRel = "stl-screenshots/screenshot_{$filename}.png"; // path relative to public disk
-        $screenshotBase64 = $publicDisk->exists($shotRel)
-            ? base64_encode($publicDisk->get($shotRel))
-            : null;
+        // Read screenshot via the public disk (storage/app/public)
+        $public = Storage::disk('public');
+        $shotRel = "stl-screenshots/screenshot_{$filename}.png";
+        $screenshotBase64 = $public->exists($shotRel) ? base64_encode($public->get($shotRel)) : null;
 
         return response()->json([
-            'ok'            => true,
-            'stl_filename'  => $jsonOutput['stl_filename'],
-            'stl_url'       => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
-            'screenshot_file' => $screenshotBase64, // null if not present
+            'success'              => true,
+            'stl_filename'    => $jsonOutput['stl_filename'],
+            'stl_url'         => asset("storage/stl-files/{$jsonOutput['stl_filename']}.stl"),
+            'screenshot_file' => $screenshotBase64, // null if screenshot failed
         ]);
+
     }
 
 }
