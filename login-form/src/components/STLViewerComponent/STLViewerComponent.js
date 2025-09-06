@@ -395,6 +395,8 @@ const removeItem = async (fileName) => {
                           id='screenshot-image'
                           src={`data:image/png;base64,${file.screenshot_file}`}
                           alt={`Screenshot for ${file.stl_filename}`}
+                          width={444}
+                          height={121}
                         />
                       )}
                       <div style={{
