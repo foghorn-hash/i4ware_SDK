@@ -79,6 +79,9 @@ Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
 	Route::get('/stl-item', [StlController::class, 'getStlItem'])->name('stl.stl-item');
 	Route::post('/stl-file', [StlController::class, 'getStlFile'])->name('stl.stl-file');
 	Route::delete('/delete-stl', [StlController::class, 'postStlDeleteFile'])->name('stl.delete-stl'); 
+	Route::post('/generate-spaceship', [StlController::class, 'generateSpaceship']);
+	Route::post('/generate-cyborg', [StlController::class, 'generateCyborg']);
+	Route::post('/generate-car', [StlController::class, 'generateCar']);
 });
 
 Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router) {
@@ -119,5 +122,7 @@ Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router)
 	Route::get('/customer', [AtlassianSalesController::class, 'getAllCustomer']);
 	Route::post('/customer', [AtlassianSalesController::class, 'addCustomer']);
 	Route::post('/transaction', [AtlassianSalesController::class, 'addTransaction']);
+	Route::get('/merged-monthly-sums', [AtlassianSalesController::class, 'getIncomeByMonthAllYears']);
+	Route::get('/income-years', [AtlassianSalesController::class, 'getIncomeYears']);
 
 });

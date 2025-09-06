@@ -1,6 +1,6 @@
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import {API_BASE_URL, API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
+import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME} from "../../constants/apiConstants";
 import axios from "axios";
 import React, { useState, useEffect } from 'react';
 
@@ -10,7 +10,11 @@ const TransactionForm= ({handleClose}) =>{
     
     const fetchCustomers = async () =>{
 
-        const response = await axios.get(API_BASE_URL + "/api/reports/customer")
+        const response = await axios.get(API_BASE_URL + "/api/reports/customer", {
+                  headers: {
+                    Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+                  },
+                })
         const data= await response.data.data
         setCustomers(data)
           
@@ -26,7 +30,11 @@ const TransactionForm= ({handleClose}) =>{
         const formData = new FormData(e.target),
         formDataObj = Object.fromEntries(formData.entries())
         try{
-        const response = await axios.post(API_BASE_URL + "/api/reports/transaction", formDataObj)
+        const response = await axios.post(API_BASE_URL + "/api/reports/transaction", formDataObj, {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+          },
+        })
         if(response.status === 200 ){
             e.target.reset();
             alert("Invoice added successfully!");
@@ -65,7 +73,7 @@ const TransactionForm= ({handleClose}) =>{
 
             <Form.Group className="mb-3" controlId="formInvoiceVATPer">
                 <Form.Label>VAT%</Form.Label>
-                <Form.Control type="number" step="0.01" max="100" name="vatPercentage" placeholder="VAT%" />
+                <Form.Control type="text" step="0.01" max="100" name="vatPercentage" placeholder="VAT%" />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formInvoiceDueDate">

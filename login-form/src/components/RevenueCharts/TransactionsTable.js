@@ -50,7 +50,11 @@ const TransactionsTable = () => {
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get(API_BASE_URL + "/api/reports/sales-report"); // Replace with your Laravel API URL
+      const response = await axios.get(API_BASE_URL + "/api/reports/sales-report", {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+          },
+        }); // Replace with your Laravel API URL
       const data = response.data.root;
 
       // Prepare chart data
