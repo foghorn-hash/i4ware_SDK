@@ -321,6 +321,15 @@ function Header(props) {
                   </NavLink>
                 )}
                 {authState.isLogged && (
+                  <NavLink
+                    className="Header-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                    to="/timesheet"
+                  >
+                    {strings.timesheet}
+                  </NavLink>
+                )}
+                {authState.isLogged && (
                   <PermissionGate permission={"users.view"}>
                     <NavLink
                       className="Header-nav-link"

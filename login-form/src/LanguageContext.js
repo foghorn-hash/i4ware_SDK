@@ -16,6 +16,7 @@ const strings = new LocalizedStrings({
     videoPhoto: "Video/Photo",
     chat: "Chat",
     revenueReport: "Revenues",
+    timesheet: "Timesheet",
   },
   fi: {
     login: "Kirjaudu sisään",
@@ -30,6 +31,7 @@ const strings = new LocalizedStrings({
     videoPhoto: "Video/Kuva",
     chat: "Chatti",
     revenueReport: "Liikevaihtod",
+    timesheet: "Tuntikortti",
   },
   sv: {
     login: "Logga in",
@@ -44,6 +46,7 @@ const strings = new LocalizedStrings({
     videoPhoto: "Video/Foto",
     chat: "Chatt",
     revenueReport: "Intäkter",
+    timesheet: "Tidrapport",
   },
 });
 
