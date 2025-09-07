@@ -1,0 +1,61 @@
+:root {
+  --col1: 160px;   /* Hyväk./Hylä. */
+  --col2: 260px;   /* Projekti */
+  --col3: 120px;   /* PVM */
+  --col4: 90px;    /* Klo */
+}
+
+.table-light th  {
+  background-color: #4e4e4e; /* Bootstrapin .table-light taustaväri */
+  color: #ffffff;
+}
+.table-lock thead th {
+  white-space: nowrap;
+  word-break: normal;       /* override break-all */
+  overflow-wrap: normal;
+  overflow: hidden;         /* prevent spill */
+  text-overflow: ellipsis;  /* show … if too narrow */
+}
+
+.table-lock thead th { writing-mode: initial; text-orientation: mixed; }
+
+/* if any global rule set vertical text, nuke it */
+.table-lock thead th { position: sticky; top: 0; z-index: 5; writing-mode: initial; text-orientation: mixed; background: #555; color: #fff; font-weight: bold; }
+
+.table-lock-wrap { position: relative; overflow-x: auto; }
+
+/* sticky left columns (header + body) */
+.sticky-col,.sticky-col-2,.sticky-col-3,.sticky-col-4 {
+  position: sticky; background:#fff; z-index:30; box-shadow:1px 0 0 rgba(0,0,0,.08);
+}
+
+.sticky-col   { left:0; }
+.sticky-col-2 { left:var(--col1); }
+.sticky-col-3 { left:calc(var(--col1) + var(--col2)); }
+.sticky-col-4 { left:calc(var(--col1) + var(--col2) + var(--col3)); }
+
+/* fixed widths */
+.w-col1{min-width:var(--col1); width:var(--col1);}
+.w-col2{min-width:var(--col2); width:var(--col2);}
+.w-col3{min-width:var(--col3); width:var(--col3);}
+.w-col4{min-width:var(--col4); width:var(--col4);}
+
+.right-border {
+  border-right: 2px grey solid !important; /* Bootstrapin .table-border-color */
+}
+
+.table {
+  box-shadow:4px 0 0 rgba(0,0,0,.08) !important; /* Bootstrapin .table-border-color */
+  border-radius: 10px !important;
+}
+
+.deleteRow {
+  width: 40px !important;
+  background: #555 !important; /* Bootstrapin .table-danger taustaväri */
+  color: #721c24 !important;       /* Bootstrapin .table-danger teksti */
+}
+
+.tcontainer {
+  border-radius: 10px;
+  box-shadow:4px 0 0 rgb(255, 0, 0,.08) !important;
+}

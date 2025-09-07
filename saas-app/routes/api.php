@@ -16,6 +16,8 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NetvisorController;
 use App\Http\Controllers\AtlassianSalesController;
+use App\Http\Controllers\TimesheetController;
+use App\Http\Controllers\TimesheetRowController;
 
 /*
 |--------------------------------------------------------------------------
@@ -125,4 +127,12 @@ Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router)
 	Route::get('/merged-monthly-sums', [AtlassianSalesController::class, 'getIncomeByMonthAllYears']);
 	Route::get('/income-years', [AtlassianSalesController::class, 'getIncomeYears']);
 
+});
+
+Route::group(['prefix' => 'timesheet', 'middleware' => 'CORS'], function ($router) {
+	Route::get('timesheets/{timesheet}/rows',           [TimesheetRowController::class, 'index']);
+	Route::post('timesheets/{timesheet}/rows',          [TimesheetRowController::class, 'store']);
+	Route::get('timesheets/{timesheet}/rows/{row}',     [TimesheetRowController::class, 'show']);
+	Route::put('timesheets/{timesheet}/rows/{row}',     [TimesheetRowController::class, 'update']);
+	Route::delete('timesheets/{timesheet}/rows/{row}',  [TimesheetRowController::class, 'destroy']);
 });
