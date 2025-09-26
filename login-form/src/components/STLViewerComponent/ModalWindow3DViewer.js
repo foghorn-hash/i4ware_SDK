@@ -15,7 +15,7 @@ export function ModalWindow3DViewer({ stlFilename }) {
       const scene = new THREE.Scene();
   
       // Create a camera
-      const camera = setupCamera(20, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const camera = setupCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
       //camera.position.set(0, 0, 80); // camera position x, y, z
   
       // Create a renderer

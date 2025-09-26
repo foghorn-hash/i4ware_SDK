@@ -44,15 +44,7 @@
     background-color: red;
 }
 
-/* Position the label over the file input */
-.file-input-container label::after {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    pointer-events: none; /* Allow clicks to pass through to the hidden input */
-}
+/* Removed problematic ::after pseudoelement that was blocking clicks */
 
 .FileFormUpload-title {
  padding-left: 15px;

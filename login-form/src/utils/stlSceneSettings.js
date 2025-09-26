@@ -22,7 +22,7 @@ export function setupSceneMaterialsAndLighting(scene) {
 
 export function setupCamera(fov, aspectRatio, nearClip, farClip) {
     const camera = new THREE.PerspectiveCamera(fov, aspectRatio, nearClip, farClip);
-    camera.lookAt(0, 0, 0) // camera is pointing to x, y, z 
-    camera.position.set(0, 0, 50); // camera position x, y, z
+    camera.lookAt(0, 0, 0) // camera is pointing to x, y, z
+    camera.position.set(0, 0, 200); // camera position x, y, z - moved further back
     return camera
   }   

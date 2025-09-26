@@ -92,21 +92,28 @@ function App() {
       request()
         .get("/api/settings")
         .then(res => {
-          if(res.status == 200 ){
+          if(res && res.status == 200 ){
             // setLoading(false);
               const obj = {};
               for (let i = 0; i < res.data.data.length; i++) {
                   const element = res.data.data[i];
                   if(element.setting_value == "1"){
-                      obj[element.setting_key] = true 
+                      obj[element.setting_key] = true
                   }
                   if(element.setting_value == "0"){
-                      obj[element.setting_key] = false 
+                      obj[element.setting_key] = false
                   }
               }
               setSetting(obj);
           }
-  
+        })
+        .catch(error => {
+          console.error("Settings API error:", error);
+          // Set default settings if API fails
+          setSetting({
+            show_captcha: false,
+            disable_registertion_from_others: false
+          });
         })
     },[]);
 

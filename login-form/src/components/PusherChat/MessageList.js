@@ -218,9 +218,19 @@ const MessageList = ({
         throw new Error("Failed to fetch audio data");
       }
 
-      const audioUrl = API_BASE_URL + "/" + response.data.url;
+      // Remove leading slash if present to avoid double slashes
+      const urlPath = response.data.url.startsWith('/') ? response.data.url.substring(1) : response.data.url;
+      const audioUrl = API_BASE_URL + "/" + urlPath;
       const audio = new Audio(audioUrl);
-      audio.play();
+
+      // Add error handling for audio loading
+      audio.onerror = (e) => {
+        console.error("Audio failed to load:", audioUrl, e);
+      };
+
+      audio.play().catch(error => {
+        console.error("Audio play failed:", error);
+      });
       setCurrentAudio(audio);
       setCurrentMessageId(messageId);
       setCurrentAudioUrl(audioUrl);

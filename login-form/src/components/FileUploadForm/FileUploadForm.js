@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import "./FileUploadForm.css";
 import axios from "axios";
 import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
@@ -31,6 +31,7 @@ let strings = new LocalizedStrings({
 
 const FileUploadForm = ({ newItemIsUploaded }) => {
   const [selectedFile, setSelectedFile] = useState(null);
+  const fileRef = useRef(null);
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -43,16 +44,24 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
   }
 
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (file) {
+      // Save to multiple places to survive re-renders
+      setSelectedFile(file);
+      fileRef.current = file;
+      window.tempUploadFile = file;
+    }
   };
 
   const handleFileUpload = async () => {
-    if (selectedFile) {
+    const fileToUpload = selectedFile || fileRef.current || window.tempUploadFile;
+
+    if (fileToUpload) {
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', fileToUpload);
 
       try {
-        const screenshotDataUrl = await captureScreenshot(selectedFile);
+        const screenshotDataUrl = await captureScreenshot(fileToUpload);
         formData.append('screenshot', screenshotDataUrl);
 
         const response = await axios.post(API_BASE_URL + '/api/stl/upload-stl', formData, {
@@ -64,11 +73,16 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
 
         if (response.data && response.data.fileName) {
           newItemIsUploaded(response.data.fileName);
-          setSelectedFile(null);  
+          setSelectedFile(null);
+          fileRef.current = null;
+          window.tempUploadFile = null;
         }
       } catch (error) {
         console.error('Error uploading file:', error);
+        alert('Upload failed: ' + error.message);
       }
+    } else {
+      alert('Please select a file first');
     }
   };
 
@@ -83,10 +97,29 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
           className="FileFormUplaod-file-selector"
           onChange={handleFileChange}
           accept=".stl"
+          style={{display: 'none'}}
         />
-        <label htmlFor="file-input">{strings.browse}</label>
+        <button
+          type="button"
+          onClick={() => document.getElementById('file-input').click()}
+          style={{
+            backgroundColor: 'transparent',
+            color: '#fff',
+            padding: '10px 15px',
+            marginRight: '10px',
+            marginLeft: '10px',
+            border: '1px red solid',
+            borderRadius: '20px',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'red'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+        >
+          {strings.browse}
+        </button>
       </div>
       <button className="FileFormUplaod-file-button" onClick={handleFileUpload}>{strings.upload}</button>
+
       {selectedFile && (
         <div className="file-info">
           <p>{strings.chose} {selectedFile.name}. {strings.press}</p>

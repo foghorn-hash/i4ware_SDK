@@ -66,8 +66,8 @@ var query = window.location.search.substring(1);
 var urlParams = new URLSearchParams(query);
 var localization = urlParams.get("lang");
 
-if (localization == null) {
-  strings.setLanguage(API_DEFAULT_LANGUAGE);
+if (localization == null || localization === "") {
+  strings.setLanguage(API_DEFAULT_LANGUAGE || "en");
 } else {
   strings.setLanguage(localization);
 }

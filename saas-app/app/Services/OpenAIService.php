@@ -18,7 +18,7 @@ class OpenAIService
     {
         $this->client = OpenAI::client(env('OPENAI_API_KEY'));
         $this->apiKey = env('OPENAI_API_KEY');
-        $this->maxTokens = (integer) env('OPENAI_MAX_TOKENS');
+        $this->maxTokens = (int) env('OPENAI_MAX_TOKENS');
         $this->clientGuzzle = new Client([
             'base_uri' => 'https://api.openai.com',
             'headers' => [
@@ -83,8 +83,8 @@ class OpenAIService
     public function synthesizeSpeech($text, $voice)
     {
 
-         // Map voice parameter to appropriate model and voice
-         switch ($voice) {
+        // Map voice parameter to appropriate model and voice
+        switch ($voice) {
             case 'alloy':
                 $model = 'tts-1';
                 $voiceName = 'alloy';
@@ -189,7 +189,7 @@ class OpenAIService
                         'role' => 'user',
                         'content' => [
                             ['type' => 'input_text', 'text' => $prompt],
-                            ['type' => 'input_file', 'file_url' => env("APP_URL").$fileUrl],
+                            ['type' => 'input_file', 'file_url' => env("APP_NGROK_URL)") . $fileUrl],
                         ],
                     ],
                 ],

@@ -16,6 +16,57 @@ class StlController extends Controller
         $this->middleware('auth:api');
     }
 
+    /**
+     * Build cross-platform command for running Python scripts with display
+     */
+    private function buildCrossPlatformCommand($scriptName, $filename)
+    {
+        $scriptPath = base_path('scripts/' . $scriptName);
+
+        // Detect operating system
+        $os = PHP_OS_FAMILY;
+
+        switch ($os) {
+            case 'Linux':
+                // Ubuntu/Linux - use xvfb-run for virtual display
+                $pythonPath = env('PYTHON_PATH', '/home/ubuntu/miniconda3/envs/cad/bin/python');
+                $xvfbPath = env('XVFB_PATH', '/usr/bin/xvfb-run');
+                return [$xvfbPath, '-a', $pythonPath, $scriptPath, $filename];
+
+            case 'Darwin':
+                // macOS - try different Python paths in order of preference
+                $pythonPath = env('PYTHON_PATH');
+                if (!$pythonPath) {
+                    // Try common Python paths on macOS
+                    $possiblePaths = [
+                        '/opt/homebrew/bin/python3',
+                        '/usr/bin/python3',
+                        '/opt/anaconda3/bin/python',
+                        '/usr/local/bin/python3',
+                        'python3'
+                    ];
+
+                    foreach ($possiblePaths as $path) {
+                        if ($path === 'python3' || file_exists($path)) {
+                            $pythonPath = $path;
+                            break;
+                        }
+                    }
+                }
+                return [$pythonPath ?: 'python3', $scriptPath, $filename];
+
+            case 'Windows':
+                // Windows - use python directly
+                $pythonPath = env('PYTHON_PATH', 'python');
+                return [$pythonPath, $scriptPath, $filename];
+
+            default:
+                // Fallback to direct python execution
+                $pythonPath = env('PYTHON_PATH', 'python3');
+                return [$pythonPath, $scriptPath, $filename];
+        }
+    }
+
     public function uploadStlFile(Request $request)
     {
         /*
@@ -203,14 +254,50 @@ class StlController extends Controller
         Log::info("Attempting to delete file at path: " . $filePath);
         Log::info("Attempting to delete screenshot at path: " . $fileScreenshotPath);
         
-        if (file_exists($filePath) && file_exists($fileScreenshotPath)) {
-            if (unlink($filePath) && unlink($fileScreenshotPath)) {
-                return response()->json(['message' => 'File deleted successfully'], 200);
+        $deletedFiles = 0;
+        $failedFiles = [];
+
+        // Delete STL file if it exists
+        if (file_exists($filePath)) {
+            if (unlink($filePath)) {
+                $deletedFiles++;
+                Log::info("Successfully deleted STL file: " . $filePath);
             } else {
-                return response()->json(['message' => 'File could not be deleted'], 500);
+                $failedFiles[] = 'STL file';
+                Log::error("Failed to delete STL file: " . $filePath);
             }
         } else {
-            return response()->json(['message' => 'File not found'], 404);
+            Log::warning("STL file not found: " . $filePath);
+        }
+
+        // Delete screenshot file if it exists
+        if (file_exists($fileScreenshotPath)) {
+            if (unlink($fileScreenshotPath)) {
+                $deletedFiles++;
+                Log::info("Successfully deleted screenshot file: " . $fileScreenshotPath);
+            } else {
+                $failedFiles[] = 'Screenshot file';
+                Log::error("Failed to delete screenshot file: " . $fileScreenshotPath);
+            }
+        } else {
+            Log::warning("Screenshot file not found: " . $fileScreenshotPath);
+        }
+
+        // Return appropriate response
+        if ($deletedFiles > 0) {
+            if (count($failedFiles) > 0) {
+                return response()->json([
+                    'message' => 'Some files deleted successfully, but failed to delete: ' . implode(', ', $failedFiles),
+                    'deleted_files' => $deletedFiles
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Files deleted successfully',
+                    'deleted_files' => $deletedFiles
+                ], 200);
+            }
+        } else {
+            return response()->json(['message' => 'No files found to delete'], 404);
         }
     }
 
@@ -224,12 +311,9 @@ class StlController extends Controller
             @mkdir($mesaCache, 0775, true);
         }
 
-        $process = new Process([
-            '/usr/bin/xvfb-run', '-a',
-            '/home/ubuntu/miniconda3/envs/cad/bin/python',
-            base_path('scripts/spaceship.py'),
-            $filename,
-        ]);
+        // Cross-platform process command building
+        $command = $this->buildCrossPlatformCommand('spaceship.py', $filename);
+        $process = new Process($command);
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
@@ -243,13 +327,25 @@ class StlController extends Controller
         $process->run();
 
         if (!$process->isSuccessful()) {
+            $errorOutput = trim($process->getErrorOutput() ?: $process->getOutput());
             Log::error('Python failed', [
                 'stderr' => $process->getErrorOutput(),
                 'stdout' => $process->getOutput(),
+                'command' => implode(' ', $command),
             ]);
+
+            // Check for common Python issues and provide helpful error messages
+            if (strpos($errorOutput, 'python: not found') !== false) {
+                $errorOutput = 'Python not found. Please install Python 3 or set PYTHON_PATH in .env file.';
+            } elseif (strpos($errorOutput, "No module named 'OCC'") !== false) {
+                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: pip install python-opencascade';
+            } elseif (strpos($errorOutput, 'exec: python: not found') !== false) {
+                $errorOutput = 'Python executable not found. Try installing Python 3 or setting PYTHON_PATH environment variable.';
+            }
+
             return response()->json([
                 'ok'    => false,
-                'error' => trim($process->getErrorOutput() ?: $process->getOutput()),
+                'error' => $errorOutput,
             ], 500);
         }
 
@@ -300,12 +396,9 @@ class StlController extends Controller
             @mkdir($mesaCache, 0775, true);
         }
 
-        $process = new Process([
-            '/usr/bin/xvfb-run', '-a',
-            '/home/ubuntu/miniconda3/envs/cad/bin/python',
-            base_path('scripts/cyborg.py'),
-            $filename,
-        ]);
+        // Cross-platform process command building
+        $command = $this->buildCrossPlatformCommand('cyborg.py', $filename);
+        $process = new Process($command);
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
@@ -319,13 +412,25 @@ class StlController extends Controller
         $process->run();
 
         if (!$process->isSuccessful()) {
+            $errorOutput = trim($process->getErrorOutput() ?: $process->getOutput());
             Log::error('Python failed', [
                 'stderr' => $process->getErrorOutput(),
                 'stdout' => $process->getOutput(),
+                'command' => implode(' ', $command),
             ]);
+
+            // Check for common Python issues and provide helpful error messages
+            if (strpos($errorOutput, 'python: not found') !== false) {
+                $errorOutput = 'Python not found. Please install Python 3 or set PYTHON_PATH in .env file.';
+            } elseif (strpos($errorOutput, "No module named 'OCC'") !== false) {
+                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: pip install python-opencascade';
+            } elseif (strpos($errorOutput, 'exec: python: not found') !== false) {
+                $errorOutput = 'Python executable not found. Try installing Python 3 or setting PYTHON_PATH environment variable.';
+            }
+
             return response()->json([
                 'ok'    => false,
-                'error' => trim($process->getErrorOutput() ?: $process->getOutput()),
+                'error' => $errorOutput,
             ], 500);
         }
 
@@ -376,12 +481,9 @@ class StlController extends Controller
             @mkdir($mesaCache, 0775, true);
         }
 
-        $process = new Process([
-            '/usr/bin/xvfb-run', '-a',
-            '/home/ubuntu/miniconda3/envs/cad/bin/python',
-            base_path('scripts/sportcar.py'),
-            $filename,
-        ]);
+        // Cross-platform process command building
+        $command = $this->buildCrossPlatformCommand('sportcar.py', $filename);
+        $process = new Process($command);
         $process->setEnv([
             'LIBGL_ALWAYS_SOFTWARE' => '1',
             'QT_QPA_PLATFORM'       => 'offscreen',
@@ -395,13 +497,25 @@ class StlController extends Controller
         $process->run();
 
         if (!$process->isSuccessful()) {
+            $errorOutput = trim($process->getErrorOutput() ?: $process->getOutput());
             Log::error('Python failed', [
                 'stderr' => $process->getErrorOutput(),
                 'stdout' => $process->getOutput(),
+                'command' => implode(' ', $command),
             ]);
+
+            // Check for common Python issues and provide helpful error messages
+            if (strpos($errorOutput, 'python: not found') !== false) {
+                $errorOutput = 'Python not found. Please install Python 3 or set PYTHON_PATH in .env file.';
+            } elseif (strpos($errorOutput, "No module named 'OCC'") !== false) {
+                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: pip install python-opencascade';
+            } elseif (strpos($errorOutput, 'exec: python: not found') !== false) {
+                $errorOutput = 'Python executable not found. Try installing Python 3 or setting PYTHON_PATH environment variable.';
+            }
+
             return response()->json([
                 'ok'    => false,
-                'error' => trim($process->getErrorOutput() ?: $process->getOutput()),
+                'error' => $errorOutput,
             ], 500);
         }
 
