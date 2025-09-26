@@ -336,7 +336,7 @@ const PusherChat = () => {
       console.error(err);
       alert("Error analyzing PDF");
       Swal.fire({
-          icon: "failure",
+          icon: "error",
           title: strings.upload_failure,
           text: strings.pdf_upload_failure,
       });

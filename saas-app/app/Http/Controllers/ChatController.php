@@ -289,7 +289,7 @@ class ChatController extends Controller
             $message->message = $prompt;
             $message->gender = "male";
             $message->file_path = 'storage/' . $filename;
-            $message->download_link = url('/storage/' . $filename);
+            $message->download_link = env('APP_NGROK_URL', env('APP_URL')) . '/storage/' . $filename;
             $message->type = $type;
         }
         $message->save();
@@ -475,7 +475,7 @@ class ChatController extends Controller
         $pathUrl = "storage/$filename"; // this goes into storage/app/public/        
 
         // Optionally return the file URL so frontend can fetch it
-        $url = Storage::url($filename); // gives /storage/chatgpt_output_xxx_analysis.xlsx
+        $url = env('APP_NGROK_URL', env('APP_URL')) . '/storage/' . $filename; // gives ngrok or public URL for AI access
 
         // Create a new record in the database
         $message = new MessageModel();
