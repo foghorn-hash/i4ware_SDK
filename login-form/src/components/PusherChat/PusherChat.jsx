@@ -280,19 +280,6 @@ const PusherChat = () => {
 
     try {
 
-      const responseSubmit = await Axios.post(
-        `${API_BASE_URL}/api/chat/messages`,
-        { username, message, type: null },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
-          },
-        }
-      );
-
-      setMessage(""); 
-
       const response = await Axios.post(
           `${API_BASE_URL}/api/chat/analyze-pdf`,
           formData, // <-- body goes here directly
