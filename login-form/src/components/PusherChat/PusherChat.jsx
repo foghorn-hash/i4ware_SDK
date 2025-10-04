@@ -44,6 +44,7 @@ let strings = new LocalizedStrings({
     duration: "Duration",
     upload_successful: "Upload Successful",
     image_upload_successful: "Image upload success",
+    pdf_upload_successful: "PDF upload success",
     capture_successful: "Image capture success",
     video_capture_successful: "Video capture success",
     please_select_file: "Please select a file to upload",
@@ -97,6 +98,7 @@ let strings = new LocalizedStrings({
     duration: "Kesto",
     upload_successful: "Lataus onnistui",
     image_upload_successful: "Kuvan lataus onnistui",
+    pdf_upload_successful: "PDF:n lataus onnistui",
     capture_successful: "Kuvan kaappaus onnistui",
     video_capture_successful: "Videon kaappaus onnistui",
     please_select_file: "Olehyvä ja valitse tiedosto minkä haluat ladata",
@@ -150,6 +152,7 @@ let strings = new LocalizedStrings({
     duration: "Varaktighet",
     upload_successful: "Uppladdning lyckades",
     image_upload_successful: "Bilduppladdning lyckades",
+    pdf_upload_successful: "PDF-uppladdning lyckades",
     capture_successful: "Bildupptagning lyckades",
     video_capture_successful: "Videoupptagning lyckades",
     please_select_file: "Vänligen välj en fil att ladda upp",
@@ -276,17 +279,33 @@ const PusherChat = () => {
     // send to backend
     const formData = new FormData();
     formData.append("pdf", file);
-    formData.append("message", message);
+    // Ensure message is not empty for PDF uploads
+    const messageForPdf = message.trim() || 'Please analyze this PDF document';
+    formData.append("message", messageForPdf);
 
     try {
+      const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+      console.log('PDF Upload - Token from localStorage:', token);
+      console.log('PDF Upload - Token first 20 chars:', token ? token.substring(0, 20) : 'null');
+
+      // Validate token before proceeding
+      if (!validateToken()) {
+        return; // Stop execution if token is invalid
+      }
+
+      console.log('About to send request with token:', token.substring(0, 50) + '...');
+      console.log('Full Authorization header:', `Bearer ${token}`);
+
+      // Ensure message is not empty for PDF uploads
+      const messageText = message.trim() || 'PDF document uploaded for analysis';
 
       const responseSubmit = await Axios.post(
         `${API_BASE_URL}/api/chat/messages`,
-        { username, message, type: null },
+        { username, message: messageText, type: null },
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -311,7 +330,7 @@ const PusherChat = () => {
         Swal.fire({
           icon: "success",
           title: strings.upload_successful,
-          text: strings.image_upload_successful,
+          text: strings.pdf_upload_successful,
         }).then((result) => {
           if (result.isConfirmed) {
             setIsThinking(false);
@@ -336,7 +355,7 @@ const PusherChat = () => {
       console.error(err);
       alert("Error analyzing PDF");
       Swal.fire({
-          icon: "failure",
+          icon: "error",
           title: strings.upload_failure,
           text: strings.pdf_upload_failure,
       });
@@ -462,8 +481,43 @@ const PusherChat = () => {
       .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
+  // Utility function to validate JWT token
+  const validateToken = () => {
+    const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+
+    // Check if token is valid JWT format (should have exactly 3 parts separated by dots)
+    if (!token || typeof token !== 'string' || token.trim() === '' || token.split('.').length !== 3) {
+      console.error('Invalid JWT token format detected on component mount, clearing localStorage and redirecting to login');
+      console.error('Current token:', token);
+      console.error('Token type:', typeof token);
+      console.error('Token length:', token ? token.length : 'null');
+      localStorage.clear();
+      alert('Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.');
+      window.location.href = '/';
+      return false;
+    }
+
+    // Additional validation: Check if token parts are not empty
+    const tokenParts = token.split('.');
+    if (tokenParts.some(part => !part || part.trim() === '')) {
+      console.error('JWT token has empty parts detected on component mount, clearing localStorage and redirecting to login');
+      console.error('Token parts:', tokenParts);
+      localStorage.clear();
+      alert('Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.');
+      window.location.href = '/';
+      return false;
+    }
+
+    return true;
+  };
+
   // Initialize Pusher and fetch initial messages
   useEffect(() => {
+    // Validate token first before doing anything
+    if (!validateToken()) {
+      return; // Stop execution if token is invalid
+    }
+
     fetchUsername();
     const cleanup = initializePusher();
     fetchMessages(); // Fetch messages on component mount
@@ -938,12 +992,13 @@ const PusherChat = () => {
     try {
       const response = await Axios.post(
         `${API_BASE_URL}/api/chat/generate-response`,
-        { prompt: fullPrompt },
+        { prompt: fullPrompt, language: localization || API_DEFAULT_LANGUAGE },
         {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
           },
+          timeout: 120000, // 120 seconds (2 minutes)
         }
       );
       // 1. Generate the Word file in backend
@@ -955,6 +1010,7 @@ const PusherChat = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
           },
+          timeout: 120000, // 120 seconds (2 minutes)
         }
       );
       // Optionally, save the message to DB as before
@@ -981,8 +1037,16 @@ const PusherChat = () => {
       );
       fetchMessages(); // Fetch messages after generating AI response
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error generating AI response:", error);
+      console.error("Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       setIsThinking(false);
+
+      // Show user-friendly error message
+      alert(strings.error_generating_response || "Failed to generate AI response. Please try again.");
     }
   };
 
@@ -990,7 +1054,7 @@ const PusherChat = () => {
     try {
       const response = await Axios.post(
         `${API_BASE_URL}/api/chat/generate-image`,
-        { prompt: message, generate: true },
+        { prompt: message, generate: true, language: localization || API_DEFAULT_LANGUAGE },
         {
           headers: {
             "Content-Type": "application/json",
@@ -1004,6 +1068,8 @@ const PusherChat = () => {
         generate: true,
         message: highlightedHTML,
         created_at: new Date().toISOString(),
+        original_prompt: message, // Include original prompt for translation
+        language: localization || API_DEFAULT_LANGUAGE, // Include language
       };
       await saveMessageToDatabase(aiResponseMessage);
       setIsThinking(false);

@@ -73,8 +73,37 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
   //     a.click();
   //     window.URL.revokeObjectURL(url);
   //     setRecordedChunks([]);
-  //     // Upload the video after downloading
   //     uploadVideo();
+  //   }
+  // };
+
+  // const compressVideo = async (blob) => {
+  //   return new Promise((resolve) => {
+  //     const video = document.createElement('video');
+  //     const canvas = document.createElement('canvas');
+  //     const ctx = canvas.getContext('2d');
+  //
+  //     video.onloadedmetadata = () => {
+  //       canvas.width = video.videoWidth * 0.5;
+  //       canvas.height = video.videoHeight * 0.5;
+  //
+  //       video.ontimeupdate = () => {
+  //         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  //         canvas.toBlob(resolve, 'video/webm', 0.7);
+  //       };
+  //       video.currentTime = 0.1;
+  //     };
+  //
+  //     video.src = URL.createObjectURL(blob);
+  //   });
+  // };
+
+  // const [videoPreview, setVideoPreview] = useState(null);
+  // const generateVideoPreview = () => {
+  //   if (recordedChunks.length) {
+  //     const blob = new Blob(recordedChunks, { type: 'video/webm' });
+  //     const url = URL.createObjectURL(blob);
+  //     setVideoPreview(url);
   //   }
   // };
 
@@ -98,9 +127,8 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
             title: 'Upload Successful', 
             text: response.data.message,  
           }).then((result) => {
-            if (result.isConfirmed) {  
-              window.location.reload();          
-              onUpload();             
+            if (result.isConfirmed) {
+              onUpload();
             }
           });
         })
@@ -133,8 +161,7 @@ const CaptureVideoPhoto = ({ model, captureType, onUpload }) => {
               text: response.data.message,  
             }).then((result) => {
               if (result.isConfirmed) {
-                window.location.reload();  
-                onUpload(); 
+                onUpload();
               }
             });
           })

@@ -51,6 +51,7 @@ const MessageList = ({
   const [currentMessageId, setCurrentMessageId] = useState(null);
   const [currentAudio, setCurrentAudio] = useState(null);
   const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
+  const [loadingMessageId, setLoadingMessageId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(<></>); // Initialize to an empty React fragment
   const [isVideo, setIsVideo] = useState(false); // Track if the modal content is a video
@@ -203,6 +204,13 @@ const MessageList = ({
     }
 
     try {
+      // Always set loading state to ensure animation shows
+      setLoadingMessageId(messageId);
+
+      // Ensure minimum loading duration for consistent UX
+      const minLoadingTime = 800; // milliseconds
+      const startTime = Date.now();
+
       const response = await Axios.post(
         API_BASE_URL + "/api/chat/tts",
         { text, voice, message_id: messageId },
@@ -218,20 +226,35 @@ const MessageList = ({
         throw new Error("Failed to fetch audio data");
       }
 
-      const audioUrl = API_BASE_URL + "/" + response.data.url;
+      const audioUrl = API_BASE_URL + response.data.url;
       const audio = new Audio(audioUrl);
-      audio.play();
-      setCurrentAudio(audio);
-      setCurrentMessageId(messageId);
-      setCurrentAudioUrl(audioUrl);
 
-      audio.onended = () => {
-        setCurrentMessageId(null);
-        setCurrentAudio(null);
-        setCurrentAudioUrl(null);
-      };
+      // Calculate remaining time to reach minimum loading duration
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+
+      // Wait for minimum loading time before clearing loading state
+      setTimeout(() => {
+        setLoadingMessageId(null);
+
+        audio.play();
+        setCurrentAudio(audio);
+        setCurrentMessageId(messageId);
+        setCurrentAudioUrl(audioUrl);
+
+        audio.onended = () => {
+          setCurrentMessageId(null);
+          setCurrentAudio(null);
+          setCurrentAudioUrl(null);
+        };
+      }, remainingTime);
+
     } catch (error) {
       console.error("Error generating speech:", error);
+      // Clear loading state on error after minimum time
+      setTimeout(() => {
+        setLoadingMessageId(null);
+      }, 500);
     }
   };
 
@@ -294,14 +317,39 @@ const MessageList = ({
                 <strong>{msg.username}: </strong>
                 <i>{new Date(msg.formatted_created_at).toLocaleTimeString()}</i>
 
-                <button
-                  className="message-TTS"
-                  onClick={() =>
-                    handleToggleSpeech(msg.message, msg.gender, msg.id)
-                  }
-                >
-                  {currentMessageId === msg.id ? <StopFill /> : <PlayFill />}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <button
+                    className={`message-TTS ${loadingMessageId === msg.id ? 'tts-loading' : ''} ${currentMessageId === msg.id ? 'tts-playing' : ''}`}
+                    onClick={() =>
+                      handleToggleSpeech(msg.message, msg.gender, msg.id)
+                    }
+                    disabled={loadingMessageId === msg.id}
+                  >
+                    {currentMessageId === msg.id ? (
+                      <StopFill />
+                    ) : (
+                      <PlayFill />
+                    )}
+                  </button>
+                  {currentMessageId === msg.id && (
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="classic-spinner"
+                    >
+                      <line x1="12" y1="2" x2="12" y2="6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-1" />
+                      <line x1="18.36" y1="5.64" x2="15.54" y2="8.46" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-2" />
+                      <line x1="22" y1="12" x2="18" y2="12" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-3" />
+                      <line x1="18.36" y1="18.36" x2="15.54" y2="15.54" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-4" />
+                      <line x1="12" y1="22" x2="12" y2="18" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-5" />
+                      <line x1="5.64" y1="18.36" x2="8.46" y2="15.54" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-6" />
+                      <line x1="2" y1="12" x2="6" y2="12" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-7" />
+                      <line x1="5.64" y1="5.64" x2="8.46" y2="8.46" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" className="spinner-line-8" />
+                    </svg>
+                  )}
+                </div>
                 {msg.download_link && (
                   <a
                     href={msg.download_link}

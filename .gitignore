@@ -1,5 +1,15 @@
 .DS_Store
 CLAUDE.md
-daily.md
-dailyw.md
-dailyf.md
+work-log.md
+daily*.md
+fixed.md
+COMM-log.md
+
+# Environment files - protect real credentials only
+**/.env
+.env
+saas-app/.env
+login-form/.env
+
+# Keep .env.example files in git but with placeholder values only
+# Real credentials should only be in .env files (which are ignored)

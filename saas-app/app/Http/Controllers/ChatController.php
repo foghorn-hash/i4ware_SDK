@@ -46,6 +46,20 @@ class ChatController extends Controller
      */
     public function message(Request $request)
     {
+        // Debug: Log the request details
+        Log::info('Message Request - Method: ' . $request->method());
+        Log::info('Message Request - URL: ' . $request->fullUrl());
+        $authHeader = $request->header('Authorization');
+        Log::info('Message Request - Auth Header: ' . ($authHeader ? substr($authHeader, 0, 50) . '...' : 'MISSING'));
+        Log::info('Message Request - Full Auth Header Length: ' . ($authHeader ? strlen($authHeader) : 0));
+
+        try {
+            $user = Auth::user();
+            Log::info('PDF Request - Auth User: ' . ($user ? $user->id : 'NULL'));
+        } catch (\Exception $e) {
+            Log::error('PDF Request - Auth Error: ' . $e->getMessage());
+        }
+
         $user = Auth::user();
 
         $message = new MessageModel();
@@ -245,15 +259,22 @@ class ChatController extends Controller
     {
 
         $prompt = $request->input('prompt');
-        $response = $this->openAiService->generateText($prompt);
+        $language = $request->input('language', 'en'); // Default to English if not specified
+        $response = $this->openAiService->generateText($prompt, $language);
 
         return response()->json(['response' => $response]);
     }
 
     public function generateImage(Request $request) {
-        
+
         $prompt = $request->input('prompt');
-        $response = $this->openAiService->generateImage($prompt);
+        $language = $request->input('language', 'en'); // Default to English if not specified
+
+        Log::info('Generating image', ['prompt' => $prompt, 'language' => $language]);
+
+        $response = $this->openAiService->generateImage($prompt, $language);
+
+        Log::info('Image generation response', ['response' => $response]);
 
         return response()->json(['response' => $response]);
 
@@ -264,6 +285,10 @@ class ChatController extends Controller
         $user = Auth::user();
         $data = $request->all();
         $generate = $data['generate'];
+        $language = $data['language'] ?? 'en'; // Get language from request
+
+        Log::info('Saving message to database', ['data' => $data, 'generate' => $generate, 'language' => $language]);
+
         $message = new MessageModel();
 
         if ($generate === true) {
@@ -271,11 +296,18 @@ class ChatController extends Controller
             $fileName = 'ai_images/' . uniqid() . '.png';
             Storage::disk('public')->put($fileName, $file);
 
+            // Generate localized description instead of using revised_prompt
+            $originalPrompt = $data['original_prompt'] ?? $data['message']['data'][0]['revised_prompt'];
+            $localizedDescription = $this->openAiService->generateText(
+                "Describe this image generation request in a conversational way: " . $originalPrompt,
+                $language
+            );
+
             $message->username = "AI";
             $message->user_id = null;
             $message->domain = $user->domain;
             $message->image_path = 'storage/' . $fileName;
-            $message->message = $data['message']['data'][0]['revised_prompt'];
+            $message->message = $localizedDescription;
             $message->type = "image";
             $message->gender = "male";
         } else {
@@ -468,8 +500,9 @@ class ChatController extends Controller
         $filename = 'chatgpt_input_' . uniqid() . '_analysis.pdf';
         $do = $pdfFile->storeAs('public', $filename);
 
-        // Send to OpenAI for analysis
-        $analysis = $openAI->analyzeText($prompt, Storage::url($do));
+        // Send to OpenAI for analysis - pass the file path for local PDF parsing
+        Log::info('PDF Analysis - Using file path: ' . $filename);
+        $analysis = $openAI->analyzeText($prompt, $filename);
 
         $path = "public/$filename"; // this goes into storage/app/public/
         $pathUrl = "storage/$filename"; // this goes into storage/app/public/        

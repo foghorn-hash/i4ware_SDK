@@ -3,14 +3,16 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use Storage;
+use Illuminate\Support\Facades\Storage;
 use OpenAI;
 use Illuminate\Support\Facades\Log;
+use Smalot\PdfParser\Parser;
 
 class OpenAIService
 {
     protected $client;
     protected $clientGuzzle;
+    protected $serverGuzzle;
     protected $apiKey;
     protected $maxTokens;
 
@@ -35,16 +37,19 @@ class OpenAIService
         ]);
     }
 
-    public function generateText($prompt)
+    public function generateText($prompt, $language = 'en')
     {
         // Assuming 'transcription' is a variable containing user input or text
         $transcription = $prompt;
+
+        // Create language-specific system message
+        $systemMessage = $this->getSystemMessageByLanguage($language);
 
         // Define the messages array
         $messages = [
             [
                 "role" => "system",
-                "content" => "You are a helpful assistant."
+                "content" => $systemMessage
             ],
             [
                 "role" => "user",
@@ -63,15 +68,16 @@ class OpenAIService
         return json_decode($response->getBody(), true)['choices'][0]['message']['content'] ?? '';
     }
 
-    public function generateImage($prompt)
+    public function generateImage($prompt, $language = 'en')
     {
-        // Assuming 'transcription' is a variable containing user input or text
-        $transcription = $prompt;
+        // Enhance the prompt with language instruction for image description
+        $languageInstruction = $this->getImageLanguageInstruction($language);
+        $enhancedPrompt = $languageInstruction . $prompt;
 
         $response = $this->clientGuzzle->post('v1/images/generations', [
             'json' => [
                 'model' => 'dall-e-3',
-                'prompt' => $transcription,
+                'prompt' => $enhancedPrompt,
                 'n' => 1,
                 'size' => '1024x1024',
             ],
@@ -179,27 +185,98 @@ class OpenAIService
         return $result['choices'][0]['message']['content'] ?? '';
     }
 
-    public function analyzeText($prompt, $fileUrl)
+    public function analyzeText($prompt, $filePath = null)
     {
-        $response = $this->clientGuzzle->post('/v1/responses', [
+        $pdfContent = '';
+
+        // If a PDF file path is provided, extract its text content
+        if ($filePath && Storage::disk('public')->exists($filePath)) {
+            try {
+                $fullPath = storage_path('app/public/' . $filePath);
+
+                // Initialize PDF parser
+                $parser = new Parser();
+                $pdf = $parser->parseFile($fullPath);
+
+                // Extract text from PDF
+                $pdfContent = $pdf->getText();
+
+                Log::info('PDF Analysis - Successfully extracted text from PDF', [
+                    'file' => $filePath,
+                    'content_length' => strlen($pdfContent)
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error('PDF Analysis - Failed to parse PDF', [
+                    'file' => $filePath,
+                    'error' => $e->getMessage()
+                ]);
+
+                // Fallback to generic response if PDF parsing fails
+                $pdfContent = '[PDF content could not be extracted]';
+            }
+        }
+
+        // Prepare the content for analysis
+        $analysisContent = "User request: " . $prompt;
+
+        if (!empty($pdfContent)) {
+            // Truncate PDF content if it's too long (keep within token limits)
+            $maxContentLength = 8000; // Adjust based on your needs
+            if (strlen($pdfContent) > $maxContentLength) {
+                $pdfContent = substr($pdfContent, 0, $maxContentLength) . "\n\n[Content truncated due to length...]";
+            }
+
+            $analysisContent .= "\n\nPDF Content:\n" . $pdfContent;
+        } else {
+            $analysisContent .= "\n\n[No PDF content was provided or could not be extracted]";
+        }
+
+        $response = $this->clientGuzzle->post('/v1/chat/completions', [
             'json' => [
-                'model' => 'gpt-5',
-                'input' => [
+                'model' => 'gpt-4o-mini',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a helpful assistant that analyzes documents. The user has uploaded a PDF document and provided a request for analysis. Analyze the actual PDF content provided and respond to the user\'s specific request.'
+                    ],
                     [
                         'role' => 'user',
-                        'content' => [
-                            ['type' => 'input_text', 'text' => $prompt],
-                            ['type' => 'input_file', 'file_url' => env("APP_URL").$fileUrl],
-                        ],
+                        'content' => $analysisContent
                     ],
                 ],
+                'max_tokens' => $this->maxTokens ?? 1024,
             ],
         ]);
 
         $data = json_decode($response->getBody(), true);
 
-        $outputText = $data['output'][1]['content'][0]['text'] ?? null;
+        return $data['choices'][0]['message']['content'] ?? 'Unable to analyze the PDF document at this time.';
+    }
 
-        return $outputText;
+    private function getSystemMessageByLanguage($language)
+    {
+        switch ($language) {
+            case 'fi':
+                return "Olet avulias assistentti. Vastaa aina suomeksi.";
+            case 'sv':
+                return "Du är en hjälpsam assistent. Svara alltid på svenska.";
+            case 'en':
+            default:
+                return "You are a helpful assistant. Always respond in English.";
+        }
+    }
+
+    private function getImageLanguageInstruction($language)
+    {
+        switch ($language) {
+            case 'fi':
+                return "Luo kuva ja kirjoita kuvaus suomeksi: ";
+            case 'sv':
+                return "Skapa en bild och skriv beskrivningen på svenska: ";
+            case 'en':
+            default:
+                return "Create an image and write the description in English: ";
+        }
     }
 }
