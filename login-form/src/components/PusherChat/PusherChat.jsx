@@ -77,6 +77,7 @@ let strings = new LocalizedStrings({
     upload_pdf: "Upload PDF",
     upload_failure: "Upload Failure",
     pdf_upload_failure: "Failed to upload PDF. Please try again.",
+    word_disabled_for_code: "Word generation disabled for code snippets",
   },
   fi: {
     send: "Lähetä",
@@ -130,6 +131,7 @@ let strings = new LocalizedStrings({
     upload_pdf: "Lataa PDF",
     upload_failure: "Lataus epäonnistui",
     pdf_upload_failure: "PDF:n lataus epäonnistui. Ole hyvä ja yritä uudestaan.",
+    word_disabled_for_code: "Word-generointi estetty koodille",
   },
   sv: {
     send: "Skicka",
@@ -183,6 +185,7 @@ let strings = new LocalizedStrings({
     upload_pdf: "Ladda upp PDF",
     upload_failure: "Uppladdning misslyckades",
     pdf_upload_failure: "Misslyckades med att ladda upp PDF. Försök igen.",
+    word_disabled_for_code: "Word-generering inaktiverad för kod",
   },
 });
 
@@ -197,6 +200,7 @@ const PusherChat = () => {
   const [aiTypingIndicator, setAiTypingIndicator] = useState("");
   const [isAiEnabled, setIsAiEnabled] = useState(false); // State to track AI checkbox
   const [isGenerateEnabled, setIsGenerateEnabled] = useState(false); // State to track AI checkbox
+  const [containsCode, setContainsCode] = useState(false); // State to track if message contains code
   const typingTimeoutRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [showCaptureModal, setCaptureShowModal] = useState(false);
@@ -522,6 +526,11 @@ const PusherChat = () => {
     }
   };
 
+  // Detect code in message in real-time
+  useEffect(() => {
+    setContainsCode(detectCode(message));
+  }, [message]);
+
   useEffect(() => {
     (async () => {
       const res = await fetchMessages(1); // newest page (backend should paginate DESC)
@@ -710,7 +719,21 @@ const PusherChat = () => {
     }
   };
 
+  // Function to detect JavaScript code in message
+  const detectCode = (text) => {
+    if (!text || text.trim() === '') return false;
+
+    // Check for if statement (simple test)
+    if (/if\s*\(/i.test(text)) return true;
+
+    return false;
+  };
+
   const handleAiCheckboxChange = (e) => {
+    if (containsCode) {
+      alert(strings.word_disabled_for_code);
+      return; // Prevent enabling if code detected
+    }
     setIsAiEnabled(e.target.checked);
     if (e.target.checked) setIsGenerateEnabled(false); // Uncheck the other option
   };
@@ -1120,8 +1143,15 @@ const PusherChat = () => {
               label={strings.ask_from_ai}
               checked={isAiEnabled}
               onChange={handleAiCheckboxChange}
+              disabled={containsCode}
+              title={containsCode ? strings.word_disabled_for_code : ""}
               value="ai"
             />
+            {containsCode && (
+              <small style={{color: 'orange', marginLeft: '10px', display: 'block', marginTop: '-5px', marginBottom: '5px'}}>
+                ⚠️ {strings.word_disabled_for_code}
+              </small>
+            )}
             <Form.Check // prettier-ignore
               type="radio"
               className="generate-image-ai"

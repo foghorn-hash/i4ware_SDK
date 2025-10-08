@@ -1,1 +1,17 @@
 .DS_Store
+
+# Internal documentation (do not push to GitHub)
+CLAUDE.md
+work-log.md
+daily*.md
+fixed.md
+COMM-log.md
+
+# Environment files with real credentials (NEVER push to GitHub)
+**/.env
+.env
+saas-app/.env
+login-form/.env
+
+# Keep .env.example files in git but with placeholder values only
+# Real credentials should only be in .env files (which are ignored)
