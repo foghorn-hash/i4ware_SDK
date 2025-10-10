@@ -719,12 +719,34 @@ const PusherChat = () => {
     }
   };
 
-  // Function to detect JavaScript code in message
+  // Function to detect code (JavaScript, PHP, TypeScript, Python, Java) in message
   const detectCode = (text) => {
     if (!text || text.trim() === '') return false;
 
-    // Check for if statement (simple test)
-    if (/if\s*\(/i.test(text)) return true;
+    // Detect code blocks (``` ```)
+    if (/```[\s\S]*?```/i.test(text)) return true;
+
+    // Programming language patterns
+    const languages = {
+      // JavaScript: if, for, while, const, let, function, class, console.log, =>, try
+      javascript: /(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\b|\blet\b|\bfunction\b|\bclass\b|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/i,
+
+      // PHP: <?php, $var=, function, echo, public function
+      php: /(<?php|\$\w+\s*=|function\s+\w+\s*\(|echo\s+|public\s+function)/i,
+
+      // TypeScript: interface, type, public:, private:, :string, :number
+      typescript: /(interface\s+\w+|type\s+\w+\s*=|public\s+\w+:|private\s+\w+:|:\s*string|:\s*number)/i,
+
+      // Python: def, class:, import, from...import, print
+      python: /(\bdef\s+\w+\s*\(|\bclass\s+\w+\s*:|\bimport\s+\w+|\bfrom\s+\w+\s+import|\bprint\s*\()/i,
+
+      // Java: public class, public static void, System.out.println, private
+      java: /(public\s+class\s+\w+|public\s+static\s+void|System\.out\.println|private\s+\w+\s+\w+)/i,
+    };
+
+    for (let lang in languages) {
+      if (languages[lang].test(text)) return true;
+    }
 
     return false;
   };
