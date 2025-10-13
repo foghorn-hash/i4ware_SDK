@@ -77,7 +77,6 @@ let strings = new LocalizedStrings({
     upload_pdf: "Upload PDF",
     upload_failure: "Upload Failure",
     pdf_upload_failure: "Failed to upload PDF. Please try again.",
-    word_disabled_for_code: "Word generation disabled for code snippets",
   },
   fi: {
     send: "Lähetä",
@@ -131,7 +130,6 @@ let strings = new LocalizedStrings({
     upload_pdf: "Lataa PDF",
     upload_failure: "Lataus epäonnistui",
     pdf_upload_failure: "PDF:n lataus epäonnistui. Ole hyvä ja yritä uudestaan.",
-    word_disabled_for_code: "Word-generointi estetty koodille",
   },
   sv: {
     send: "Skicka",
@@ -185,7 +183,6 @@ let strings = new LocalizedStrings({
     upload_pdf: "Ladda upp PDF",
     upload_failure: "Uppladdning misslyckades",
     pdf_upload_failure: "Misslyckades med att ladda upp PDF. Försök igen.",
-    word_disabled_for_code: "Word-generering inaktiverad för kod",
   },
 });
 
@@ -200,7 +197,6 @@ const PusherChat = () => {
   const [aiTypingIndicator, setAiTypingIndicator] = useState("");
   const [isAiEnabled, setIsAiEnabled] = useState(false); // State to track AI checkbox
   const [isGenerateEnabled, setIsGenerateEnabled] = useState(false); // State to track AI checkbox
-  const [containsCode, setContainsCode] = useState(false); // State to track if message contains code
   const typingTimeoutRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [showCaptureModal, setCaptureShowModal] = useState(false);
@@ -526,11 +522,6 @@ const PusherChat = () => {
     }
   };
 
-  // Detect code in message in real-time
-  useEffect(() => {
-    setContainsCode(detectCode(message));
-  }, [message]);
-
   useEffect(() => {
     (async () => {
       const res = await fetchMessages(1); // newest page (backend should paginate DESC)
@@ -719,43 +710,7 @@ const PusherChat = () => {
     }
   };
 
-  // Function to detect code (JavaScript, PHP, TypeScript, Python, Java) in message
-  const detectCode = (text) => {
-    if (!text || text.trim() === '') return false;
-
-    // Detect code blocks (``` ```)
-    if (/```[\s\S]*?```/i.test(text)) return true;
-
-    // Programming language patterns
-    const languages = {
-      // JavaScript: if, for, while, const, let, function, class, console.log, =>, try
-      javascript: /(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\b|\blet\b|\bfunction\b|\bclass\b|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/i,
-
-      // PHP: <?php, $var=, function, echo, public function
-      php: /(<?php|\$\w+\s*=|function\s+\w+\s*\(|echo\s+|public\s+function)/i,
-
-      // TypeScript: interface, type, public:, private:, :string, :number
-      typescript: /(interface\s+\w+|type\s+\w+\s*=|public\s+\w+:|private\s+\w+:|:\s*string|:\s*number)/i,
-
-      // Python: def, class:, import, from...import, print
-      python: /(\bdef\s+\w+\s*\(|\bclass\s+\w+\s*:|\bimport\s+\w+|\bfrom\s+\w+\s+import|\bprint\s*\()/i,
-
-      // Java: public class, public static void, System.out.println, private
-      java: /(public\s+class\s+\w+|public\s+static\s+void|System\.out\.println|private\s+\w+\s+\w+)/i,
-    };
-
-    for (let lang in languages) {
-      if (languages[lang].test(text)) return true;
-    }
-
-    return false;
-  };
-
   const handleAiCheckboxChange = (e) => {
-    if (containsCode) {
-      alert(strings.word_disabled_for_code);
-      return; // Prevent enabling if code detected
-    }
     setIsAiEnabled(e.target.checked);
     if (e.target.checked) setIsGenerateEnabled(false); // Uncheck the other option
   };
@@ -991,7 +946,7 @@ const PusherChat = () => {
           },
         }
       );
-      // 1. Generate the Word file in backend
+      // 1. Generate the Word file in backend (if no code detected)
       const resp = await Axios.post(
         `${API_BASE_URL}/api/chat/word/send`,
         { prompt: fullPrompt, generate: false },
@@ -1002,17 +957,21 @@ const PusherChat = () => {
           },
         }
       );
-      // Optionally, save the message to DB as before
+
+      // Check if backend detected code and skipped Word generation
       const highHTML = resp.data.message;
+      const codeDetected = resp.data.code_detected || false;
+
       const aiResponseMessage = {
         username: "AI",
         generate: false,
         message: highHTML,
         created_at: new Date().toISOString(),
-        filename: resp.data.filename || "generated.docx", // Assuming backend returns a filename
-        type: "docx",
+        filename: codeDetected ? null : (resp.data.filename || "generated.docx"),
+        type: codeDetected ? "text" : "docx", // Save as text if code detected
       };
-      await saveMessageToDatabase(aiResponseMessage, "docx");
+
+      await saveMessageToDatabase(aiResponseMessage, codeDetected ? "text" : "docx");
       setIsThinking(false);
       await Axios.post(
         `${API_BASE_URL}/api/chat/thinking`,
@@ -1165,15 +1124,8 @@ const PusherChat = () => {
               label={strings.ask_from_ai}
               checked={isAiEnabled}
               onChange={handleAiCheckboxChange}
-              disabled={containsCode}
-              title={containsCode ? strings.word_disabled_for_code : ""}
               value="ai"
             />
-            {containsCode && (
-              <small style={{color: 'orange', marginLeft: '10px', display: 'block', marginTop: '-5px', marginBottom: '5px'}}>
-                ⚠️ {strings.word_disabled_for_code}
-              </small>
-            )}
             <Form.Check // prettier-ignore
               type="radio"
               className="generate-image-ai"
