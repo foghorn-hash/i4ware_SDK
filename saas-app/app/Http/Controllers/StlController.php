@@ -338,7 +338,7 @@ class StlController extends Controller
             if (strpos($errorOutput, 'python: not found') !== false) {
                 $errorOutput = 'Python not found. Please install Python 3 or set PYTHON_PATH in .env file.';
             } elseif (strpos($errorOutput, "No module named 'OCC'") !== false) {
-                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: pip install python-opencascade';
+                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: conda install -c conda-forge pythonocc-core (NOTE: NOT available via pip!)';
             } elseif (strpos($errorOutput, 'exec: python: not found') !== false) {
                 $errorOutput = 'Python executable not found. Try installing Python 3 or setting PYTHON_PATH environment variable.';
             }
@@ -423,7 +423,7 @@ class StlController extends Controller
             if (strpos($errorOutput, 'python: not found') !== false) {
                 $errorOutput = 'Python not found. Please install Python 3 or set PYTHON_PATH in .env file.';
             } elseif (strpos($errorOutput, "No module named 'OCC'") !== false) {
-                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: pip install python-opencascade';
+                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: conda install -c conda-forge pythonocc-core (NOTE: NOT available via pip!)';
             } elseif (strpos($errorOutput, 'exec: python: not found') !== false) {
                 $errorOutput = 'Python executable not found. Try installing Python 3 or setting PYTHON_PATH environment variable.';
             }
@@ -508,7 +508,7 @@ class StlController extends Controller
             if (strpos($errorOutput, 'python: not found') !== false) {
                 $errorOutput = 'Python not found. Please install Python 3 or set PYTHON_PATH in .env file.';
             } elseif (strpos($errorOutput, "No module named 'OCC'") !== false) {
-                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: pip install python-opencascade';
+                $errorOutput = 'OpenCascade (OCC) Python libraries not installed. Please install: conda install -c conda-forge pythonocc-core (NOTE: NOT available via pip!)';
             } elseif (strpos($errorOutput, 'exec: python: not found') !== false) {
                 $errorOutput = 'Python executable not found. Try installing Python 3 or setting PYTHON_PATH environment variable.';
             }
