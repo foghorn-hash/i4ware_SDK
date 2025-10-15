@@ -49,6 +49,8 @@ class Message implements ShouldBroadcast
             'gender' => optional($this->message->users)->gender,
             'image_path' => $this->message->image_path,
             'type' => $this->message->type,
+            'file_path' => $this->message->file_path,
+            'download_link' => $this->message->download_link,
         ];
     }
 }

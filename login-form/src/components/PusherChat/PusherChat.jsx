@@ -961,17 +961,21 @@ const PusherChat = () => {
       // Check if backend detected code and skipped Word generation
       const highHTML = resp.data.message;
       const codeDetected = resp.data.code_detected || false;
+      const filename = codeDetected ? null : (resp.data.filename || "generated.docx");
 
       const aiResponseMessage = {
         username: "AI",
         generate: false,
         message: highHTML,
         created_at: new Date().toISOString(),
-        filename: codeDetected ? null : (resp.data.filename || "generated.docx"),
+        filename: filename,
         type: codeDetected ? "text" : "docx", // Save as text if code detected
+        download_link: filename ? `${API_BASE_URL}/storage/${filename}` : null,
       };
 
       await saveMessageToDatabase(aiResponseMessage, codeDetected ? "text" : "docx");
+      // Pusher will automatically add the message with all backend fields (formatted_created_at, etc.)
+
       setIsThinking(false);
       await Axios.post(
         `${API_BASE_URL}/api/chat/thinking`,
@@ -983,7 +987,7 @@ const PusherChat = () => {
           },
         }
       );
-      fetchMessages(); // Fetch messages after generating AI response
+      // fetchMessages(); // No longer needed - message already added to state
     } catch (error) {
       console.error("Error:", error);
       setIsThinking(false);

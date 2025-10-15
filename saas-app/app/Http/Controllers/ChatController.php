@@ -288,8 +288,8 @@ class ChatController extends Controller
             $message->domain = $user->domain;
             $message->message = $prompt;
             $message->gender = "male";
-            $message->file_path = 'storage/' . $filename;
-            $message->download_link = url('/storage/' . $filename);
+            $message->file_path = $filename ? ('storage/' . $filename) : null;
+            $message->download_link = $filename ? url('/storage/' . $filename) : null;
             $message->type = $type;
         }
         $message->save();
@@ -492,17 +492,59 @@ class ChatController extends Controller
         $headingStyle = ['bold' => true, 'size' => 14];
         $normalStyle = ['size' => 12];
 
-        foreach ($lines as $line) {
+        $prevLineEmpty = true;
+        foreach ($lines as $index => $line) {
             $line = trim($line);
 
-            if (preg_match('/^\*\*(.*?)\*\*$/', $line, $matches)) {
-                $section->addText($text, $headingStyle);
-            } elseif (!empty($line)) {
-                // Paragraph
-                $section->addText($line, $normalStyle);
-            } else {
-                // Line break
+            if (empty($line)) {
+                // Empty line - add line break
                 $section->addTextBreak();
+                $prevLineEmpty = true;
+                continue;
+            }
+
+            // Check if line contains inline bold markdown (**text**)
+            if (preg_match('/\*\*(.*?)\*\*/', $line)) {
+                // Split line into parts with bold and normal text
+                $parts = preg_split('/(\*\*.*?\*\*)/', $line, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+
+                $textRun = $section->addTextRun($normalStyle);
+
+                foreach ($parts as $part) {
+                    if (preg_match('/^\*\*(.*?)\*\*$/', $part, $matches)) {
+                        // Bold text
+                        $textRun->addText($matches[1], ['bold' => true, 'size' => 12]);
+                    } else {
+                        // Normal text
+                        $textRun->addText($part, ['size' => 12]);
+                    }
+                }
+                $prevLineEmpty = false;
+            } else {
+                // Check if this is a heading (short line after empty line, or numbered section)
+                $nextLine = isset($lines[$index + 1]) ? trim($lines[$index + 1]) : '';
+                $isHeading = false;
+
+                // Detect heading patterns:
+                // 1. Short line (< 60 chars) after empty line, followed by longer text
+                // 2. Numbered/lettered sections (1., a., i., etc)
+                // 3. Common EULA section titles
+                if ($prevLineEmpty && strlen($line) < 60 && !empty($nextLine) && strlen($nextLine) > 60) {
+                    $isHeading = true;
+                } elseif (preg_match('/^(\d+\.|[a-z]\.|[ivx]+\.)\s/i', $line)) {
+                    $isHeading = true;
+                } elseif (preg_match('/^(License Grant|Restrictions|Ownership|Termination|Disclaimer|Limitation of Liability|Governing Law|Entire Agreement|Definitions|Intellectual Property|Warranty|Support|Updates|Payment|Confidentiality|Indemnification|Severability|Notices)/i', $line)) {
+                    $isHeading = true;
+                }
+
+                if ($isHeading) {
+                    // Add as bold heading
+                    $section->addText($line, ['bold' => true, 'size' => 12]);
+                } else {
+                    // Normal text
+                    $section->addText($line, $normalStyle);
+                }
+                $prevLineEmpty = false;
             }
         }
         // Save the Word file
