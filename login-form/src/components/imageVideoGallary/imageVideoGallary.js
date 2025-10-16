@@ -28,7 +28,8 @@ const ImageVideoGallary = ({ data }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    setItems(data); // Initialize items state with data prop
+    console.log('ImageVideoGallary received data:', data);
+    setItems(data || []); // Initialize items state with data prop or empty array
   }, [data]);
 
   useEffect(() => {
@@ -101,9 +102,42 @@ const ImageVideoGallary = ({ data }) => {
     }
   };
 
+  // const [selectedItems, setSelectedItems] = useState([]);
+  // const toggleItemSelection = (itemId) => {
+  //   setSelectedItems(prev =>
+  //     prev.includes(itemId)
+  //       ? prev.filter(id => id !== itemId)
+  //       : [...prev, itemId]
+  //   );
+  // };
+
+  // const sortItemsByDate = (items, ascending = true) => {
+  //   return [...items].sort((a, b) => {
+  //     const dateA = new Date(a.created_at);
+  //     const dateB = new Date(b.created_at);
+  //     return ascending ? dateA - dateB : dateB - dateA;
+  //   });
+  // };
+  //
+  // const filterItemsByType = (items, type) => {
+  //   return items.filter(item => {
+  //     if (type === 'images') return /\.(jpg|jpeg|png|gif|webp)$/i.test(item.asset_path);
+  //     if (type === 'videos') return /\.(mp4|webm|ogg|avi)$/i.test(item.asset_path);
+  //     return true;
+  //   });
+  // };
+
+  // const searchItems = (items, searchTerm) => {
+  //   if (!searchTerm) return items;
+  //   return items.filter(item =>
+  //     item.filename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     item.asset_path?.toLowerCase().includes(searchTerm.toLowerCase())
+  //   );
+  // };
+
   return (
     <div className="image-video-gallary">
-      {items.map((item) => (
+      {items.filter(item => item && item.asset_path).map((item) => (
         <div className='image-video-item-container'>
         <div key={item.id} className="image-video-item" 
         onClick={() => openModal(item)} >

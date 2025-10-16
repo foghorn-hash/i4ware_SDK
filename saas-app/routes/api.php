@@ -90,7 +90,7 @@ Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router)
 	Route::delete('/photos_videos/delete', [GalleryController::class, 'deleteMedia'])->name('gallery.delete-media');
 });
 
-Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
+Route::group(['prefix' => 'chat', 'middleware' => ['CORS', 'auth:api']], function ($router) {
 	Route::post('/messages', [ChatController::class, 'message']);
 	Route::get('/messages', [ChatController::class, 'getMessages']);
 	Route::post('/typing', [ChatController::class, 'userTyping']);

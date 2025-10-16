@@ -273,6 +273,148 @@
   background-color: #7a0000;
   color: #ffffff;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-TTS:hover {
+  background-color: #8a1010;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(122, 0, 0, 0.4);
+}
+
+.message-TTS.tts-loading {
+  background-color: #1a5f1a !important;
+  cursor: not-allowed;
+  animation: pulse-green 1.5s infinite;
+}
+
+.message-TTS.tts-playing {
+  background-color: #0a7a00;
+}
+
+.tts-spinner {
+  animation: spin 1s linear infinite;
+}
+
+.tts-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 6px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 0 0 8px 8px;
+  z-index: 10;
+}
+
+.tts-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22c55e, #16a34a, #15803d);
+  border-radius: 0 0 8px 8px;
+  animation: fill-horizontal ease-in-out;
+  position: relative;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.classic-spinner .spinner-line-1 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0s;
+}
+
+.classic-spinner .spinner-line-2 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0.125s;
+}
+
+.classic-spinner .spinner-line-3 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0.25s;
+}
+
+.classic-spinner .spinner-line-4 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0.375s;
+}
+
+.classic-spinner .spinner-line-5 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0.5s;
+}
+
+.classic-spinner .spinner-line-6 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0.625s;
+}
+
+.classic-spinner .spinner-line-7 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0.75s;
+}
+
+.classic-spinner .spinner-line-8 {
+  animation: spinner-fade 1s linear infinite;
+  animation-delay: 0.875s;
+}
+
+@keyframes spinner-fade {
+  0%, 87.5%, 100% {
+    opacity: 0.3;
+  }
+  12.5% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-green {
+  0% {
+    background-color: #1a5f1a;
+    box-shadow: 0 0 0 0 rgba(26, 95, 26, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    background-color: #2d7a2d;
+    box-shadow: 0 0 0 8px rgba(26, 95, 26, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    background-color: #1a5f1a;
+    box-shadow: 0 0 0 0 rgba(26, 95, 26, 0.7);
+    transform: scale(1);
+  }
+}
+
+@keyframes fill-horizontal {
+  0% {
+    width: 0%;
+    opacity: 0.8;
+  }
+  25% {
+    width: 25%;
+    opacity: 1;
+  }
+  50% {
+    width: 50%;
+    opacity: 0.9;
+  }
+  75% {
+    width: 75%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0.8;
+  }
 }
 
 .code-block {

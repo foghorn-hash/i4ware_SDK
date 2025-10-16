@@ -6,15 +6,26 @@ import { withRouter } from "react-router-dom";
 import request from "../../utils/Request";
 import { Button } from "react-bootstrap";
 import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
-import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
+
+// const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+// const SUPPORTED_VIDEO_FORMATS = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi'];
+// const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+// const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+// const trackUploadProgress = (progressEvent) => {
+//   const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+//   console.log(`Upload progress: ${percentCompleted}%`);
+// };
+import { AuthContext } from "../../contexts/auth.contexts";
 import LOADING from "../../tube-spinner.svg";
-import InfiniteScroll from 'react-infinite-scroller';
-import Axios from 'axios';
 import ImageVideoGallary from "../imageVideoGallary/imageVideoGallary";
 import CaptureVideoPhoto from '../CaptureVideoPhoto/CaptureVideoPhoto';
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
-import ModalPhotoVideoDelete from "./ModalPhotoVideoDelete";
+
+// import { AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
+// import InfiniteScroll from 'react-infinite-scroller';
+// import Axios from 'axios';
+// import ModalPhotoVideoDelete from "./ModalPhotoVideoDelete";
 
 let strings = new LocalizedStrings({
     en: {
@@ -23,6 +34,12 @@ let strings = new LocalizedStrings({
         capturePhoto: "Capture Photo",
         uploadVideo: "Upload Video",
         captureVideo: "Capture Video",
+        uploadSuccess: "Upload Successful",
+        imageUploadSuccess: "Image uploaded successfully!",
+        videoUploadSuccess: "Video uploaded successfully!",
+        uploadError: "Upload Error",
+        imageTypeNotSupported: "Image type is not supported. Please upload a JPEG (jpg) or PNG (png) image.",
+        videoSizeTooLarge: "Video size is too large. Please upload a video file less than 100 MB."
     },
     fi: {
         videoPhoto: "Video/Kuva",
@@ -30,6 +47,12 @@ let strings = new LocalizedStrings({
         capturePhoto: "Ota kuva",
         uploadVideo: "Lataa video",
         captureVideo: "Ota video",
+        uploadSuccess: "Lataus onnistui",
+        imageUploadSuccess: "Kuva ladattu onnistuneesti!",
+        videoUploadSuccess: "Video ladattu onnistuneesti!",
+        uploadError: "Latausvirhe",
+        imageTypeNotSupported: "Kuvatyyppiä ei tueta. Lataa JPEG (jpg) tai PNG (png) kuva.",
+        videoSizeTooLarge: "Videotiedosto on liian suuri. Lataa videotiedosto, joka on alle 100 Mt."
     },
     sv: {
         videoPhoto: "Video/Foto",
@@ -37,6 +60,12 @@ let strings = new LocalizedStrings({
         capturePhoto: "Ta foto",
         uploadVideo: "Ladda upp video",
         captureVideo: "Spela in video",
+        uploadSuccess: "Uppladdning lyckades",
+        imageUploadSuccess: "Bild uppladdad framgångsrikt!",
+        videoUploadSuccess: "Video uppladdad framgångsrikt!",
+        uploadError: "Uppladdningsfel",
+        imageTypeNotSupported: "Bildtyp stöds inte. Ladda upp en JPEG (jpg) eller PNG (png) bild.",
+        videoSizeTooLarge: "Videostorleken är för stor. Ladda upp en videofil mindre än 100 MB."
     }
 });
 
@@ -45,8 +74,8 @@ function VideoPhoto(props) {
     const [assets, setAssets] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
-    const { authState, authActions } = useContext(AuthContext);
-    const [selectedFile, setSelectedFile] = useState(null);
+    // const { authState, authActions } = useContext(AuthContext);
+    // const [selectedFile, setSelectedFile] = useState(null);
 
     const fileInputRef = useRef(null);
       const videoFileInputRef = useRef(null); 
@@ -58,7 +87,7 @@ function VideoPhoto(props) {
     //     setShowCapturePhoto(!showCapturePhoto);
     //   };
     const handleCapturePhoto = () => {
-        setSelectedFile(null); // Reset selected file
+        // setSelectedFile(null);
         setShowCapturePhoto(!showCapturePhoto);
     };
 
@@ -120,6 +149,29 @@ function VideoPhoto(props) {
             });
     };
 
+    const refreshGallery = () => {
+        setIsLoading(true);
+        setPage(1);
+        setHasMore(true);
+        request().get(`/api/gallery/assets?page=1`)
+            .then(res => {
+                const newAssets = res.data;
+                if (newAssets && newAssets.length > 0) {
+                    setAssets(newAssets); // Replace entire assets array
+                    setPage(2); // Next page will be 2
+                } else {
+                    setAssets([]);
+                    setHasMore(false);
+                }
+            })
+            .catch(error => {
+                console.error("Error refreshing gallery:", error);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    };
+
   
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -129,17 +181,37 @@ function VideoPhoto(props) {
         }
         if (!file.type.includes('image/jpeg') && !file.type.includes('image/png')) {
             console.error("Image type is not supported");
-            alert("Image type is not supported. Please upload a JPEG (jpg) or PNG (png) image.");
+            Swal.fire({
+                title: strings.uploadError,
+                text: strings.imageTypeNotSupported,
+                icon: 'error'
+            });
             return;
         }
         const formData = new FormData();
         formData.append('file', file);
         try {
-            const response = await request().post('/api/gallery/upload-media', formData);
+            await request().post('/api/gallery/upload-media', formData);
             console.log("Image uploaded successfully");
-            setAssets(prevAssets => [...prevAssets, response.data.asset]);
+
+            // Show success message
+            Swal.fire({
+                title: strings.uploadSuccess,
+                text: strings.imageUploadSuccess,
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false
+            });
+
+            // Refresh the assets list
+            refreshGallery();
         } catch (error) {
             console.error("Error uploading image:", error);
+            Swal.fire({
+                title: strings.uploadError,
+                text: error.response?.data?.message || 'Failed to upload image',
+                icon: 'error'
+            });
         }
     };
     
@@ -152,17 +224,37 @@ function VideoPhoto(props) {
         }
         if (file.size > 100 * 1024 * 1024) {
             console.error("Video size is too large");
-            alert("Video size is too large. Please upload a video file less than 15 MB.");
+            Swal.fire({
+                title: strings.uploadError,
+                text: strings.videoSizeTooLarge,
+                icon: 'error'
+            });
             return;
         }
         const formData = new FormData();
         formData.append('file', file);
         try {
-            const response = await request().post('/api/gallery/upload-media', formData);
+            await request().post('/api/gallery/upload-media', formData);
             console.log("Video uploaded successfully");
-            setAssets(prevAssets => [...prevAssets, response.data.asset]);
+
+            // Show success message
+            Swal.fire({
+                title: strings.uploadSuccess,
+                text: strings.videoUploadSuccess,
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false
+            });
+
+            // Refresh the assets list
+            refreshGallery();
         } catch (error) {
             console.error("Error uploading video:", error);
+            Swal.fire({
+                title: strings.uploadError,
+                text: error.response?.data?.message || 'Failed to upload video',
+                icon: 'error'
+            });
         }
     };
 
@@ -173,24 +265,51 @@ function VideoPhoto(props) {
     const handleButtonClickvideo = () => {
         videoFileInputRef.current.click();
     };
-    
-    const handleUpload = async () => {
-          const formData = new FormData();  
-          formData.append('file', selectedFile);
 
-          await request().post('/api/gallery/upload-media', formData)
-              .then(response => {
+    // const handleBatchUpload = async (files) => {
+    //   const formData = new FormData();
+    //   Array.from(files).forEach((file, index) => {
+    //     formData.append(`files[${index}]`, file);
+    //   });
+    //   try {
+    //     const response = await request().post('/api/gallery/batch-upload', formData);
+    //     refreshGallery();
+    //     return response.data;
+    //   } catch (error) {
+    //     console.error('Batch upload failed:', error);
+    //     throw error;
+    //   }
+    // };
 
-                  console.log("Photo uploaded successfully");
+    // const optimizeImage = (file, maxWidth = 1920, quality = 0.8) => {
+    //   return new Promise((resolve) => {
+    //     const canvas = document.createElement('canvas');
+    //     const ctx = canvas.getContext('2d');
+    //     const img = new Image();
+    //
+    //     img.onload = () => {
+    //       const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+    //       canvas.width = img.width * ratio;
+    //       canvas.height = img.height * ratio;
+    //
+    //       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    //       canvas.toBlob(resolve, 'image/jpeg', quality);
+    //     };
+    //
+    //     img.src = URL.createObjectURL(file);
+    //   });
+    // };
 
-              })
-              .catch(error => {
-                  // Handle error
-                  console.error("Error uploading photo:", error);
-              });
-      };
-
-
+    // const handleDragOver = (e) => {
+    //   e.preventDefault();
+    //   e.stopPropagation();
+    // };
+    //
+    // const handleDrop = async (e) => {
+    //   e.preventDefault();
+    //   e.stopPropagation();
+    //   const files = Array.from(e.dataTransfer.files);
+    // };
 
     if (isLoading) {
         return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
@@ -253,8 +372,8 @@ function VideoPhoto(props) {
             {/* show Gallary */}
             <ImageVideoGallary data={assets} />
             {/* show capture VideoPhoto model */}
-            {showCapturePhoto && <CaptureVideoPhoto model={true} captureType="photo" onUpload={loadMore} />}
-            {showCaptureVideo && <CaptureVideoPhoto model={true} captureType="video" onUpload={loadMore} />}
+            {showCapturePhoto && <CaptureVideoPhoto model={true} captureType="photo" onUpload={refreshGallery} />}
+            {showCaptureVideo && <CaptureVideoPhoto model={true} captureType="video" onUpload={refreshGallery} />}
         </div>
     );
 }
