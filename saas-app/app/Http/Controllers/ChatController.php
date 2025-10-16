@@ -445,10 +445,72 @@ class ChatController extends Controller
         ]);
     }
 
+    /**
+     * Detect if text contains programming code (8 languages supported)
+     * Same logic as frontend detectCode() function
+     */
+    private function detectCode($text)
+    {
+        if (empty($text) || trim($text) === '') {
+            return false;
+        }
+
+        // 1. Detect code blocks (``` ```)
+        if (preg_match('/```[\s\S]*?```/i', $text)) {
+            return true;
+        }
+
+        // 2. Programming language patterns (8 languages)
+        $patterns = [
+            // JavaScript: if, for, while, const, let, function, class, console.log, =>, try
+            'javascript' => '/(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\b|\blet\b|\bfunction\b|\bclass\b|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/i',
+
+            // PHP: <?php, $var=, function, echo, public function
+            'php' => '/(<?php|\$\w+\s*=|function\s+\w+\s*\(|echo\s+|public\s+function)/i',
+
+            // TypeScript: interface, type, public:, private:, :string, :number
+            'typescript' => '/(interface\s+\w+|type\s+\w+\s*=|public\s+\w+:|private\s+\w+:|:\s*string|:\s*number)/i',
+
+            // Python: def, class:, import, from...import, print
+            'python' => '/(\bdef\s+\w+\s*\(|\bclass\s+\w+\s*:|\bimport\s+\w+|\bfrom\s+\w+\s+import|\bprint\s*\()/i',
+
+            // Java: public class, public static void, System.out.println, private
+            'java' => '/(public\s+class\s+\w+|public\s+static\s+void|System\.out\.println|private\s+\w+\s+\w+)/i',
+
+            // C#: using System, namespace, public class, Console.WriteLine, private/public typed vars
+            'csharp' => '/(using\s+System|namespace\s+\w+|public\s+class\s+\w+|Console\.WriteLine|private\s+\w+\s+\w+|public\s+\w+\s+\w+)/i',
+
+            // Go: func main, package main, fmt.Println, import "fmt", :=
+            'go' => '/(\bfunc\s+main\s*\(|\bpackage\s+main|fmt\.Println|import\s+"fmt"|\w+\s*:=)/i',
+
+            // Rust: fn main, let mut, println!, impl, use std::
+            'rust' => '/(\bfn\s+main\s*\(|\blet\s+mut\b|println!\s*\(|\bimpl\s+\w+|use\s+std::)/i',
+        ];
+
+        foreach ($patterns as $language => $pattern) {
+            if (preg_match($pattern, $text)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function generateWordFile(Request $request)
     {
         $prompt = $request->input('prompt');
         $aiResponse = $this->openAiService->askChatGPT($prompt);
+
+        // Check if AI response contains code - if yes, don't generate Word file
+        if ($this->detectCode($aiResponse)) {
+            return response()->json([
+                'success' => false,
+                'filename' => null,
+                'message' => $aiResponse,
+                'code_detected' => true,
+                'reason' => 'Word document generation disabled for code snippets'
+            ]);
+        }
 
         // Generate unique filename
         $filename = 'chatgpt_output_' . uniqid() . '.docx';
@@ -462,17 +524,59 @@ class ChatController extends Controller
         $headingStyle = ['bold' => true, 'size' => 14];
         $normalStyle = ['size' => 12];
 
-        foreach ($lines as $line) {
+        $prevLineEmpty = true;
+        foreach ($lines as $index => $line) {
             $line = trim($line);
 
-            if (preg_match('/^\*\*(.*?)\*\*$/', $line, $matches)) {
-                $section->addText($text, $headingStyle);
-            } elseif (!empty($line)) {
-                // Paragraph
-                $section->addText($line, $normalStyle);
-            } else {
-                // Line break
+            if (empty($line)) {
+                // Empty line - add line break
                 $section->addTextBreak();
+                $prevLineEmpty = true;
+                continue;
+            }
+
+            // Check if line contains inline bold markdown (**text**)
+            if (preg_match('/\*\*(.*?)\*\*/', $line)) {
+                // Split line into parts with bold and normal text
+                $parts = preg_split('/(\*\*.*?\*\*)/', $line, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+
+                $textRun = $section->addTextRun($normalStyle);
+
+                foreach ($parts as $part) {
+                    if (preg_match('/^\*\*(.*?)\*\*$/', $part, $matches)) {
+                        // Bold text
+                        $textRun->addText($matches[1], ['bold' => true, 'size' => 12]);
+                    } else {
+                        // Normal text
+                        $textRun->addText($part, ['size' => 12]);
+                    }
+                }
+                $prevLineEmpty = false;
+            } else {
+                // Check if this is a heading (short line after empty line, or numbered section)
+                $nextLine = isset($lines[$index + 1]) ? trim($lines[$index + 1]) : '';
+                $isHeading = false;
+
+                // Detect heading patterns:
+                // 1. Short line (< 60 chars) after empty line, followed by longer text
+                // 2. Numbered/lettered sections (1., a., i., etc)
+                // 3. Common EULA section titles
+                if ($prevLineEmpty && strlen($line) < 60 && !empty($nextLine) && strlen($nextLine) > 60) {
+                    $isHeading = true;
+                } elseif (preg_match('/^(\d+\.|[a-z]\.|[ivx]+\.)\s/i', $line)) {
+                    $isHeading = true;
+                } elseif (preg_match('/^(License Grant|Restrictions|Ownership|Termination|Disclaimer|Limitation of Liability|Governing Law|Entire Agreement|Definitions|Intellectual Property|Warranty|Support|Updates|Payment|Confidentiality|Indemnification|Severability|Notices)/i', $line)) {
+                    $isHeading = true;
+                }
+
+                if ($isHeading) {
+                    // Add as bold heading
+                    $section->addText($line, ['bold' => true, 'size' => 12]);
+                } else {
+                    // Normal text
+                    $section->addText($line, $normalStyle);
+                }
+                $prevLineEmpty = false;
             }
         }
         // Save the Word file

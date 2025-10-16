@@ -40,7 +40,7 @@ Route::group(['prefix' => 'users', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/reset-password', [AuthController::class, 'submitResetPasswordForm'])->name('reset.password.post');
 });
 
-Route::get('/settings', [SettingsController::class, 'settings'])->name('settings.get');
+Route::get('/settings', [SettingsController::class, 'settings'])->middleware('CORS')->name('settings.get');
 
 Route::group(['prefix' => 'manage', 'middleware' => 'CORS'], function ($router) {
 
