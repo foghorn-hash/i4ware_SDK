@@ -187,7 +187,6 @@ class OpenAIService
 
     public function analyzeText($prompt, $filePath = null)
     {
-<<<<<<< HEAD
         $pdfContent = '';
 
         // If a PDF file path is provided, extract its text content
@@ -282,14 +281,5 @@ class OpenAIService
             default:
                 return "Create an image and write the description in English: ";
         }
-=======
-        // For now, return a simple text analysis since PDF content analysis
-        // requires more complex setup with OpenAI's document parsing
-        $fullUrl = env("APP_NGROK_URL", env("APP_URL")) . $fileUrl;
-
-        return "I have received your PDF document located at: " . $fullUrl . "\n\n" .
-               "PDF Analysis: " . $prompt . "\n\n" .
-               "Note: This is a simplified response. The PDF file is now accessible via the ngrok tunnel for AI processing.";
->>>>>>> ngrok-url-support
     }
 }
