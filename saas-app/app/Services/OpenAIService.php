@@ -242,14 +242,10 @@ class OpenAIService
                     ],
                     [
                         'role' => 'user',
-<<<<<<< HEAD
                         'content' => [
                             ['type' => 'input_text', 'text' => $prompt],
                             ['type' => 'input_file', 'file_url' => env("APP_NGROK_URL)") . $fileUrl],
                         ],
-=======
-                        'content' => $analysisContent
->>>>>>> text-to-speech-button-and-localization
                     ],
                 ],
                 'max_tokens' => $this->maxTokens ?? 1024,
