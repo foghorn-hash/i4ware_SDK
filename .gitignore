@@ -1,5 +1,21 @@
 .DS_Store
+
+# Documentation (local only - not for GitHub)
 CLAUDE.md
 daily.md
 dailyw.md
+VismaNetvisor.md
+VismaTest.md
+Branchit-Seloste.md
+TIEDOSTOPOLUT.md
+WinConda.md
+COMM-log.md
+WorkLog1.md
+fixed.md
+work-log.md
 
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.sample
