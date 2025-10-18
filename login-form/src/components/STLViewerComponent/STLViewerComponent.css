@@ -34,11 +34,13 @@
 }
 
 .STLViewerComponent-large-modal .modal-dialog {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-height: calc(100vh - 3.5rem); 
-    width: 90%;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    max-height: calc(100vh - 3.5rem) !important;
+    width: 90% !important;
+    max-width: 1400px !important;
+    min-width: 800px !important;
 }
 
 .STLViewerComponent-card-title {
