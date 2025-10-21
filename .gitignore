@@ -7,6 +7,13 @@ WorkLog*.md
 daily*.md
 fixed.md
 COMM-log.md
+VismaNetvisor.md
+VismaTest.md
+Branchit-Seloste.md
+TIEDOSTOPOLUT.md
+
+# IDE/Editor configuration
+.markdownlint.json
 
 # Environment files with real credentials (NEVER push to GitHub)
 **/.env

@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Transaction;
+use App\Models\NetvisorTransaction;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
+use Spatie\ArrayToXml\ArrayToXml;
 
 class NetvisorAPIService
 {
@@ -98,7 +99,7 @@ class NetvisorAPIService
 
     public function saveTransaction()
     {
-        Transaction::create([
+        NetvisorTransaction::create([
             'timestamp' => $this->timestamp,
             'language' => $this->language,
             'transaction_id' => $this->transactionId,
@@ -151,7 +152,7 @@ class NetvisorAPIService
     
     public function getProducts()
     {
-        return $this->sendtRequest('GET', '/productlist.nv');
+        return $this->sendRequest('GET', '/productlist.nv');
     }
 
     public function getSalesInvoices()
@@ -162,24 +163,57 @@ class NetvisorAPIService
     public function addCustomer(array $customerBaseInfo, array $finvoiceDetails = [], array $deliveryDetails = [], array $contactDetails = [], array $additionalInfo = [], array $dimensionDetails = [])
     {
         return $this->sendRequest('POST', '/customer.nv?method=add', [
-            'customer' => [ // Customer details is aggregated in a single 'customer' key
-                'customerbaseinformation' => $customerBaseInfo, // Base information about the customer
-                ],[
-                'customerfinvoicedetails' => $finvoiceDetails, // Aggregated in a single 'customerfinvoicedetails' key
-                ],[
-                'customerdeliverydetails' => $deliveryDetails
-                ],[
-                'customercontactdetails' => $contactDetails
-                ],[
-                'customeradditionalinformation' => $additionalInfo
-                ],[
-                'customerdimensiondetails' => [
-                        $dimensionDetails
-                    ]
-                ],
-            ]          
-        );
+            'customer' => [
+                'customerbaseinformation' => $customerBaseInfo,
+                'customerfinvoicedetails' => $finvoiceDetails,
+                'customerdeliverydetails' => $deliveryDetails,
+                'customercontactdetails' => $contactDetails,
+                'customeradditionalinformation' => $additionalInfo,
+                'customerdimensiondetails' => $dimensionDetails
+            ]
+        ]);
     }
-    
+
+    /**
+     * Create a sales invoice in Netvisor
+     *
+     * @param array $invoiceData
+     * @param array $invoiceLines
+     * @return array
+     */
+    public function createSalesInvoice(array $invoiceData, array $invoiceLines = [])
+    {
+        $invoice = [
+            'salesinvoice' => [
+                'salesinvoicedate' => $invoiceData['invoice_date'] ?? date('Y-m-d'),
+                'salesinvoicedeliverydate' => $invoiceData['delivery_date'] ?? date('Y-m-d'),
+                'salesinvoicereferencenumber' => $invoiceData['reference_number'] ?? '',
+                'salesinvoiceamount' => $invoiceData['amount'] ?? 0,
+                'salesinvoicevatamount' => $invoiceData['vat_amount'] ?? 0,
+                'salesinvoicetotalamount' => $invoiceData['total_amount'] ?? 0,
+                'salesinvoiceseller' => $invoiceData['seller'] ?? '',
+                'invoicingstatus' => $invoiceData['status'] ?? 'unsent',
+                'customernumber' => $invoiceData['customer_number'] ?? '',
+                'customername' => $invoiceData['customer_name'] ?? '',
+                'invoicelines' => [
+                    'invoiceline' => $invoiceLines
+                ]
+            ]
+        ];
+
+        return $this->sendRequest('POST', '/salesinvoice.nv', $invoice, true);
+    }
+
+    /**
+     * Get a specific sales invoice by Netvisor key
+     *
+     * @param string $netvisorKey
+     * @return array
+     */
+    public function getSalesInvoice(string $netvisorKey)
+    {
+        return $this->sendRequest('GET', "/getsalesinvoice.nv?netvisorkey={$netvisorKey}");
+    }
+
     // Add more methods as needed for other API endpoints
 }

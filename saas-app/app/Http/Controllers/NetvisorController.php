@@ -120,4 +120,56 @@ class NetvisorController extends Controller
             return response()->json(['error' => 'Failed to add customer'], 500);
         }
     }
+
+    public function getCustomers()
+    {
+        try {
+            $response = $this->netvisorAPI->getCustomers();
+            Log::info('Customers response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving customers: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve customers'], 500);
+        }
+    }
+
+    public function getProducts()
+    {
+        try {
+            $response = $this->netvisorAPI->getProducts();
+            Log::info('Products response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving products: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve products'], 500);
+        }
+    }
+
+    public function createInvoice(Request $request)
+    {
+        try {
+            $invoiceData = $request->input('invoice', []);
+            $invoiceLines = $request->input('lines', []);
+
+            $response = $this->netvisorAPI->createSalesInvoice($invoiceData, $invoiceLines);
+
+            Log::info('Sales invoice created: ' . json_encode($response));
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            Log::error('Error creating sales invoice: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to create sales invoice'], 500);
+        }
+    }
+
+    public function getInvoice($netvisorKey)
+    {
+        try {
+            $response = $this->netvisorAPI->getSalesInvoice($netvisorKey);
+            Log::info('Sales invoice response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving sales invoice: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve sales invoice'], 500);
+        }
+    }
 }

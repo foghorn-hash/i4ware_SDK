@@ -92,7 +92,7 @@ function App() {
       request()
         .get("/api/settings")
         .then(res => {
-          if(res && res.status === 200 ){
+          if(res.status == 200 ){
             // setLoading(false);
               const obj = {};
               for (let i = 0; i < res.data.data.length; i++) {
@@ -106,13 +106,7 @@ function App() {
               }
               setSetting(obj);
           }
-        })
-        .catch(error => {
-          console.error("Error fetching settings:", error);
-          // Set default settings if API call fails
-          setSetting({
-            disable_license_details: false
-          });
+  
         })
     },[]);
 

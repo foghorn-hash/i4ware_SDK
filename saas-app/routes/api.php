@@ -109,7 +109,17 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 });
 
 Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router) {
+	// Invoices
 	Route::get('/invoices', [NetvisorController::class, 'getSalesInvoices']);
+	Route::get('/invoices/{netvisorKey}', [NetvisorController::class, 'getInvoice']);
+	Route::post('/invoices', [NetvisorController::class, 'createInvoice']);
+
+	// Customers
+	Route::get('/customers', [NetvisorController::class, 'getCustomers']);
+	Route::post('/customers', [NetvisorController::class, 'addCustomer']);
+
+	// Products
+	Route::get('/products', [NetvisorController::class, 'getProducts']);
 });
 
 // Route for Atlassian sales report

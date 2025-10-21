@@ -8,17 +8,17 @@ class CreateTransactionsTable extends Migration
 {
     public function up()
     {
-        Schema::create('transactions', function (Blueprint $table) {
+        Schema::create('netvisor_transactions', function (Blueprint $table) {
             $table->id();
             $table->string('timestamp');
             $table->string('language');
-            $table->string('transaction_id');
+            $table->string('transaction_id')->unique(); // ✅ UNIQUE index added
             $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('transactions');
+        Schema::dropIfExists('netvisor_transactions');
     }
 }
