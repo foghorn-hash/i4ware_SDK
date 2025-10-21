@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useContext } from "react";
 import axios from "axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Table, Form, Button, Card } from 'react-bootstrap';
 import './Timesheet.css';
 import { API_BASE_URL,  API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
+import { LanguageContext } from "../../LanguageContext";
 
 /** === API setup === */
 const API_BASE = API_BASE_URL;
@@ -11,7 +12,10 @@ const AUTH_TOKEN = localStorage.getItem(ACCESS_TOKEN_NAME); // esim. "eyJhbGciOi
 
 const api = axios.create({
   baseURL: API_BASE,
-  headers: { "Content-Type": "application/json" }
+  headers: { 
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${AUTH_TOKEN}`
+  }
 });
 if (AUTH_TOKEN) api.defaults.headers.common["Authorization"] = `Bearer ${AUTH_TOKEN}`;
 
@@ -100,19 +104,46 @@ const makeRow = (id) => ({
   memo: '',
 });
 
-export default function Timeshaat() {
+export default function Timesheet() {
   const CURRENT_USER_ID = 1; // hae oikeasti authista
   const [timesheetId, setTimesheetId] = useState(null);
+  const { strings } = useContext(LanguageContext); //käännös
 
   const [meta, setMeta] = useState({
-    nimi: 'Matti Kiviharju, 25.07.2025',
-    tyontekija: 'Matti Kiviharju',
+    nimi: '',
+    tyontekija: '',
     ammattinimike: '',
+    project: '',
+    pvm: '',
+    klo_alku: '', 
+    klo_loppu: '', 
+    klo: '', 
+    norm: '', 
+    lisatLa: '', 
+    lisatSu: '', 
+    lisatIlta: '', 
+    lisatYo: '', 
+    ylityoVrk50: '',
+    ylityoVrk100: '',
+    ylityoVko50: '',
+    ylityoVko100: '',
+    atv: '',
+    matk: '',
+    ateriakorvaus: '',
+    km: '',
+    tyokalukorvaus: '',
+    paivaraha_koko: '',
+    paivaraha_osa: '',
+    km_selite: '',
+    huom: '',
+    memo: ''
   });
 
   const [rows, setRows] = useState(() => Array.from({ length: 0 }, (_, i) => makeRow(i + 1)));
   const [showExtras, setShowExtras] = useState(true);
   const [showOvertime, setShowOvertime] = useState(true);
+  const [showExtrasMessage, setShowExtrasMessage] = useState(false);
+  const [showOvertimeMessage, setShowOvertimeMessage] = useState(false);
   const saveTimers = useRef({}); // debounce per rowId
   const metaTimer = useRef(null);
 
@@ -121,17 +152,18 @@ export default function Timeshaat() {
     (async () => {
       try {
         // 1) yritä löytää käyttäjän uusin samalla nimellä
-        const search = await api.get('/timesheets', { params: { user_id: CURRENT_USER_ID, q: meta.nimi, per_page: 1 }});
+        const search = await api.get('/api/timesheet/timesheets', { params: { user_id: CURRENT_USER_ID, q: meta.nimi, per_page: 1 }});
         let ts = search.data?.data?.[0];
 
         // 2) jos ei löydy, luo
         if (!ts) {
-          const created = await api.post('/timesheets', {
-            user_id: CURRENT_USER_ID, // backend ei pakollinen tässä controllerissa, mutta varmuudeksi
-            nimi: meta.nimi,
-            tyontekija: meta.tyontekija,
-            ammattinimike: meta.ammattinimike,
-            status: 'Luotu'
+          const created = await api.post('/api/timesheet/timesheets', {
+            user_id: Number(CURRENT_USER_ID), // backend ei pakollinen tässä controllerissa, mutta varmuudeksi
+            nimi: meta.nimi || 'Uusi tuntikortti',
+            tyontekija: meta.tyontekija || 'Tuntematon',
+            ammattinimike: meta.ammattinimike || '',
+            status: 'Luotu',
+            domain: '',
           });
           ts = created.data;
         }
@@ -139,8 +171,17 @@ export default function Timeshaat() {
         setTimesheetId(ts.id);
 
         // 3) lataa rivit
-        const res = await api.get(`/timesheets/${ts.id}/rows`, { params: { per_page: 500, order_by: 'row_no,pvm,id' }});
-        const srvRows = res.data?.data ?? [];
+        let res = await api.get(`/api/timesheet/timesheets/${ts.id}/rows`, { params: { per_page: 500, order_by: 'row_no,pvm,id' }});
+        let srvRows = res.data?.data ?? [];
+
+        // jos rivejä ei ole, luo yksi oletusrivi
+        if (srvRows.length === 0) {
+          const createdRow = await api.post(`/api/timesheet/timesheets/${ts.id}/rows`, {
+            user_id: Number(CURRENT_USER_ID),
+            status: 'Luotu'
+          });
+          srvRows = [createdRow.data]; // käytetään luotua riviä
+        }
         setRows(srvRows.map(fromApiRow));
       } catch (e) {
         console.error("Init failed", e);
@@ -155,10 +196,10 @@ export default function Timeshaat() {
     if (metaTimer.current) clearTimeout(metaTimer.current);
     metaTimer.current = setTimeout(async () => {
       try {
-        await api.put(`/timesheets/${timesheetId}`, {
-          nimi: meta.nimi,
-          tyontekija: meta.tyontekija,
-          ammattinimike: meta.ammattinimike,
+        await api.put(`/api/timesheet/timesheets/${timesheetId}`, {
+          nimi: meta.nimi || 'Uusi tuntikortti',
+          tyontekija: meta.tyontekija || 'Tuntematon',
+          ammattinimike: meta.ammattinimike  || '',
         });
       } catch (e) {
         console.error("Meta save failed", e);
@@ -201,7 +242,7 @@ export default function Timeshaat() {
           setRows(prev => prev.map(x => x.id === r.id ? newRow : x));
         } else {
           const payload = toApiRow(r, CURRENT_USER_ID, timesheetId);
-          await api.put(`/timesheets/${timesheetId}/rows/${r.id}`, payload);
+          await api.put(`/api/timesheet/timesheets/${timesheetId}/rows/${r.id}`, payload);
         }
       } catch (e) {
         console.error("Row save failed", e);
@@ -218,14 +259,32 @@ export default function Timeshaat() {
     queueSaveRow(id);
   };
 
-  const addRow = async () => {
-    // Lisää ensin lokaali tmp-rivi (snappy UI), server sync hoitaa POSTin
-    await api.post('/api/timesheet/1/timesheets/rows', { user_id: CURRENT_USER_ID, nimi: meta.nimi, tyontekija: meta.tyontekija, ammattinimike: meta.ammattinimike, status: 'Luotu' });
-    const tmpId = `tmp_${Date.now()}`;
-    setRows(prev => [...prev, { ...makeRow( (rows?.length||0)+1 ), id: tmpId }]);
-    queueSaveRow(tmpId);
-  };
+  const [statusMessage, setStatusMessage] = useState('');
 
+  const addRow = () => {
+    if (!timesheetId) {
+      setStatusMessage('Timesheet ei ole vielä valmis, odota hetki.');
+      setTimeout(() => setStatusMessage(''), 3000);
+      alert("Timesheet ei ole vielä valmis, odota hetki.");
+      return;
+    }
+
+    try {
+      
+      const tmpId = `tmp_${Date.now()}`;
+      setRows(prev => [...prev, { ...makeRow((rows?.length||0)+1 ), id: tmpId }]);
+      queueSaveRow(tmpId);
+  
+      setStatusMessage('Rivi lisätty onnistuneesti!');
+      setTimeout(() => setStatusMessage(''), 3000);
+  
+    } catch (err) {
+      console.error('Rivin lisääminen epäonnistui:', err);
+      setStatusMessage('Rivin lisääminen epäonnistui.');
+      setTimeout(() => setStatusMessage(''), 3000);
+    }
+  };
+  
   const removeRow = async (id) => {
     try {
       // jos tmp-riviä ei ole serverillä, poista vain lokaalista
@@ -265,40 +324,461 @@ export default function Timeshaat() {
     />
   );
 
+  //yhdistää työajan aloittamis ja loppumis ajat klo kenttään
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const recordable = {
+      ...meta,
+      klo: `${meta.klo_alku}-${meta.klo_loppu}`
+    };
+    try {
+      const response = await fetch(`/api/timesheet/timesheets/${timesheetId}/rows`, {
+        method: 'POST',
+        headers: {'Content-type': 'application/json'},
+        body: JSON.stringify(recordable)
+      });
+
+      if (!response.ok) throw new Error('Virhe tallennuksessa');
+
+      const result = await response.json();
+      console.log('Tallennettu:', result);
+
+      alert('Tiedot tallennettu onnistuneesti!');
+      setMeta({
+        nimi: '',
+        tyontekija: '',
+        ammattinimike: '',
+        project: '',
+        pvm: '',
+        klo_alku: '', 
+        klo_loppu: '', 
+        klo: '', 
+        norm: '', 
+        lisatLa: '', 
+        lisatSu: '', 
+        lisatIlta: '', 
+        lisatYo: '', 
+        ylityoVrk50: '',
+        ylityoVrk100: '',
+        ylityoVko50: '',
+        ylityoVko100: '',
+        atv: '',
+        matk: '',
+        ateriakorvaus: '',
+        km: '',
+        tyokalukorvaus: '',
+        paivaraha_koko: '',
+        paivaraha_osa: '',
+        km_selite: '',
+        huom: '',
+        memo: ''
+      }); 
+    } catch (err) {
+      console.error('Tallennus epäonnistui:', err);
+      alert('Tallennus epäonnistui. Tarkista tiedot ja yritä uudelleen.')
+    }
+  };
+
+  const toggleExtras = () => {
+    setShowExtras(s => !s);
+    setShowExtrasMessage(true);
+    setTimeout(() => setShowExtrasMessage(true)); //jos haluaa aikarajan -> setShowExtrasMessage(false), 4000);
+  };
+
+  const toggleOvertime = () => {
+    setShowOvertime(s => !s);
+    setShowOvertimeMessage(true);
+    setTimeout(() => setShowOvertimeMessage(true));
+  }
+
   /* ====== TÄSTÄ ALASPÄIN: sinun alkuperäinen renderöinti (lyhennetty header…) ====== */
   return (
     <Container fluid className="tcontainer py-4 bg-dark min-vh-100">
       <Container style={{maxWidth: 1600}}>
         <Card className="shadow-sm mb-3">
           <Card.Body>
-            <Row className="g-3">
-              <Col md>
-                <Form.Group>
-                  <Form.Label className="small text-muted">Tuntikortin nimi</Form.Label>
-                  <Form.Control value={meta.nimi} onChange={e=>setMeta({...meta, nimi:e.target.value})} />
-                </Form.Group>
-              </Col>
-              <Col md>
-                <Form.Group>
-                  <Form.Label className="small text-muted">Työntekijä</Form.Label>
-                  <Form.Control value={meta.tyontekija} onChange={e=>setMeta({...meta, tyontekija:e.target.value})} />
-                </Form.Group>
-              </Col>
-              <Col md>
-                <Form.Group>
-                  <Form.Label className="small text-muted">Ammattinimike</Form.Label>
-                  <Form.Control value={meta.ammattinimike} onChange={e=>setMeta({...meta, ammattinimike:e.target.value})} />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row className="g-2 mt-3">
-              <Col xs="auto"><Button size="sm" variant="primary" onClick={()=>setShowExtras(s=>!s)}>{showExtras? 'Lisät piiloon':'Lisät näkyviin'}</Button></Col>
-              <Col xs="auto"><Button size="sm" variant="secondary" onClick={()=>setShowOvertime(s=>!s)}>{showOvertime? 'Ylityöt piiloon':'Ylityöt näkyviin'}</Button></Col>
-              <Col className="text-end">
-                <Button size="sm" variant="success" className="me-2" onClick={addRow}>➕ Lisää rivi</Button>
-                <Button size="sm" variant="outline-danger" onClick={clearAll}>🗑 Tyhjennä kaikki</Button>
-              </Col>
-            </Row>
+            <Form onSubmit={handleSubmit}>
+              <Row className="g-3">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.timesheetNameLabel}</Form.Label>
+                    <Form.Control 
+                      value={meta.nimi} 
+                      onChange={e=>setMeta({...meta, nimi:e.target.value})} 
+                      placeholder={strings.timesheetNamePlaceholder}
+                      required
+                    /> 
+                  </Form.Group>
+                </Col>
+
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.employeeLabel}</Form.Label>
+                    <Form.Control 
+                      value={meta.tyontekija} 
+                      onChange={e=>setMeta({...meta, tyontekija:e.target.value})} 
+                      placeholder={strings.employeePlaceholder}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.jobTitleLabel}</Form.Label>
+                    <Form.Control 
+                      value={meta.ammattinimike} 
+                      onChange={e=>setMeta({...meta, ammattinimike:e.target.value})} 
+                      placeholder={strings.jobTitlePlaceholder}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <hr></hr>
+
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.projectLabel}</Form.Label>
+                    <Form.Control 
+                      value={meta.project} 
+                      onChange={e=>setMeta({...meta, project:e.target.value})} 
+                      placeholder={strings.projectPlaceholder}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.dateLabel}</Form.Label>
+                    <Form.Control 
+                      type="date" 
+                      value={meta.pvm} 
+                      onChange={e=>setMeta({...meta, pvm:e.target.value})}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.startTimeLabel}</Form.Label>
+                    <Form.Control 
+                      className="flex-grow-1"
+                      type="time"
+                      required
+                      value={meta.klo_alku || ''} 
+                      onChange={e => {
+                        const alku = e.target.value;
+                        setMeta({
+                          ...meta, 
+                          klo_alku: alku, 
+                          klo: `${alku}-${meta.klo_loppu || ''}`
+                        });
+                      }}
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.endTimeLabel}</Form.Label>
+                    <Form.Control 
+                      className="flex-grow-1"
+                      type="time" 
+                      required
+                      value={meta.klo_loppu || ''} 
+                      onChange={e => {
+                        const loppu = e.target.value;
+                        setMeta({
+                          ...meta, 
+                          klo_loppu: loppu, 
+                          klo: `${meta.klo_alku || ''}-${loppu}`
+                        });
+                      }}
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.normalHoursLabel}</Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      step={0.1} 
+                      value={meta.norm} 
+                      onChange={e=>setMeta({...meta, norm:e.target.value})} 
+                      placeholder={strings.normalHoursPlaceholder}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+
+              {showExtras && (
+              <>
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.extrasLaLabel}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.lisatLa} 
+                      onChange={e=>setMeta({...meta, lisatLa:e.target.value})} 
+                      placeholder={strings.extrasPlaceholder}
+                    />
+                    {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.extrasSuLabel}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.lisatSu} 
+                      onChange={e=>setMeta({...meta, lisatSu:e.target.value})} 
+                      placeholder={strings.extrasPlaceholder}
+                    />
+                    {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.extrasEveningLabel}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.lisatIlta} 
+                      onChange={e=>setMeta({...meta, lisatIlta:e.target.value})} 
+                      placeholder={strings.extrasPlaceholder}
+                    />
+                    {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.extrasNightLabel}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.lisatYo} 
+                      onChange={e=>setMeta({...meta, lisatYo:e.target.value})} 
+                      placeholder={strings.extrasPlaceholder}
+                    />
+                    {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+              </>
+              )}
+    
+              {showOvertime && (
+              <>
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.overtimeVrk50Label}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.ylityoVrk50} 
+                      onChange={e=>setMeta({...meta, ylityoVrk50:e.target.value})} 
+                      placeholder={strings.overtimePlaceholder}
+                    />
+                    {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.overtimeVrk100Label}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.ylityoVrk100} 
+                      onChange={e=>setMeta({...meta, ylityoVrk100:e.target.value})} 
+                      placeholder={strings.overtimePlaceholder}
+                    />
+                    {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.overtimeVko50Label}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.ylityoVko50} 
+                      onChange={e=>setMeta({...meta, ylityoVko50:e.target.value})} 
+                      placeholder={strings.overtimePlaceholder}
+                    />
+                    {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.overtimeVko100Label}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      step={0.1} 
+                      value={meta.ylityoVko100} 
+                      onChange={e=>setMeta({...meta, ylityoVko100:e.target.value})} 
+                      placeholder={strings.overtimePlaceholder}
+                    />
+                    {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                  </Form.Group>
+                </Col>
+              </>
+              )}
+     
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.atvLabel}</Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      step={0.1} 
+                      value={meta.atv} 
+                      onChange={e=>setMeta({...meta, atv:e.target.value})} 
+                      placeholder={strings.extrasPlaceholder}
+                    />
+                  </Form.Group>
+                </Col>
+    
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.travelLabel}</Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      step={0.1} 
+                      value={meta.matk} 
+                      onChange={e=>setMeta({...meta, matk:e.target.value})} 
+                      placeholder={strings.extrasPlaceholder}
+                    />
+                  </Form.Group>
+                </Col>
+    
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.mealLabel}</Form.Label>
+                    <Form.Control 
+                      type="number"
+                      value={meta.ateriakorvaus} 
+                      onChange={e=>setMeta({...meta, ateriakorvaus:e.target.value})}
+                      placeholder={strings.mealLabel}
+                    />
+                  </Form.Group>
+                </Col>  
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.kmLabel}</Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      step={0.1} 
+                      value={meta.km} 
+                      onChange={e=>setMeta({...meta, km:e.target.value})}
+                      placeholder={strings.kmPlaceholder}
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.toolCompLabel}</Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      value={meta.tyokalukorvaus} 
+                      onChange={e=>setMeta({...meta, tyokalukorvaus:e.target.value})} 
+                      placeholder={strings.toolCompPlaceholder}
+                    />
+                  </Form.Group>
+                </Col>
+
+                {/* <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">Päiväraha</Form.Label>
+                    <Form.Check 
+                      type="radio" 
+                      label="Koko"
+                      name="paivaraha"
+                      value="koko"
+                      checked={meta.paivaraha_koko==="koko"} 
+                      onChange={()=>setMeta({...meta, paivaraha_koko:"koko"})} 
+                    />
+                    <Form.Check 
+                      type="radio" 
+                      label="Osa"
+                      name="paivaraha"
+                      value="osa"
+                      checked={meta.paivaraha_osa==="osa"} 
+                      onChange={()=>setMeta({...meta, paivaraha_osa:"osa"})} 
+                    />
+                  </Form.Group>
+                </Col> */}
+
+              {parseFloat(meta.km) > 0 && (
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.kmNoteLabel}</Form.Label>
+                    <Form.Control 
+                      as="textarea" 
+                      value={meta.km_selite} 
+                      onChange={e=>setMeta({...meta, km_selite:e.target.value})} 
+                      placeholder={strings.kmNotePlaceholder}
+                    />
+                    <Form.Text className="text-info">
+                      {strings.kmDescInfo}
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              )}
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.noteLabel}</Form.Label>
+                    <Form.Control 
+                      as="textarea" 
+                      value={meta.huom} 
+                      onChange={e=>setMeta({...meta, huom:e.target.value})} 
+                      placeholder={strings.notePlaceholder}
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.memoLabel}</Form.Label>
+                    <Form.Control 
+                      as="textarea" 
+                      value={meta.memo} 
+                      onChange={e=>setMeta({...meta, memo:e.target.value})} 
+                      placeholder={strings.memoPlaceholder}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              {statusMessage && (
+                <Row className="mb-2">
+                  <Col>
+                    <div className={`save-status ${statusMessage.includes('epäonnistui') ? 'error' : 'success'}`}>
+                      {statusMessage}
+                    </div>
+                  </Col>
+                </Row>
+              )}
+              <Row className="g-2 mt-3">
+                <Col xs="auto"><Button size="sm" variant="primary" onClick={toggleExtras}>{showExtras? strings.toggleExtrasHide : strings.toggleExtrasShow}</Button></Col>
+                <Col xs="auto"><Button size="sm" variant="secondary" onClick={toggleOvertime}>{showOvertime? strings.toggleOvertimeHide : strings.toggleOvertimeShow}</Button></Col>
+                <Col className="text-end">
+                  <Button size="sm" variant="success" className="me-2" onClick={addRow}>{strings.addRowButton}</Button>
+                  <Button size="sm" variant="outline-danger" onClick={clearAll}>{strings.clearAllButton}</Button>
+                </Col>
+              </Row>
+            </Form>
           </Card.Body>
         </Card>
 
@@ -306,26 +786,26 @@ export default function Timeshaat() {
 
         {/* Yhteenveto pidetään ennallaan */}
         <Card className="shadow-sm">
-          <Card.Header as="h6">Yhteenveto</Card.Header>
-          <Card.Body>
-            <Row className="g-3">
-              <Summary label="Norm. tunnit" value={totals.norm} suffix=" h" />
-              <Summary label="Lisät la" value={totals.lisatLa} suffix=" h" />
-              <Summary label="Lisät su" value={totals.lisatSu} suffix=" h" />
-              <Summary label="Lisät Ilta" value={totals.lisatIlta} suffix=" h" />
-              <Summary label="Lisät Yö" value={totals.lisatYo} suffix=" h" />
-              <Summary label="Ylityö vrk 50%" value={totals.ylityoVrk50} suffix=" h" />
-              <Summary label="Ylityö vrk 100%" value={totals.ylityoVrk100} suffix=" h" />
-              <Summary label="Ylityö vko 50%" value={totals.ylityoVko50} suffix=" h" />
-              <Summary label="Ylityö vko 100%" value={totals.ylityoVko100} suffix=" h" />
-              <Summary label="ATV" value={totals.atv} suffix=" h" />
-              <Summary label="Matkatunnit" value={totals.matk} suffix=" h" />
-              <Summary label="Ateriakorvaus" value={totals.ateriakorvaus} prefix="€ " />
-              <Summary label="Kilometrikorvaus (km)" value={totals.km} suffix=" km" />
-              <Summary label="Työkalukorvaus" value={totals.tyokalukorvaus} prefix="€ " />
-            </Row>
-          </Card.Body>
-        </Card>
+  <Card.Header as="h6">{strings.summaryHeader}</Card.Header>
+  <Card.Body>
+    <Row className="g-3">
+      <Summary label={strings.normalHoursLabel} value={totals.norm} suffix=" h" />
+      <Summary label={strings.extrasLaLabel} value={totals.lisatLa} suffix=" h" />
+      <Summary label={strings.extrasSuLabel} value={totals.lisatSu} suffix=" h" />
+      <Summary label={strings.extrasEveningLabel} value={totals.lisatIlta} suffix=" h" />
+      <Summary label={strings.extrasNightLabel} value={totals.lisatYo} suffix=" h" />
+      <Summary label={strings.overtimeVrk50Label} value={totals.ylityoVrk50} suffix=" h" />
+      <Summary label={strings.overtimeVrk100Label} value={totals.ylityoVrk100} suffix=" h" />
+      <Summary label={strings.overtimeVko50Label} value={totals.ylityoVko50} suffix=" h" />
+      <Summary label={strings.overtimeVko100Label} value={totals.ylityoVko100} suffix=" h" />
+      <Summary label={strings.atvLabel} value={totals.atv} suffix=" h" />
+      <Summary label={strings.travelLabel} value={totals.matk} suffix=" h" />
+      <Summary label={strings.mealLabel} value={totals.ateriakorvaus} suffix=" €" />
+      <Summary label={strings.kmLabel} value={totals.km} suffix=" km" />
+      <Summary label={strings.toolCompLabel} value={totals.tyokalukorvaus} suffix=" €" />
+    </Row>
+  </Card.Body>
+</Card>
       </Container>
     </Container>
   );

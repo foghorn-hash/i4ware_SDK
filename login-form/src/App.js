@@ -32,7 +32,7 @@ import LOGO from "./52311-logo-transparent.png";
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import request from "./utils/Request";
-import Timeshhet from "./components/Timesheet/Timesheet";
+import Timesheet from "./components/Timesheet/Timesheet";
 // ES6 module syntax
 import LocalizedStrings from 'react-localization';
 
@@ -181,7 +181,7 @@ function App() {
               <PrivateRoute path="/stl-viewer" component={STLViewerComponent} />
               <PrivateRoute path="/video-photo" component={VideoPhoto} />
               <PrivateRoute path="/pusher-chat" component={PusherChat} />
-              <PrivateRoute path="/timesheet" component={Timeshhet} />
+              <PrivateRoute path="/timesheet" component={Timesheet} />
             </Switch>
           </Container>
         </AuthProvider>

@@ -130,9 +130,12 @@ Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router)
 });
 
 Route::group(['prefix' => 'timesheet', 'middleware' => 'CORS'], function ($router) {
+	Route::get('timesheets', 							[TimesheetController::class, 'index']);
+	Route::post('timesheets', 							[TimesheetController::class, 'store']);
 	Route::get('timesheets/{timesheet}/rows',           [TimesheetRowController::class, 'index']);
-	Route::post('timesheets/{timesheet}/rows',          [TimesheetRowController::class, 'store']);
+	Route::post('timesheets/{timesheet}/rows', 			[TimesheetRowController::class, 'store']);
 	Route::get('timesheets/{timesheet}/rows/{row}',     [TimesheetRowController::class, 'show']);
+	Route::put('timesheets/{timesheet}', 				[TimesheetController::class, 'update']);
 	Route::put('timesheets/{timesheet}/rows/{row}',     [TimesheetRowController::class, 'update']);
 	Route::delete('timesheets/{timesheet}/rows/{row}',  [TimesheetRowController::class, 'destroy']);
 });

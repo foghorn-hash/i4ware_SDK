@@ -46,6 +46,10 @@ class TimesheetController extends Controller
             'domain'        => ['nullable','string','max:255'],
         ]);
 
+        //jos frontend ei lähetä status/user_id, se luo niitä
+        $data['status'] = $data['status'] ?? 'Luotu';
+        $data['user_id'] = $data['user_id'] ?? auth()->id();
+
         $ts = Timesheet::create($data);
         return response()->json($ts, Response::HTTP_CREATED);
     }
