@@ -20,14 +20,15 @@ const api = axios.create({
 if (AUTH_TOKEN) api.defaults.headers.common["Authorization"] = `Bearer ${AUTH_TOKEN}`;
 
 /** === helpers: camelCase <-> snake_case === */
-const toApiRow = (r, userId, timesheetId) => ({
+const toApiRow = (r, userId, timesheetId, rowNo) => ({
   user_id: userId,
   timesheet_id: timesheetId,
-  row_no: r.id ?? r.row_no,
+  row_no: rowNo,
   status: r.status,
   project: r.project || null,
   pvm: r.pvm || null,
-  klo: r.klo || null,
+  klo_alku: r.klo_alku || null,
+  klo_loppu: r.klo_loppu || null,
   norm: Number(r.norm || 0),
   lisat_la: Number(r.lisatLa || 0),
   lisat_su: Number(r.lisatSu || 0),
@@ -39,8 +40,8 @@ const toApiRow = (r, userId, timesheetId) => ({
   ylityo_vko_100: Number(r.ylityoVko100 || 0),
   atv: Number(r.atv || 0),
   matk: Number(r.matk || 0),
-  paivaraha_osa: !!r.paivaraha_osa,
-  paivaraha_koko: !!r.paivaraha_koko,
+  // paivaraha_osa: !!r.paivaraha_osa,
+  // paivaraha_koko: !!r.paivaraha_koko,
   ateriakorvaus: Number(r.ateriakorvaus || 0),
   km: Number(r.km || 0),
   tyokalukorvaus: Number(r.tyokalukorvaus || 0),
@@ -51,10 +52,12 @@ const toApiRow = (r, userId, timesheetId) => ({
 
 const fromApiRow = (r) => ({
   id: r.id,                  // käytetään serverin id:tä rivin tunnisteena
+  row_no: r.row_no ?? 0,
   status: r.status,
   project: r.project ?? "",
   pvm: r.pvm ?? "",
-  klo: r.klo ? r.klo.slice(0,5) : "00:00",
+  klo_alku: r.klo_alku ?? "00:00",
+  klo_loppu: r.klo_loppu ?? "00:00",
   norm: Number(r.norm ?? 0),
   lisatLa: Number(r.lisat_la ?? 0),
   lisatSu: Number(r.lisat_su ?? 0),
@@ -66,8 +69,8 @@ const fromApiRow = (r) => ({
   ylityoVko100: Number(r.ylityo_vko_100 ?? 0),
   atv: Number(r.atv ?? 0),
   matk: Number(r.matk ?? 0),
-  paivaraha_osa: !!r.paivaraha_osa,
-  paivaraha_koko: !!r.paivaraha_koko,
+  // paivaraha_osa: !!r.paivaraha_osa,
+  // paivaraha_koko: !!r.paivaraha_koko,
   ateriakorvaus: Number(r.ateriakorvaus ?? 0),
   km: Number(r.km ?? 0),
   tyokalukorvaus: Number(r.tyokalukorvaus ?? 0),
@@ -82,7 +85,8 @@ const makeRow = (id) => ({
   status: 'Luotu',
   project: '',
   pvm: '',
-  klo: '00:00',
+  klo_alku: '00:00',
+  klo_loppu: '00:00',
   norm: 0,
   lisatLa: 0,
   lisatSu: 0,
@@ -94,8 +98,8 @@ const makeRow = (id) => ({
   ylityoVko100: 0,
   atv: 0,
   matk: 0,
-  paivaraha_osa: false,
-  paivaraha_koko: false,
+  // paivaraha_osa: false,
+  // paivaraha_koko: false,
   ateriakorvaus: 0,
   km: 0,
   tyokalukorvaus: 0,
@@ -117,7 +121,6 @@ export default function Timesheet() {
     pvm: '',
     klo_alku: '', 
     klo_loppu: '', 
-    klo: '', 
     norm: '', 
     lisatLa: '', 
     lisatSu: '', 
@@ -132,8 +135,8 @@ export default function Timesheet() {
     ateriakorvaus: '',
     km: '',
     tyokalukorvaus: '',
-    paivaraha_koko: '',
-    paivaraha_osa: '',
+    // paivaraha_koko: '',
+    // paivaraha_osa: '',
     km_selite: '',
     huom: '',
     memo: ''
@@ -236,8 +239,8 @@ export default function Timesheet() {
 
         // jos rivi on vasta lokaali (id negatiivinen tms.), tee POST
         if (typeof r.id === 'string' && r.id.startsWith('tmp_')) {
-          const payload = toApiRow(r, CURRENT_USER_ID, timesheetId);
-          const created = await api.post(`/timesheets/${timesheetId}/rows`, payload);
+          const payload = toApiRow(r, CURRENT_USER_ID, timesheetId, rows.indexOf(r) + 1);
+          const created = await api.post(`/api/timesheet/timesheets/${timesheetId}/rows`, payload);
           const newRow = fromApiRow(created.data);
           setRows(prev => prev.map(x => x.id === r.id ? newRow : x));
         } else {
@@ -272,7 +275,35 @@ export default function Timesheet() {
     try {
       
       const tmpId = `tmp_${Date.now()}`;
-      setRows(prev => [...prev, { ...makeRow((rows?.length||0)+1 ), id: tmpId }]);
+      const newRow = { 
+        ...makeRow((rows?.length||0)+1), 
+        id: tmpId,
+        project: meta.project,
+        pvm: meta.pvm,
+        klo_alku: meta.klo_alku,
+        klo_loppu: meta.klo_loppu,
+        norm: Number(meta.norm || 0),
+        lisatLa: Number(meta.lisatLa || 0),
+        lisatSu: Number(meta.lisatSu || 0),
+        lisatIlta: Number(meta.lisatIlta || 0),
+        lisatYo: Number(meta.lisatYo || 0),
+        ylityoVrk50: Number(meta.ylityoVrk50 || 0),
+        ylityoVrk100: Number(meta.ylityoVrk100 || 0),
+        ylityoVko50: Number(meta.ylityoVko50 || 0),
+        ylityoVko100: Number(meta.ylityoVko100 || 0),
+        atv: Number(meta.atv || 0),
+        matk: Number(meta.matk || 0),
+        // paivaraha_koko: !!meta.paivaraha_koko,
+        // paivaraha_osa: !!meta.paivaraha_osa,
+        ateriakorvaus: Number(meta.ateriakorvaus || 0),
+        km: Number(meta.km || 0),
+        tyokalukorvaus: Number(meta.tyokalukorvaus || 0),
+        km_selite: meta.km_selite,
+        huom: meta.huom,
+        memo: meta.memo
+      };
+
+      setRows(prev => [...prev, newRow]);
       queueSaveRow(tmpId);
   
       setStatusMessage('Rivi lisätty onnistuneesti!');
@@ -292,7 +323,7 @@ export default function Timesheet() {
         setRows(prev => prev.filter(r => r.id !== id));
         return;
       }
-      await api.delete(`/timesheets/${timesheetId}/rows/${id}`);
+      await api.delete(`/api/timesheet/timesheets/${timesheetId}/rows/${id}`);
       setRows(prev => prev.filter(r => r.id !== id));
     } catch (e) {
       console.error("Delete failed", e);
@@ -327,23 +358,55 @@ export default function Timesheet() {
   //yhdistää työajan aloittamis ja loppumis ajat klo kenttään
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const recordable = {
-      ...meta,
-      klo: `${meta.klo_alku}-${meta.klo_loppu}`
-    };
+    if (!timesheetId) {
+      alert("Ei ole vielä valmis");
+      return;
+    }
+  
     try {
-      const response = await fetch(`/api/timesheet/timesheets/${timesheetId}/rows`, {
-        method: 'POST',
-        headers: {'Content-type': 'application/json'},
-        body: JSON.stringify(recordable)
-      });
-
-      if (!response.ok) throw new Error('Virhe tallennuksessa');
-
-      const result = await response.json();
-      console.log('Tallennettu:', result);
-
-      alert('Tiedot tallennettu onnistuneesti!');
+      // luo payload toApiRow:n kautta
+      const tmpId = `tmp_${Date.now()}`;
+      const newRowLocal = { ...makeRow(rows.length + 1), id: tmpId };
+  
+      // yhdistää tiedot meta:sta
+      const combinedRow = {
+        ...newRowLocal,
+        status: 'Luotu',
+        project: meta.project,
+        pvm: meta.pvm,
+        klo_alku: meta.klo_alku,
+        klo_loppu: meta.klo_loppu,
+        norm: Number(meta.norm || 0),
+        lisatLa: Number(meta.lisatLa || 0),
+        lisatSu: Number(meta.lisatSu || 0),
+        lisatIlta: Number(meta.lisatIlta || 0),
+        lisatYo: Number(meta.lisatYo || 0),
+        ylityoVrk50: Number(meta.ylityoVrk50 || 0),
+        ylityoVrk100: Number(meta.ylityoVrk100 || 0),
+        ylityoVko50: Number(meta.ylityoVko50 || 0),
+        ylityoVko100: Number(meta.ylityoVko100 || 0),
+        atv: Number(meta.atv || 0),
+        matk: Number(meta.matk || 0),
+        // paivaraha_koko: !!meta.paivaraha_koko,
+        // paivaraha_osa: !!meta.paivaraha_osa,
+        ateriakorvaus: Number(meta.ateriakorvaus || 0),
+        km: Number(meta.km || 0),
+        tyokalukorvaus: Number(meta.tyokalukorvaus || 0),
+        km_selite: meta.km_selite,
+        huom: meta.huom,
+        memo: meta.memo
+      };
+  
+      const payload = toApiRow(combinedRow, CURRENT_USER_ID, timesheetId, rows.length + 1);
+      const created = await api.post(`/api/timesheet/timesheets/${timesheetId}/rows`, payload);
+  
+      // saa uuden rivin ja tekee sen frontin ymmärrettäväksi
+      const newRow = fromApiRow(created.data);
+  
+      // lisää lokaalisen state:n
+      setRows(prev => [...prev, newRow]);
+  
+      // tyhjentää lomakkeen
       setMeta({
         nimi: '',
         tyontekija: '',
@@ -352,7 +415,6 @@ export default function Timesheet() {
         pvm: '',
         klo_alku: '', 
         klo_loppu: '', 
-        klo: '', 
         norm: '', 
         lisatLa: '', 
         lisatSu: '', 
@@ -367,15 +429,17 @@ export default function Timesheet() {
         ateriakorvaus: '',
         km: '',
         tyokalukorvaus: '',
-        paivaraha_koko: '',
-        paivaraha_osa: '',
+        // paivaraha_koko: '',
+        // paivaraha_osa: '',
         km_selite: '',
         huom: '',
         memo: ''
-      }); 
+      });
+  
+      alert('Rivi tallennettu onnistuneesti!');
     } catch (err) {
       console.error('Tallennus epäonnistui:', err);
-      alert('Tallennus epäonnistui. Tarkista tiedot ja yritä uudelleen.')
+      alert('Tallennus epäonnistui. Tarkista tiedot ja yritä uudelleen.');
     }
   };
 
@@ -469,14 +533,7 @@ export default function Timesheet() {
                       type="time"
                       required
                       value={meta.klo_alku || ''} 
-                      onChange={e => {
-                        const alku = e.target.value;
-                        setMeta({
-                          ...meta, 
-                          klo_alku: alku, 
-                          klo: `${alku}-${meta.klo_loppu || ''}`
-                        });
-                      }}
+                      onChange={e => setMeta({ ...meta, klo_alku: e.target.value })}
                     />
                   </Form.Group>
                 </Col>
@@ -489,14 +546,7 @@ export default function Timesheet() {
                       type="time" 
                       required
                       value={meta.klo_loppu || ''} 
-                      onChange={e => {
-                        const loppu = e.target.value;
-                        setMeta({
-                          ...meta, 
-                          klo_loppu: loppu, 
-                          klo: `${meta.klo_alku || ''}-${loppu}`
-                        });
-                      }}
+                      onChange={e => setMeta({ ...meta, klo_loppu: e.target.value })}
                     />
                   </Form.Group>
                 </Col>
