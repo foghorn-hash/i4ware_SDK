@@ -62,16 +62,16 @@ class NetvisorAPIService
 
         // Encode all parameters to ISO-8859-15
         //$encodedParameters = array_map(function($param) {
-            //$encodedParam = mb_convert_encoding($param, 'ISO-8859-15', 'UTF-8');
-            //return $encodedParam;
+        //$encodedParam = mb_convert_encoding($param, 'ISO-8859-15', 'UTF-8');
+        //return $encodedParam;
         //}, $parameters);
 
         // Concatenate the encoded parameters into a single string
         $sha256string = implode('&', $parameters);
-        
+
         // Calculate the HMAC using SHA-256
         $h_mac = hash("sha256", $sha256string);
-        
+
         // Log the calculated HMAC for debugging purposes
         Log::info('Calculated HMAC: ' . $h_mac);
 
@@ -126,10 +126,10 @@ class NetvisorAPIService
             $response = $this->client->request($method, $url, $options);
 
             $this->saveTransaction();
-        
+
             $body = $response->getBody()->getContents();
-    
-             // Parse the XML response
+
+            // Parse the XML response
             $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA);
             $json = json_encode($xml);
             $responseArray = json_decode($json, true);
@@ -149,7 +149,7 @@ class NetvisorAPIService
     {
         return $this->sendRequest('GET', '/customerlist.nv');
     }
-    
+
     public function getProducts()
     {
         return $this->sendRequest('GET', '/productlist.nv');
@@ -267,5 +267,152 @@ class NetvisorAPIService
         return $this->sendRequest('GET', "/getsalesinvoice.nv?netvisorkey={$netvisorKey}");
     }
 
-    // Add more methods as needed for other API endpoints
+    /**
+     * Get sales order details
+     *
+     * @param string $netvisorKey
+     * @return array
+     */
+    public function getOrder(string $netvisorKey)
+    {
+        return $this->sendRequest('GET', "/getorder.nv?netvisorkey={$netvisorKey}");
+    }
+
+    /**
+     * Delete sales invoice
+     *
+     * @param int $netvisorKey
+     * @return array
+     */
+    public function deleteSalesInvoice($netvisorKey)
+    {
+        return $this->sendRequest('GET', '/deletesalesinvoice.nv', [
+            'netvisorkey' => $netvisorKey
+        ]);
+    }
+
+    /**
+     * Update sales invoice status
+     *
+     * @param array $statusData
+     * @return array
+     */
+    public function updateSalesInvoiceStatus(array $statusData)
+    {
+        return $this->sendRequest('POST', '/updatesalesinvoicestatus.nv', [
+            'salesinvoicestatus' => $statusData
+        ]);
+    }
+
+    /**
+     * Get deleted sales invoices
+     *
+     * @return array
+     */
+    public function getDeletedSalesInvoices()
+    {
+        return $this->sendRequest('GET', '/deletedsalesinvoices.nv');
+    }
+
+    /**
+     * Get deleted sales orders
+     *
+     * @return array
+     */
+    public function getDeletedSalesOrders()
+    {
+        return $this->sendRequest('GET', '/deletedsalesorders.nv');
+    }
+
+    /**
+     * Add comment to sales invoice/order
+     *
+     * @param array $commentData
+     * @return array
+     */
+    public function addSalesInvoiceComment(array $commentData)
+    {
+        return $this->sendRequest('POST', '/salesinvoicecomment.nv', [
+            'salesinvoicecomment' => $commentData
+        ]);
+    }
+
+    /**
+     * Get payment term list
+     *
+     * @return array
+     */
+    public function getPaymentTerms()
+    {
+        return $this->sendRequest('GET', '/paymenttermlist.nv');
+    }
+
+    /**
+     * Get sales personnel list
+     *
+     * @return array
+     */
+    public function getSalesPersonnel()
+    {
+        return $this->sendRequest('GET', '/salespersonnellist.nv');
+    }
+
+    /**
+     * Get sales payment list
+     *
+     * @return array
+     */
+    public function getSalesPayments()
+    {
+        return $this->sendRequest('GET', '/salespaymentlist.nv');
+    }
+
+    /**
+     * Add sales payment
+     *
+     * @param array $paymentData
+     * @return array
+     */
+    public function addSalesPayment(array $paymentData)
+    {
+        return $this->sendRequest('POST', '/salespayment.nv', [
+            'salespayment' => $paymentData
+        ]);
+    }
+
+    /**
+     * Delete sales payment
+     *
+     * @param int $netvisorKey
+     * @return array
+     */
+    public function deleteSalesPayment($netvisorKey)
+    {
+        return $this->sendRequest('POST', '/deletesalespayment.nv', [
+            'netvisorkey' => $netvisorKey
+        ]);
+    }
+
+    /**
+     * Get deleted sales payments
+     *
+     * @return array
+     */
+    public function getDeletedSalesPayments()
+    {
+        return $this->sendRequest('GET', '/deletedsalespayments.nv');
+    }
+
+    /**
+     * Match payment to invoice
+     *
+     * @param array $matchData
+     * @return array
+     */
+    public function matchPayment(array $matchData)
+    {
+        return $this->sendRequest('POST', '/matchpayment.nv', [
+            'paymentmatching' => $matchData
+        ]);
+    } // Add more methods as needed for other API endpoints
 }

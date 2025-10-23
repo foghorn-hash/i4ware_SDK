@@ -16,7 +16,7 @@ class NetvisorController extends Controller
     public function __construct(NetvisorAPIService $netvisorAPI)
     {
         $this->middleware("auth:api", ["except" => []]);
-		$this->user = new User;
+        $this->user = new User;
         $this->netvisorAPI = $netvisorAPI;
     }
 
@@ -59,7 +59,7 @@ class NetvisorController extends Controller
         $finvoiceDetails = [ // Aggregated in a single 'customerfinvoicedetails' key
             'finvoiceaddress' => '',
             'finvoiceroutercode' => '',
-            
+
         ];
 
         $deliveryDetails = [ // Aggregated in a single 'customerdeliverydetails' key
@@ -110,7 +110,7 @@ class NetvisorController extends Controller
                 'dimensionitem' => '',
             ]
         ];
-        
+
         try {
             $response = $this->netvisorAPI->addCustomer($customerBaseInfo, $finvoiceDetails, $deliveryDetails, $contactDetails, $additionalInfo, $dimensionDetails);
             Log::info('Customer added successfully: ' . json_encode($response));
@@ -220,6 +220,166 @@ class NetvisorController extends Controller
         } catch (\Exception $e) {
             Log::error('Error adding contact person: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to add contact person'], 500);
+        }
+    }
+    public function getOrder($orderKey)
+    {
+        try {
+            $response = $this->netvisorAPI->getOrder($orderKey);
+            Log::info('Sales order response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving sales order: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve sales order'], 500);
+        }
+    }
+
+    public function deleteSalesInvoice($invoiceKey)
+    {
+        try {
+            $response = $this->netvisorAPI->deleteSalesInvoice($invoiceKey);
+            Log::info('Sales invoice deleted: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error deleting sales invoice: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete sales invoice'], 500);
+        }
+    }
+
+    public function updateSalesInvoiceStatus(Request $request)
+    {
+        try {
+            $statusData = $request->all();
+            $response = $this->netvisorAPI->updateSalesInvoiceStatus($statusData);
+            Log::info('Sales invoice status updated: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error updating sales invoice status: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update invoice status'], 500);
+        }
+    }
+
+    public function getDeletedSalesInvoices()
+    {
+        try {
+            $response = $this->netvisorAPI->getDeletedSalesInvoices();
+            Log::info('Deleted sales invoices response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving deleted invoices: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve deleted invoices'], 500);
+        }
+    }
+
+    public function getDeletedSalesOrders()
+    {
+        try {
+            $response = $this->netvisorAPI->getDeletedSalesOrders();
+            Log::info('Deleted sales orders response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving deleted orders: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve deleted orders'], 500);
+        }
+    }
+
+    public function addSalesInvoiceComment(Request $request)
+    {
+        try {
+            $commentData = $request->all();
+            $response = $this->netvisorAPI->addSalesInvoiceComment($commentData);
+            Log::info('Sales invoice comment added: ' . json_encode($response));
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            Log::error('Error adding invoice comment: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to add comment'], 500);
+        }
+    }
+
+    public function getPaymentTerms()
+    {
+        try {
+            $response = $this->netvisorAPI->getPaymentTerms();
+            Log::info('Payment terms response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving payment terms: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve payment terms'], 500);
+        }
+    }
+
+    public function getSalesPersonnel()
+    {
+        try {
+            $response = $this->netvisorAPI->getSalesPersonnel();
+            Log::info('Sales personnel response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving sales personnel: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve sales personnel'], 500);
+        }
+    }
+
+    public function getSalesPayments()
+    {
+        try {
+            $response = $this->netvisorAPI->getSalesPayments();
+            Log::info('Sales payments response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving sales payments: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve sales payments'], 500);
+        }
+    }
+
+    public function addSalesPayment(Request $request)
+    {
+        try {
+            $paymentData = $request->all();
+            $response = $this->netvisorAPI->addSalesPayment($paymentData);
+            Log::info('Sales payment added: ' . json_encode($response));
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            Log::error('Error adding sales payment: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to add payment'], 500);
+        }
+    }
+
+    public function deleteSalesPayment(Request $request)
+    {
+        try {
+            $netvisorKey = $request->input('netvisorkey');
+            $response = $this->netvisorAPI->deleteSalesPayment($netvisorKey);
+            Log::info('Sales payment deleted: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error deleting sales payment: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete payment'], 500);
+        }
+    }
+
+    public function getDeletedSalesPayments()
+    {
+        try {
+            $response = $this->netvisorAPI->getDeletedSalesPayments();
+            Log::info('Deleted sales payments response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving deleted payments: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve deleted payments'], 500);
+        }
+    }
+
+    public function matchPayment(Request $request)
+    {
+        try {
+            $matchData = $request->all();
+            $response = $this->netvisorAPI->matchPayment($matchData);
+            Log::info('Payment matched: ' . json_encode($response));
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            Log::error('Error matching payment: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to match payment'], 500);
         }
     }
 }

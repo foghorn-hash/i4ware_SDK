@@ -113,6 +113,25 @@ Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router
 	Route::get('/invoices', [NetvisorController::class, 'getSalesInvoices']);
 	Route::get('/invoices/{netvisorKey}', [NetvisorController::class, 'getInvoice']);
 	Route::post('/invoices', [NetvisorController::class, 'createInvoice']);
+	Route::delete('/invoices/{invoiceKey}', [NetvisorController::class, 'deleteSalesInvoice']);
+	Route::post('/invoices/status', [NetvisorController::class, 'updateSalesInvoiceStatus']);
+	Route::post('/invoices/comment', [NetvisorController::class, 'addSalesInvoiceComment']);
+	Route::get('/invoices-deleted', [NetvisorController::class, 'getDeletedSalesInvoices']);
+
+	// Orders
+	Route::get('/orders/{orderKey}', [NetvisorController::class, 'getOrder']);
+	Route::get('/orders-deleted', [NetvisorController::class, 'getDeletedSalesOrders']);
+
+	// Payment Terms & Personnel
+	Route::get('/payment-terms', [NetvisorController::class, 'getPaymentTerms']);
+	Route::get('/sales-personnel', [NetvisorController::class, 'getSalesPersonnel']);
+
+	// Payments
+	Route::get('/payments', [NetvisorController::class, 'getSalesPayments']);
+	Route::post('/payments', [NetvisorController::class, 'addSalesPayment']);
+	Route::delete('/payments', [NetvisorController::class, 'deleteSalesPayment']);
+	Route::get('/payments-deleted', [NetvisorController::class, 'getDeletedSalesPayments']);
+	Route::post('/payments/match', [NetvisorController::class, 'matchPayment']);
 
 	// Customers
 	Route::get('/customers', [NetvisorController::class, 'getCustomers']);
