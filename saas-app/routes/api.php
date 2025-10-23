@@ -116,7 +116,11 @@ Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router
 
 	// Customers
 	Route::get('/customers', [NetvisorController::class, 'getCustomers']);
+	Route::get('/customers/{customerId}', [NetvisorController::class, 'getCustomer']);
 	Route::post('/customers', [NetvisorController::class, 'addCustomer']);
+	Route::delete('/customers/{customerId}', [NetvisorController::class, 'deleteCustomer']);
+	Route::post('/customers/office', [NetvisorController::class, 'addCustomerOffice']);
+	Route::post('/customers/contact-person', [NetvisorController::class, 'addContactPerson']);
 
 	// Products
 	Route::get('/products', [NetvisorController::class, 'getProducts']);

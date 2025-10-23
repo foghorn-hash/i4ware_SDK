@@ -175,6 +175,58 @@ class NetvisorAPIService
     }
 
     /**
+     * Get customer details by Netvisor ID
+     *
+     * @param int $netvisorId
+     * @return array
+     */
+    public function getCustomer($netvisorId)
+    {
+        return $this->sendRequest('GET', '/getcustomer.nv', [
+            'id' => $netvisorId
+        ]);
+    }
+
+    /**
+     * Delete customer by Netvisor ID
+     *
+     * @param int $netvisorId
+     * @return array
+     */
+    public function deleteCustomer($netvisorId)
+    {
+        return $this->sendRequest('GET', '/deletecustomer.nv', [
+            'id' => $netvisorId
+        ]);
+    }
+
+    /**
+     * Add customer office details
+     *
+     * @param array $officeData
+     * @return array
+     */
+    public function addCustomerOffice(array $officeData)
+    {
+        return $this->sendRequest('POST', '/office.nv', [
+            'office' => $officeData
+        ]);
+    }
+
+    /**
+     * Add customer contact person
+     *
+     * @param array $contactPersonData
+     * @return array
+     */
+    public function addContactPerson(array $contactPersonData)
+    {
+        return $this->sendRequest('POST', '/contactperson.nv', [
+            'contactperson' => $contactPersonData
+        ]);
+    }
+
+    /**
      * Create a sales invoice in Netvisor
      *
      * @param array $invoiceData

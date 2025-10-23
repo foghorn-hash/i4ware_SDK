@@ -172,4 +172,54 @@ class NetvisorController extends Controller
             return response()->json(['error' => 'Failed to retrieve sales invoice'], 500);
         }
     }
+
+    public function getCustomer($customerId)
+    {
+        try {
+            $response = $this->netvisorAPI->getCustomer($customerId);
+            Log::info('Customer details response: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving customer: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to retrieve customer'], 500);
+        }
+    }
+
+    public function deleteCustomer($customerId)
+    {
+        try {
+            $response = $this->netvisorAPI->deleteCustomer($customerId);
+            Log::info('Customer deleted: ' . json_encode($response));
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error deleting customer: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete customer'], 500);
+        }
+    }
+
+    public function addCustomerOffice(Request $request)
+    {
+        try {
+            $officeData = $request->all();
+            $response = $this->netvisorAPI->addCustomerOffice($officeData);
+            Log::info('Customer office added: ' . json_encode($response));
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            Log::error('Error adding customer office: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to add customer office'], 500);
+        }
+    }
+
+    public function addContactPerson(Request $request)
+    {
+        try {
+            $contactPersonData = $request->all();
+            $response = $this->netvisorAPI->addContactPerson($contactPersonData);
+            Log::info('Contact person added: ' . json_encode($response));
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            Log::error('Error adding contact person: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to add contact person'], 500);
+        }
+    }
 }
