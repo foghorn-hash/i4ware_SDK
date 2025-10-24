@@ -3,14 +3,18 @@
 # Internal documentation (do not push to GitHub)
 CLAUDE.md
 work-log.md
+work-log*.md
 WorkLog*.md
 daily*.md
 fixed.md
 COMM-log.md
 VismaNetvisor.md
+VismaNetvisor-TaskStatus.md
 VismaTest.md
 Branchit-Seloste.md
 TIEDOSTOPOLUT.md
+NETVISOR-TESTING-GUIDE.md
+timesheet-summary.md
 
 # IDE/Editor configuration
 .markdownlint.json
