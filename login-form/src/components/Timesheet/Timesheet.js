@@ -333,11 +333,48 @@ export default function Timesheet() {
   const clearAll = async () => {
     try {
       // poista kaikki serveriltä
-      const ids = rows.map(r => r.id).filter(id => !(typeof id === 'string' && id.startsWith('tmp_')));
-      await Promise.all(ids.map(id => api.delete(`/timesheets/${timesheetId}/rows/${id}`)));
+      const ids = rows
+        .map(r => r.id)
+        .filter(id => !(typeof id === 'string' && id.startsWith('tmp_')));
+      await Promise.all(ids.map(id => api.delete(`/api/timesheet/timesheets/${timesheetId}/rows/${id}`)));
+  
+      // tyhjennä kaikki paikalliset rivit
       setRows([]);
+  
+      // tyhjennä lomakkeen meta-tiedot
+      setMeta({
+        nimi: '',
+        tyontekija: '',
+        ammattinimike: '',
+        project: '',
+        pvm: '',
+        klo_alku: '',
+        klo_loppu: '',
+        norm: '',
+        lisatLa: '',
+        lisatSu: '',
+        lisatIlta: '',
+        lisatYo: '',
+        ylityoVrk50: '',
+        ylityoVrk100: '',
+        ylityoVko50: '',
+        ylityoVko100: '',
+        atv: '',
+        matk: '',
+        ateriakorvaus: '',
+        km: '',
+        tyokalukorvaus: '',
+        km_selite: '',
+        huom: '',
+        memo: ''
+      });
+  
+      setStatusMessage('Kaikki tiedot tyhjennetty.');
+      setTimeout(() => setStatusMessage(''), 3000);
     } catch (e) {
       console.error("Clear failed", e);
+      setStatusMessage('Tyhjennys epäonnistui.');
+      setTimeout(() => setStatusMessage(''), 3000);
     }
   };
 
