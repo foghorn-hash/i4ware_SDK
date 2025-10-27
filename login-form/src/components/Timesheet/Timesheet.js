@@ -40,8 +40,7 @@ const toApiRow = (r, userId, timesheetId, rowNo) => ({
   ylityo_vko_100: Number(r.ylityoVko100 || 0),
   atv: Number(r.atv || 0),
   matk: Number(r.matk || 0),
-  // paivaraha_osa: !!r.paivaraha_osa,
-  // paivaraha_koko: !!r.paivaraha_koko,
+  paivaraha: r.paivaraha || 'ei',
   ateriakorvaus: Number(r.ateriakorvaus || 0),
   km: Number(r.km || 0),
   tyokalukorvaus: Number(r.tyokalukorvaus || 0),
@@ -69,8 +68,7 @@ const fromApiRow = (r) => ({
   ylityoVko100: Number(r.ylityo_vko_100 ?? 0),
   atv: Number(r.atv ?? 0),
   matk: Number(r.matk ?? 0),
-  // paivaraha_osa: !!r.paivaraha_osa,
-  // paivaraha_koko: !!r.paivaraha_koko,
+  paivaraha: r.paivaraha ?? "ei",
   ateriakorvaus: Number(r.ateriakorvaus ?? 0),
   km: Number(r.km ?? 0),
   tyokalukorvaus: Number(r.tyokalukorvaus ?? 0),
@@ -98,8 +96,7 @@ const makeRow = (id) => ({
   ylityoVko100: 0,
   atv: 0,
   matk: 0,
-  // paivaraha_osa: false,
-  // paivaraha_koko: false,
+  paivaraha: 'ei',
   ateriakorvaus: 0,
   km: 0,
   tyokalukorvaus: 0,
@@ -132,11 +129,10 @@ export default function Timesheet() {
     ylityoVko100: '',
     atv: '',
     matk: '',
+    paivaraha: 'ei',
     ateriakorvaus: '',
     km: '',
     tyokalukorvaus: '',
-    // paivaraha_koko: '',
-    // paivaraha_osa: '',
     km_selite: '',
     huom: '',
     memo: ''
@@ -154,44 +150,58 @@ export default function Timesheet() {
   useEffect(() => {
     (async () => {
       try {
-        // 1) yritä löytää käyttäjän uusin samalla nimellä
-        const search = await api.get('/api/timesheet/timesheets', { params: { user_id: CURRENT_USER_ID, q: meta.nimi, per_page: 1 }});
+        // Haetaan käyttäjän viimeisin tuntikortti
+        const search = await api.get('/api/timesheet/timesheets', { 
+          params: { user_id: CURRENT_USER_ID, per_page: 1, order_by: 'created_at desc' } 
+        });
         let ts = search.data?.data?.[0];
-
-        // 2) jos ei löydy, luo
+  
+        // Jos yhtään tuntikorttia ei löytynyt, luodaan uusi
         if (!ts) {
           const created = await api.post('/api/timesheet/timesheets', {
-            user_id: Number(CURRENT_USER_ID), // backend ei pakollinen tässä controllerissa, mutta varmuudeksi
-            nimi: meta.nimi || 'Uusi tuntikortti',
-            tyontekija: meta.tyontekija || 'Tuntematon',
-            ammattinimike: meta.ammattinimike || '',
+            user_id: Number(CURRENT_USER_ID),
+            nimi: '',
+            tyontekija: '',
+            ammattinimike: '',
             status: 'Luotu',
             domain: '',
           });
           ts = created.data;
         }
-
+  
+        // Tallennetaan tuntikortin ID tilaan
         setTimesheetId(ts.id);
-
-        // 3) lataa rivit
-        let res = await api.get(`/api/timesheet/timesheets/${ts.id}/rows`, { params: { per_page: 500, order_by: 'row_no,pvm,id' }});
-        let srvRows = res.data?.data ?? [];
-
-        // jos rivejä ei ole, luo yksi oletusrivi
-        if (srvRows.length === 0) {
-          const createdRow = await api.post(`/api/timesheet/timesheets/${ts.id}/rows`, {
-            user_id: Number(CURRENT_USER_ID),
-            status: 'Luotu'
-          });
-          srvRows = [createdRow.data]; // käytetään luotua riviä
-        }
-        setRows(srvRows.map(fromApiRow));
+  
+        // Päivitetään vain metatiedot (nimi, työntekijä, ammattinimike)
+        setMeta(prev => ({
+          ...prev,
+          nimi: ts.nimi,
+          tyontekija: ts.tyontekija,
+          ammattinimike: ts.ammattinimike || ''
+        }));
+  
+        // Rivien (rows) latausta ei tehdä vielä tässä vaiheessa
+  
       } catch (e) {
         console.error("Init failed", e);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!timesheetId) return; // Odotetaan, että timesheetId on asetettu
+  
+    (async () => {
+      try {
+        // Haetaan valitun tuntikortin rivit 
+        const res = await api.get(`/api/timesheet/timesheets/${timesheetId}/rows`);
+        const rawRows = Array.isArray(res.data.data) ? res.data.data : [];
+        setRows(rawRows.map(fromApiRow));  // Muunnetaan rivit sovelluksen sisäiseen muotoon
+      } catch (e) {
+        console.error("Failed to fetch rows", e);
+      }
+    })();
+  }, [timesheetId]);
 
   /** === meta-autosave (debounce) === */
   useEffect(() => {
@@ -200,35 +210,137 @@ export default function Timesheet() {
     metaTimer.current = setTimeout(async () => {
       try {
         await api.put(`/api/timesheet/timesheets/${timesheetId}`, {
-          nimi: meta.nimi || 'Uusi tuntikortti',
-          tyontekija: meta.tyontekija || 'Tuntematon',
-          ammattinimike: meta.ammattinimike  || '',
+          nimi: meta.nimi,
+          tyontekija: meta.tyontekija,
+          ammattinimike: meta.ammattinimike,
         });
       } catch (e) {
         console.error("Meta save failed", e);
       }
-    }, 600);
+    }, 1800);
   }, [meta, timesheetId]);
 
   /** === totals === */
-  const totals = useMemo(() => rows.reduce((acc, r) => ({
-    norm: acc.norm + Number(r.norm||0),
-    lisatLa: acc.lisatLa + Number(r.lisatLa||0),
-    lisatSu: acc.lisatSu + Number(r.lisatSu||0),
-    lisatIlta: acc.lisatIlta + Number(r.lisatIlta||0),
-    lisatYo: acc.lisatYo + Number(r.lisatYo||0),
-    ylityoVrk50: acc.ylityoVrk50 + Number(r.ylityoVrk50||0),
-    ylityoVrk100: acc.ylityoVrk100 + Number(r.ylityoVrk100||0),
-    ylityoVko50: acc.ylityoVko50 + Number(r.ylityoVko50||0),
-    ylityoVko100: acc.ylityoVko100 + Number(r.ylityoVko100||0),
-    atv: acc.atv + Number(r.atv||0),
-    matk: acc.matk + Number(r.matk||0),
-    ateriakorvaus: acc.ateriakorvaus + Number(r.ateriakorvaus||0),
-    km: acc.km + Number(r.km||0),
-    tyokalukorvaus: acc.tyokalukorvaus + Number(r.tyokalukorvaus||0),
-  }), { norm:0, lisatLa:0, lisatSu:0, lisatIlta:0, lisatYo:0, ylityoVrk50:0, ylityoVrk100:0, ylityoVko50:0, ylityoVko100:0, atv:0, matk:0, ateriakorvaus:0, km:0, tyokalukorvaus:0 }), [rows]);
-
+  const totals = useMemo(() => {
+    if (!Array.isArray(rows) || rows.length === 0) return {
+      norm:0, lisatLa:0, lisatSu:0, lisatIlta:0, lisatYo:0,
+      ylityoVrk50:0, ylityoVrk100:0, ylityoVko50:0, ylityoVko100:0,
+      atv:0, matk:0, ateriakorvaus:0, km:0, tyokalukorvaus:0
+    };
+    
+    return rows.reduce((acc, r) => ({
+      norm: acc.norm + Number(r.norm||0),
+      lisatLa: acc.lisatLa + Number(r.lisatLa||0),
+      lisatSu: acc.lisatSu + Number(r.lisatSu||0),
+      lisatIlta: acc.lisatIlta + Number(r.lisatIlta||0),
+      lisatYo: acc.lisatYo + Number(r.lisatYo||0),
+      ylityoVrk50: acc.ylityoVrk50 + Number(r.ylityoVrk50||0),
+      ylityoVrk100: acc.ylityoVrk100 + Number(r.ylityoVrk100||0),
+      ylityoVko50: acc.ylityoVko50 + Number(r.ylityoVko50||0),
+      ylityoVko100: acc.ylityoVko100 + Number(r.ylityoVko100||0),
+      atv: acc.atv + Number(r.atv||0),
+      matk: acc.matk + Number(r.matk||0),
+      ateriakorvaus: acc.ateriakorvaus + Number(r.ateriakorvaus||0),
+      km: acc.km + Number(r.km||0),
+      tyokalukorvaus: acc.tyokalukorvaus + Number(r.tyokalukorvaus||0),
+    }), {
+      norm:0, lisatLa:0, lisatSu:0, lisatIlta:0, lisatYo:0,
+      ylityoVrk50:0, ylityoVrk100:0, ylityoVko50:0, ylityoVko100:0,
+      atv:0, matk:0, ateriakorvaus:0, km:0, tyokalukorvaus:0
+    });
+  }, [rows]);
+  
+  
+  
   /** === server-sync helpers === */
+  const createAndSaveRow = async (metaData, clearForm = false) => {
+    if (!timesheetId) {
+      setStatusMessage('Timesheet ei ole vielä valmis');
+      return;
+    }
+  
+    try {
+      // luo payload serveriä varten
+      const payload = {
+        user_id: Number(CURRENT_USER_ID),
+        timesheet_id: Number(timesheetId),
+        row_no: (rows?.length || 0) + 1,
+        status: 'Luotu',
+        project: metaData.project || null,
+        pvm: metaData.pvm || null,
+        klo_alku: metaData.klo_alku || null,
+        klo_loppu: metaData.klo_loppu || null,
+        norm: Number(metaData.norm || 0),
+        lisat_la: Number(metaData.lisatLa || 0),
+        lisat_su: Number(metaData.lisatSu || 0),
+        lisat_ilta: Number(metaData.lisatIlta || 0),
+        lisat_yo: Number(metaData.lisatYo || 0),
+        ylityo_vrk_50: Number(metaData.ylityoVrk50 || 0),
+        ylityo_vrk_100: Number(metaData.ylityoVrk100 || 0),
+        ylityo_vko_50: Number(metaData.ylityoVko50 || 0),
+        ylityo_vko_100: Number(metaData.ylityoVko100 || 0),
+        atv: Number(metaData.atv || 0),
+        matk: Number(metaData.matk || 0),
+        paivaraha: ['ei','osa','koko'].includes(metaData.paivaraha) ? metaData.paivaraha : 'ei',
+        ateriakorvaus: Number(metaData.ateriakorvaus || 0),
+        km: Number(metaData.km || 0),
+        tyokalukorvaus: Number(metaData.tyokalukorvaus || 0),
+        km_selite: metaData.km_selite || "",
+        huom: metaData.huom || "",
+        memo: metaData.memo || "",
+      };
+  
+      // POST serveriin — backend luo id
+      const created = await api.post(`/api/timesheet/timesheets/${timesheetId}/rows`, payload);
+      const newRow = fromApiRow(created.data);
+  
+      // lisää lokaalisesti rows
+      setRows(prev => [...prev, newRow]);
+  
+      setStatusMessage('Rivi lisätty onnistuneesti!');
+      setTimeout(() => setStatusMessage(''), 3000);
+  
+      if (clearForm) {
+        setMeta({
+          nimi: '',
+          tyontekija: '',
+          ammattinimike: '',
+          project: '',
+          pvm: '',
+          klo_alku: '',
+          klo_loppu: '',
+          norm: '',
+          lisatLa: '',
+          lisatSu: '',
+          lisatIlta: '',
+          lisatYo: '',
+          ylityoVrk50: '',
+          ylityoVrk100: '',
+          ylityoVko50: '',
+          ylityoVko100: '',
+          atv: '',
+          matk: '',
+          paivaraha: '',
+          ateriakorvaus: '',
+          km: '',
+          tyokalukorvaus: '',
+          km_selite: '',
+          huom: '',
+          memo: ''
+        });
+      }
+  
+    } catch (err) {
+      console.error('Rivin lisääminen epäonnistui:', err);
+      if (err.response?.data?.errors) {
+        console.log('Validation errors:', err.response.data.errors);
+      }
+      setStatusMessage('Rivin lisääminen epäonnistui.');
+      setTimeout(() => setStatusMessage(''), 3000);
+    }
+  };
+  
+
   const queueSaveRow = (rowId) => {
     if (!timesheetId) return;
     if (saveTimers.current[rowId]) clearTimeout(saveTimers.current[rowId]);
@@ -236,21 +348,13 @@ export default function Timesheet() {
       try {
         const r = rows.find(x => x.id === rowId);
         if (!r) return;
-
-        // jos rivi on vasta lokaali (id negatiivinen tms.), tee POST
-        if (typeof r.id === 'string' && r.id.startsWith('tmp_')) {
-          const payload = toApiRow(r, CURRENT_USER_ID, timesheetId, rows.indexOf(r) + 1);
-          const created = await api.post(`/api/timesheet/timesheets/${timesheetId}/rows`, payload);
-          const newRow = fromApiRow(created.data);
-          setRows(prev => prev.map(x => x.id === r.id ? newRow : x));
-        } else {
-          const payload = toApiRow(r, CURRENT_USER_ID, timesheetId);
-          await api.put(`/api/timesheet/timesheets/${timesheetId}/rows/${r.id}`, payload);
-        }
+  
+        const payload = toApiRow(r, CURRENT_USER_ID, timesheetId);
+        await api.put(`/api/timesheet/timesheets/${timesheetId}/rows/${r.id}`, payload);
       } catch (e) {
         console.error("Row save failed", e);
       }
-    }, 500);
+    }, 1000); // lyhyt debounce
   };
 
   /** === UI actions bound to API === */
@@ -264,57 +368,7 @@ export default function Timesheet() {
 
   const [statusMessage, setStatusMessage] = useState('');
 
-  const addRow = () => {
-    if (!timesheetId) {
-      setStatusMessage('Timesheet ei ole vielä valmis, odota hetki.');
-      setTimeout(() => setStatusMessage(''), 3000);
-      alert("Timesheet ei ole vielä valmis, odota hetki.");
-      return;
-    }
-
-    try {
-      
-      const tmpId = `tmp_${Date.now()}`;
-      const newRow = { 
-        ...makeRow((rows?.length||0)+1), 
-        id: tmpId,
-        project: meta.project,
-        pvm: meta.pvm,
-        klo_alku: meta.klo_alku,
-        klo_loppu: meta.klo_loppu,
-        norm: Number(meta.norm || 0),
-        lisatLa: Number(meta.lisatLa || 0),
-        lisatSu: Number(meta.lisatSu || 0),
-        lisatIlta: Number(meta.lisatIlta || 0),
-        lisatYo: Number(meta.lisatYo || 0),
-        ylityoVrk50: Number(meta.ylityoVrk50 || 0),
-        ylityoVrk100: Number(meta.ylityoVrk100 || 0),
-        ylityoVko50: Number(meta.ylityoVko50 || 0),
-        ylityoVko100: Number(meta.ylityoVko100 || 0),
-        atv: Number(meta.atv || 0),
-        matk: Number(meta.matk || 0),
-        // paivaraha_koko: !!meta.paivaraha_koko,
-        // paivaraha_osa: !!meta.paivaraha_osa,
-        ateriakorvaus: Number(meta.ateriakorvaus || 0),
-        km: Number(meta.km || 0),
-        tyokalukorvaus: Number(meta.tyokalukorvaus || 0),
-        km_selite: meta.km_selite,
-        huom: meta.huom,
-        memo: meta.memo
-      };
-
-      setRows(prev => [...prev, newRow]);
-      queueSaveRow(tmpId);
-  
-      setStatusMessage('Rivi lisätty onnistuneesti!');
-      setTimeout(() => setStatusMessage(''), 3000);
-  
-    } catch (err) {
-      console.error('Rivin lisääminen epäonnistui:', err);
-      setStatusMessage('Rivin lisääminen epäonnistui.');
-      setTimeout(() => setStatusMessage(''), 3000);
-    }
-  };
+  const addRow = () => createAndSaveRow(meta, false);
   
   const removeRow = async (id) => {
     try {
@@ -332,24 +386,14 @@ export default function Timesheet() {
 
   const clearAll = async () => {
     try {
-      // poista kaikki serveriltä
-      const ids = rows
-        .map(r => r.id)
-        .filter(id => !(typeof id === 'string' && id.startsWith('tmp_')));
-      await Promise.all(ids.map(id => api.delete(`/api/timesheet/timesheets/${timesheetId}/rows/${id}`)));
-  
-      // tyhjennä kaikki paikalliset rivit
-      setRows([]);
   
       // tyhjennä lomakkeen meta-tiedot
-      setMeta({
-        nimi: '',
-        tyontekija: '',
-        ammattinimike: '',
+      setMeta(prev => ({
+        ...prev,
         project: '',
-        pvm: '',
-        klo_alku: '',
-        klo_loppu: '',
+        pvm: undefined,
+        klo_alku: null,
+        klo_loppu: null,
         norm: '',
         lisatLa: '',
         lisatSu: '',
@@ -361,13 +405,14 @@ export default function Timesheet() {
         ylityoVko100: '',
         atv: '',
         matk: '',
+        paivaraha: '',
         ateriakorvaus: '',
         km: '',
         tyokalukorvaus: '',
         km_selite: '',
         huom: '',
         memo: ''
-      });
+      }));
   
       setStatusMessage('Kaikki tiedot tyhjennetty.');
       setTimeout(() => setStatusMessage(''), 3000);
@@ -379,105 +424,68 @@ export default function Timesheet() {
   };
 
   /** === Numero-input joka forwardaa style ym. === */
-  const Num = ({ value, onChange, step = 0.25, style, className, ...rest }) => (
-    <Form.Control
-      type="number"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      step={step}
-      size="sm"
-      style={style}
-      className={className}
-      {...rest}
-    />
-  );
+  const Num = ({ value, onChange, step = 0.25, min = 0, max = 999.99, placeholder, style, className, required = false, ...rest }) => {
+    const [error, setError] = React.useState('');
+  
+    const handleChange = (e) => {
+      let val = Number(e.target.value || 0);
+  
+      if (val > max) {
+        setError('Liian iso luku');
+        return;
+      } else if (val < min) {
+        setError(`Ei voi olla pienempi kuin ${min}`);
+        return;
+      } else {
+        setError('');
+      }
+  
+      onChange(val);
+    };
+  
+    return (
+      <div>
+        <Form.Control
+          type="number"
+          value={value}
+          onChange={handleChange}
+          step={step}
+          min={min}
+          max={max}
+          placeholder={placeholder}
+          size="sm"
+          style={style}
+          className={className}
+          required={required}
+          {...rest}
+        />
+        {error && <Form.Text className="text-danger">{error}</Form.Text>}
+      </div>
+    );
+  };  
 
-  //yhdistää työajan aloittamis ja loppumis ajat klo kenttään
-  const handleSubmit = async (e) => {
+  const NumberValidator = ({ value, min = 0.1, max = 999.99, 
+    messageTooBig = "Liian iso luku", 
+    messageTooSmall = "Ei ole kelvollinen luku" }) => {
+
+    if (value === '' || value === null) return null;
+  
+    const val = Number(value);
+  
+    if (val < min) {
+      return <Form.Text className="text-danger">{messageTooSmall}</Form.Text>;
+    }
+  
+    if (val > max) {
+      return <Form.Text className="text-danger">{messageTooBig}</Form.Text>;
+    }
+  
+    return null;
+  };
+  
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!timesheetId) {
-      alert("Ei ole vielä valmis");
-      return;
-    }
-  
-    try {
-      // luo payload toApiRow:n kautta
-      const tmpId = `tmp_${Date.now()}`;
-      const newRowLocal = { ...makeRow(rows.length + 1), id: tmpId };
-  
-      // yhdistää tiedot meta:sta
-      const combinedRow = {
-        ...newRowLocal,
-        status: 'Luotu',
-        project: meta.project,
-        pvm: meta.pvm,
-        klo_alku: meta.klo_alku,
-        klo_loppu: meta.klo_loppu,
-        norm: Number(meta.norm || 0),
-        lisatLa: Number(meta.lisatLa || 0),
-        lisatSu: Number(meta.lisatSu || 0),
-        lisatIlta: Number(meta.lisatIlta || 0),
-        lisatYo: Number(meta.lisatYo || 0),
-        ylityoVrk50: Number(meta.ylityoVrk50 || 0),
-        ylityoVrk100: Number(meta.ylityoVrk100 || 0),
-        ylityoVko50: Number(meta.ylityoVko50 || 0),
-        ylityoVko100: Number(meta.ylityoVko100 || 0),
-        atv: Number(meta.atv || 0),
-        matk: Number(meta.matk || 0),
-        // paivaraha_koko: !!meta.paivaraha_koko,
-        // paivaraha_osa: !!meta.paivaraha_osa,
-        ateriakorvaus: Number(meta.ateriakorvaus || 0),
-        km: Number(meta.km || 0),
-        tyokalukorvaus: Number(meta.tyokalukorvaus || 0),
-        km_selite: meta.km_selite,
-        huom: meta.huom,
-        memo: meta.memo
-      };
-  
-      const payload = toApiRow(combinedRow, CURRENT_USER_ID, timesheetId, rows.length + 1);
-      const created = await api.post(`/api/timesheet/timesheets/${timesheetId}/rows`, payload);
-  
-      // saa uuden rivin ja tekee sen frontin ymmärrettäväksi
-      const newRow = fromApiRow(created.data);
-  
-      // lisää lokaalisen state:n
-      setRows(prev => [...prev, newRow]);
-  
-      // tyhjentää lomakkeen
-      setMeta({
-        nimi: '',
-        tyontekija: '',
-        ammattinimike: '',
-        project: '',
-        pvm: '',
-        klo_alku: '', 
-        klo_loppu: '', 
-        norm: '', 
-        lisatLa: '', 
-        lisatSu: '', 
-        lisatIlta: '', 
-        lisatYo: '', 
-        ylityoVrk50: '',
-        ylityoVrk100: '',
-        ylityoVko50: '',
-        ylityoVko100: '',
-        atv: '',
-        matk: '',
-        ateriakorvaus: '',
-        km: '',
-        tyokalukorvaus: '',
-        // paivaraha_koko: '',
-        // paivaraha_osa: '',
-        km_selite: '',
-        huom: '',
-        memo: ''
-      });
-  
-      alert('Rivi tallennettu onnistuneesti!');
-    } catch (err) {
-      console.error('Tallennus epäonnistui:', err);
-      alert('Tallennus epäonnistui. Tarkista tiedot ja yritä uudelleen.');
-    }
+    createAndSaveRow(meta, true); // true = tyhjentää lähetykset jälkeen
   };
 
   const toggleExtras = () => {
@@ -555,6 +563,7 @@ export default function Timesheet() {
                     <Form.Label className="small text-muted">{strings.dateLabel}</Form.Label>
                     <Form.Control 
                       type="date" 
+                      key={`pvm-${meta.pvm}`}
                       value={meta.pvm} 
                       onChange={e=>setMeta({...meta, pvm:e.target.value})}
                       required
@@ -569,6 +578,7 @@ export default function Timesheet() {
                       className="flex-grow-1"
                       type="time"
                       required
+                      key={`klo_alku-${meta.klo_alku}`}
                       value={meta.klo_alku || ''} 
                       onChange={e => setMeta({ ...meta, klo_alku: e.target.value })}
                     />
@@ -582,6 +592,7 @@ export default function Timesheet() {
                       className="flex-grow-1"
                       type="time" 
                       required
+                      key={`klo_loppu-${meta.klo_loppu}`}
                       value={meta.klo_loppu || ''} 
                       onChange={e => setMeta({ ...meta, klo_loppu: e.target.value })}
                     />
@@ -599,6 +610,7 @@ export default function Timesheet() {
                       placeholder={strings.normalHoursPlaceholder}
                       required
                     />
+                    <NumberValidator value={meta.norm} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -615,6 +627,7 @@ export default function Timesheet() {
                       placeholder={strings.extrasPlaceholder}
                     />
                     {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.lisatLa} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -629,6 +642,7 @@ export default function Timesheet() {
                       placeholder={strings.extrasPlaceholder}
                     />
                     {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.lisatSu} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -643,6 +657,7 @@ export default function Timesheet() {
                       placeholder={strings.extrasPlaceholder}
                     />
                     {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.lisatIlta} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -657,6 +672,7 @@ export default function Timesheet() {
                       placeholder={strings.extrasPlaceholder}
                     />
                     {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.lisatYo} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
               </>
@@ -675,6 +691,7 @@ export default function Timesheet() {
                       placeholder={strings.overtimePlaceholder}
                     />
                     {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.ylityoVrk50} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -689,6 +706,7 @@ export default function Timesheet() {
                       placeholder={strings.overtimePlaceholder}
                     />
                     {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.ylityoVrk100} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -703,6 +721,7 @@ export default function Timesheet() {
                       placeholder={strings.overtimePlaceholder}
                     />
                     {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.ylityoVko50} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -717,6 +736,7 @@ export default function Timesheet() {
                       placeholder={strings.overtimePlaceholder}
                     />
                     {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
+                    <NumberValidator value={meta.ylityoVko100} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
               </>
@@ -732,6 +752,7 @@ export default function Timesheet() {
                       onChange={e=>setMeta({...meta, atv:e.target.value})} 
                       placeholder={strings.extrasPlaceholder}
                     />
+                    <NumberValidator value={meta.atv} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
     
@@ -745,6 +766,7 @@ export default function Timesheet() {
                       onChange={e=>setMeta({...meta, matk:e.target.value})} 
                       placeholder={strings.extrasPlaceholder}
                     />
+                    <NumberValidator value={meta.matk} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
     
@@ -757,6 +779,7 @@ export default function Timesheet() {
                       onChange={e=>setMeta({...meta, ateriakorvaus:e.target.value})}
                       placeholder={strings.mealLabel}
                     />
+                    <NumberValidator value={meta.ateriakorvaus} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>  
 
@@ -770,6 +793,7 @@ export default function Timesheet() {
                       onChange={e=>setMeta({...meta, km:e.target.value})}
                       placeholder={strings.kmPlaceholder}
                     />
+                    <NumberValidator value={meta.km} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
 
@@ -782,30 +806,9 @@ export default function Timesheet() {
                       onChange={e=>setMeta({...meta, tyokalukorvaus:e.target.value})} 
                       placeholder={strings.toolCompPlaceholder}
                     />
+                    <NumberValidator value={meta.tyokalukorvaus} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
-
-                {/* <Col md>
-                  <Form.Group>
-                    <Form.Label className="small text-muted">Päiväraha</Form.Label>
-                    <Form.Check 
-                      type="radio" 
-                      label="Koko"
-                      name="paivaraha"
-                      value="koko"
-                      checked={meta.paivaraha_koko==="koko"} 
-                      onChange={()=>setMeta({...meta, paivaraha_koko:"koko"})} 
-                    />
-                    <Form.Check 
-                      type="radio" 
-                      label="Osa"
-                      name="paivaraha"
-                      value="osa"
-                      checked={meta.paivaraha_osa==="osa"} 
-                      onChange={()=>setMeta({...meta, paivaraha_osa:"osa"})} 
-                    />
-                  </Form.Group>
-                </Col> */}
 
               {parseFloat(meta.km) > 0 && (
                 <Col md>
@@ -824,6 +827,21 @@ export default function Timesheet() {
                 </Col>
               )}
 
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">Päiväraha</Form.Label>
+                    <Form.Select
+                      className="form-control"
+                      value={meta.paivaraha || 'ei'}
+                      onChange={(e) => setMeta({...meta, paivaraha: e.target.value})}
+                    >
+                      <option value="ei">Ei</option>
+                      <option value="osa">Osa</option>
+                      <option value="koko">Koko</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                
                 <Col md>
                   <Form.Group>
                     <Form.Label className="small text-muted">{strings.noteLabel}</Form.Label>
@@ -873,26 +891,26 @@ export default function Timesheet() {
 
         {/* Yhteenveto pidetään ennallaan */}
         <Card className="shadow-sm">
-  <Card.Header as="h6">{strings.summaryHeader}</Card.Header>
-  <Card.Body>
-    <Row className="g-3">
-      <Summary label={strings.normalHoursLabel} value={totals.norm} suffix=" h" />
-      <Summary label={strings.extrasLaLabel} value={totals.lisatLa} suffix=" h" />
-      <Summary label={strings.extrasSuLabel} value={totals.lisatSu} suffix=" h" />
-      <Summary label={strings.extrasEveningLabel} value={totals.lisatIlta} suffix=" h" />
-      <Summary label={strings.extrasNightLabel} value={totals.lisatYo} suffix=" h" />
-      <Summary label={strings.overtimeVrk50Label} value={totals.ylityoVrk50} suffix=" h" />
-      <Summary label={strings.overtimeVrk100Label} value={totals.ylityoVrk100} suffix=" h" />
-      <Summary label={strings.overtimeVko50Label} value={totals.ylityoVko50} suffix=" h" />
-      <Summary label={strings.overtimeVko100Label} value={totals.ylityoVko100} suffix=" h" />
-      <Summary label={strings.atvLabel} value={totals.atv} suffix=" h" />
-      <Summary label={strings.travelLabel} value={totals.matk} suffix=" h" />
-      <Summary label={strings.mealLabel} value={totals.ateriakorvaus} suffix=" €" />
-      <Summary label={strings.kmLabel} value={totals.km} suffix=" km" />
-      <Summary label={strings.toolCompLabel} value={totals.tyokalukorvaus} suffix=" €" />
-    </Row>
-  </Card.Body>
-</Card>
+          <Card.Header as="h6">{strings.summaryHeader}</Card.Header>
+          <Card.Body>
+            <Row className="g-3">
+              <Summary label={strings.normalHoursLabel} value={totals.norm} suffix=" h" />
+              <Summary label={strings.extrasLaLabel} value={totals.lisatLa} suffix=" h" />
+              <Summary label={strings.extrasSuLabel} value={totals.lisatSu} suffix=" h" />
+              <Summary label={strings.extrasEveningLabel} value={totals.lisatIlta} suffix=" h" />
+              <Summary label={strings.extrasNightLabel} value={totals.lisatYo} suffix=" h" />
+              <Summary label={strings.overtimeVrk50Label} value={totals.ylityoVrk50} suffix=" h" />
+              <Summary label={strings.overtimeVrk100Label} value={totals.ylityoVrk100} suffix=" h" />
+              <Summary label={strings.overtimeVko50Label} value={totals.ylityoVko50} suffix=" h" />
+              <Summary label={strings.overtimeVko100Label} value={totals.ylityoVko100} suffix=" h" />
+              <Summary label={strings.atvLabel} value={totals.atv} suffix=" h" />
+              <Summary label={strings.travelLabel} value={totals.matk} suffix=" h" />
+              <Summary label={strings.mealLabel} value={totals.ateriakorvaus} suffix=" €" />
+              <Summary label={strings.kmLabel} value={totals.km} suffix=" km" />
+              <Summary label={strings.toolCompLabel} value={totals.tyokalukorvaus} suffix=" €" />
+            </Row>
+          </Card.Body>
+        </Card>
       </Container>
     </Container>
   );

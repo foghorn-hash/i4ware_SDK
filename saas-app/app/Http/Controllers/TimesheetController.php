@@ -14,6 +14,20 @@ class TimesheetController extends Controller
         //$this->apiToken = uniqid(base64_encode(Str::random(40)));
         $this->middleware('auth:api');
     }
+
+    private function sanitize(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                $value = trim($value);
+                $value = strip_tags($value);
+                $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                $data[$key] = mb_substr($value, 0, 2000);
+            }
+        }
+        return $data;
+    }
+
     
     // GET /api/timesheets
     public function index(Request $request)
@@ -46,6 +60,8 @@ class TimesheetController extends Controller
             'domain'        => ['nullable','string','max:255'],
         ]);
 
+        $data = $this->sanitize($data);
+
         //jos frontend ei lähetä status/user_id, se luo niitä
         $data['status'] = $data['status'] ?? 'Luotu';
         $data['user_id'] = $data['user_id'] ?? auth()->id();
@@ -76,6 +92,8 @@ class TimesheetController extends Controller
             'status'        => ['nullable','in:Luotu,Hyväksytty,Hylätty'],
             'domain'        => ['nullable','string','max:255'],
         ]);
+
+        $data = $this->sanitize($data);
 
         $timesheet->update($data);
         return response()->json($timesheet);

@@ -14,6 +14,23 @@ class TimesheetRowController extends Controller
         //$this->apiToken = uniqid(base64_encode(Str::random(40)));
         $this->middleware('auth:api');
     }
+
+    private function sanitize(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                // poistaa välilyönnit reunoista 
+                $value = trim($value);
+                // poistaa HTML-tagit 
+                $value = strip_tags($value);
+                // muuntaa erilliset merkit (<, >, ", ')
+                $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                $data[$key] = mb_substr($value, 0, 2000);
+            }
+        }
+        return $data;
+    }
+
     // GET /api/timesheets/{timesheet}/rows
     public function index(Request $request, Timesheet $timesheet)
     {
@@ -40,6 +57,7 @@ class TimesheetRowController extends Controller
     public function store(Request $request, Timesheet $timesheet)
     {
         $data = $this->validateRow($request, true);
+        $data = $this->sanitize($data);
         $data['timesheet_id'] = $timesheet->id;
 
         // Oletus: row_no seuraava vapaa
@@ -61,6 +79,7 @@ class TimesheetRowController extends Controller
     {
         $this->assertBelongs($row, $timesheet);
         $data = $this->validateRow($request, false);
+        $data = $this->sanitize($data);
         $row->update($data);
         return response()->json($row);
     }
@@ -102,9 +121,8 @@ class TimesheetRowController extends Controller
             'ylityo_vko_100' => ['nullable','numeric','min:0','max:999.99'],
             'atv'            => ['nullable','numeric','min:0','max:999.99'],
             'matk'           => ['nullable','numeric','min:0','max:999.99'],
-
-            // 'paivaraha_osa'  => ['nullable','boolean'],
-            // 'paivaraha_koko' => ['nullable','boolean'],
+            
+            'paivaraha'       => ['required', 'in:ei,osa,koko'],
 
             'ateriakorvaus'  => ['nullable','numeric','min:0','max:9999999.99'],
             'km'             => ['nullable','numeric','min:0','max:999999.99'],
