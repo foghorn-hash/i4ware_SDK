@@ -34,80 +34,81 @@ class NetvisorController extends Controller
 
     public function addCustomer(Request $request)
     {
+        // Get customer data from request
+        $data = $request->input('customer', $request->all());
 
         $customerBaseInfo = [ // Base information about the customer is aggregated in a single 'customerbaseinformation' key
-            'internalidentifier' => '', // automatic (if given and customer code is left empty, the next free customer number is used automatically)
-            'externalidentifier' => '', // Business ID or private customer's social security number
-            'organizationunitnumber' => 1, // OVT identifier (Receiver's OVT identifier, if the information differs from the company's business ID)
-            'name' => 'New Customer',
-            'nameextension' => 'NewCust',
-            'streetaddress' => 'NewCust',
-            'additionaladdressline' => '',
-            'city' => 'Helsinki',
-            'postnumber' => '00100',
-            'country' => 'FI', // Country code (if not provided, Finland is the default) and country code format is ISO-3166
-            'customergroupname' => '', // Customer group name, customer is linked to the group by name. If the group does not exist, it is created.
-            'phonenumber' => '',
-            'faxnumber' => '',
-            'email' => '',
-            'homepageuri' => '',
-            'isactive' => 1, // 1 = active, 0 = inactive
-            'isprivatecustomer' => 0, // 1 = private customer, 0 = business customer
-            'emailinvoicingaddress' => '', // Email invoicing address, must be a valid email address. Can be provided as a list separated by ;
+            'internalidentifier' => $data['customer_code'] ?? '', // automatic (if given and customer code is left empty, the next free customer number is used automatically)
+            'externalidentifier' => $data['business_id'] ?? '', // Business ID or private customer's social security number
+            'organizationunitnumber' => $data['organization_unit_number'] ?? 1, // OVT identifier (Receiver's OVT identifier, if the information differs from the company's business ID)
+            'name' => $data['name'] ?? '',
+            'nameextension' => $data['name_extension'] ?? '',
+            'streetaddress' => $data['street_address'] ?? '',
+            'additionaladdressline' => $data['additional_address'] ?? '',
+            'city' => $data['city'] ?? '',
+            'postnumber' => $data['postcode'] ?? '',
+            'country' => $data['country'] ?? 'FI', // Country code (if not provided, Finland is the default) and country code format is ISO-3166
+            'customergroupname' => $data['customer_group'] ?? '', // Customer group name, customer is linked to the group by name. If the group does not exist, it is created.
+            'phonenumber' => $data['phone'] ?? '',
+            'faxnumber' => $data['fax'] ?? '',
+            'email' => $data['email'] ?? '',
+            'homepageuri' => $data['website'] ?? '',
+            'isactive' => $data['is_active'] ?? 1, // 1 = active, 0 = inactive
+            'isprivatecustomer' => $data['is_private'] ?? 0, // 1 = private customer, 0 = business customer
+            'emailinvoicingaddress' => $data['email_invoicing'] ?? '', // Email invoicing address, must be a valid email address. Can be provided as a list separated by ;
         ];
 
         $finvoiceDetails = [ // Aggregated in a single 'customerfinvoicedetails' key
-            'finvoiceaddress' => '',
-            'finvoiceroutercode' => '',
-
+            'finvoiceaddress' => $data['e_invoice_address'] ?? '',
+            'finvoiceroutercode' => $data['e_invoice_operator'] ?? '',
         ];
 
         $deliveryDetails = [ // Aggregated in a single 'customerdeliverydetails' key
-            'deliveryname' => '',
-            'deliverystreetaddress' => '',
-            'deliverycity' => '',
-            'deliverypostnumber' => '',
-            'deliverycountry' => '', // Country code format, always ISO-3166
+            'deliveryname' => $data['delivery_name'] ?? '',
+            'deliverystreetaddress' => $data['delivery_address'] ?? '',
+            'deliverycity' => $data['delivery_city'] ?? '',
+            'deliverypostnumber' => $data['delivery_postcode'] ?? '',
+            'deliverycountry' => $data['delivery_country'] ?? '', // Country code format, always ISO-3166
         ];
 
         $contactDetails = [ //  	Aggregated in a single 'customercontactdetails' key
-            'contactname' => '',
-            'contactperson' => '',
-            'contactpersonemail' => '',
-            'contactpersonphone' => '',
-            'deliverycountry' => '',
-            'defaultsellername' => '',
+            'contactname' => $data['contact_name'] ?? '',
+            'contactperson' => $data['contact_person'] ?? '',
+            'contactpersonemail' => $data['contact_person_email'] ?? '',
+            'contactpersonphone' => $data['contact_person_phone'] ?? '',
+            'deliverycountry' => $data['delivery_country'] ?? '',
+            'defaultsellername' => $data['default_seller'] ?? '',
         ];
 
         $defaultsalesperson = [ // Aggregated in a single 'defaultsalesperson' key
-            'salespersonid' => '', // Salesperson ID, if not provided, the default salesperson is used
+            'salespersonid' => $data['salesperson_id'] ?? '', // Salesperson ID, if not provided, the default salesperson is used
         ];
 
         $additionalInfo = [
-            'comment' => '',
-            'customeragreementIdentifier' => '',
-            'usecreditorreferencenumber' => '', // Use RF reference for invoicing, 1=on 0=off
-            'useorderreferencenumber' => '', // Use order reference number for invoicing, 1=on 0=off
-            'invoicinglanguage' => '', // Customer's invoicing language, FI, EN, or SE. If this information is not provided in the message, the default language for the invoice is Finnish
-            'invoiceprintchannelformat' => 2, // Invoice print format, 1 = Invoice + bank transfer, 2 = Invoice
-            'yourdefaultreference' => '',
-            'defaulttextbeforeinvoicelines' => '',
-            'defaulttextafterinvoicelines' => '',
-            'defaultpaymentterm' => '',
-            'defaultsecondname' => '',
-            'paymentinterest' => '',
-            'balancelimit' => '',
-            'receivablesmanagementautomationrule' => '',
-            'FactoringAccount' => '',
-            'taxhandlingtype' => '',
-            'eustandardfinvoice' => '',
+            'comment' => $data['comment'] ?? '',
+            'customeragreementIdentifier' => $data['agreement_id'] ?? '',
+            'usecreditorreferencenumber' => $data['use_creditor_reference'] ?? '', // Use RF reference for invoicing, 1=on 0=off
+            'useorderreferencenumber' => $data['use_order_reference'] ?? '', // Use order reference number for invoicing, 1=on 0=off
+            'invoicinglanguage' => $data['invoice_language'] ?? '', // Customer's invoicing language, FI, EN, or SE. If this information is not provided in the message, the default language for the invoice is Finnish
+            'invoiceprintchannelformat' => $data['invoice_format'] ?? 2, // Invoice print format, 1 = Invoice + bank transfer, 2 = Invoice
+            'yourdefaultreference' => $data['default_reference'] ?? '',
+            'defaulttextbeforeinvoicelines' => $data['text_before_lines'] ?? '',
+            'defaulttextafterinvoicelines' => $data['text_after_lines'] ?? '',
+            'defaultpaymentterm' => $data['payment_term'] ?? '',
+            'defaultsecondname' => $data['second_name'] ?? '',
+            'paymentinterest' => $data['payment_interest'] ?? '',
+            'balancelimit' => $data['balance_limit'] ?? '',
+            'receivablesmanagementautomationrule' => $data['receivables_automation'] ?? '',
+            'FactoringAccount' => $data['factoring_account'] ?? '',
+            'taxhandlingtype' => $data['tax_handling'] ?? '',
+            'eustandardfinvoice' => $data['eu_standard_invoice'] ?? '',
             'defaultsalesperson' => $defaultsalesperson, // Default salesperson information
         ];
 
         $dimensionDetails = [
             'dimension' => [
-                'dimensionname' => '',
-                'dimensionitem' => '',
+                'dimensionname' => $data['dimension_name'] ?? '',
+                'dimensionitem' => $data['dimension_item'] ?? '',
             ]
         ];
 
