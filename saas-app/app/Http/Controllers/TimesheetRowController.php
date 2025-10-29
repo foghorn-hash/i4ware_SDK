@@ -60,6 +60,12 @@ class TimesheetRowController extends Controller
         $data = $this->sanitize($data);
         $data['timesheet_id'] = $timesheet->id;
 
+        $fieldsToCheck = $data;
+        unset($fieldsToCheck['timesheet_id'], $fieldsToCheck['row_no']);
+        if (!collect($fieldsToCheck)->filter(fn($v) => !empty($v))->count()) {
+            return response()->json(['error' => 'Lomake ei voi olla tyhjä'], 422);
+        }
+
         // Oletus: row_no seuraava vapaa
         $data['row_no'] = $data['row_no'] ?? ((int) TimesheetRow::where('timesheet_id',$timesheet->id)->max('row_no') + 1);
 
@@ -101,16 +107,16 @@ class TimesheetRowController extends Controller
     {
         $rules = [
             'user_id'        => ['required','integer'],
-            'timesheet_id'   => ['required', 'integer'],
+            'timesheet_id'   => ['required','integer'],
             'row_no'         => ['nullable','integer','min:1'],
 
             'status'         => ['nullable','in:Luotu,Hyväksytty,Hylätty'],
-            'project'        => ['nullable','string','max:255'],
-            'pvm'            => ['nullable','date'],
-            'klo_alku'       => ['nullable','date_format:H:i'],
-            'klo_loppu'      => ['nullable','date_format:H:i'],
+            'project'        => ['required','string','filled','max:255'],
+            'pvm'            => ['required','filled','date'],
+            'klo_alku'       => ['required','filled','date_format:H:i'],
+            'klo_loppu'      => ['required','filled','date_format:H:i'],
 
-            'norm'           => ['nullable','numeric','min:0','max:999.99'],
+            'norm'           => ['required','filled','numeric','min:0','max:999.99'],
             'lisat_la'       => ['nullable','numeric','min:0','max:999.99'],
             'lisat_su'       => ['nullable','numeric','min:0','max:999.99'],
             'lisat_ilta'     => ['nullable','numeric','min:0','max:999.99'],
@@ -122,7 +128,7 @@ class TimesheetRowController extends Controller
             'atv'            => ['nullable','numeric','min:0','max:999.99'],
             'matk'           => ['nullable','numeric','min:0','max:999.99'],
             
-            'paivaraha'       => ['required', 'in:ei,osa,koko'],
+            'paivaraha'      => ['required', 'in:ei,osa,koko'],
 
             'ateriakorvaus'  => ['nullable','numeric','min:0','max:9999999.99'],
             'km'             => ['nullable','numeric','min:0','max:999999.99'],

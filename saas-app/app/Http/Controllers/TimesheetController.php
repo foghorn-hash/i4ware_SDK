@@ -86,14 +86,20 @@ class TimesheetController extends Controller
     public function update(Request $request, Timesheet $timesheet)
     {
         $data = $request->validate([
-            'nimi'          => ['sometimes','string','max:255'],
-            'tyontekija'    => ['sometimes','string','max:255'],
-            'ammattinimike' => ['nullable','string','max:255'],
+            'nimi'          => ['required','string','filled','max:255'],
+            'tyontekija'    => ['required','string','filled','max:255'],
+            'ammattinimike' => ['required','string','filled','max:255'],
             'status'        => ['nullable','in:Luotu,Hyväksytty,Hylätty'],
             'domain'        => ['nullable','string','max:255'],
         ]);
 
         $data = $this->sanitize($data);
+
+        $fieldsToCheck = $data;
+        unset($fieldsToCheck['timesheet_id'], $fieldsToCheck['row_no']);
+        if (!collect($fieldsToCheck)->filter(fn($v) => !empty($v))->count()) {
+            return response()->json(['error' => 'Lomake ei voi olla tyhjä'], 422);
+        }
 
         $timesheet->update($data);
         return response()->json($timesheet);

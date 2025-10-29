@@ -297,7 +297,7 @@ export default function Timesheet() {
       // lisää lokaalisesti rows
       setRows(prev => [...prev, newRow]);
   
-      setStatusMessage('Rivi lisätty onnistuneesti!');
+      setStatusMessage(strings.successSend);
       setTimeout(() => setStatusMessage(''), 3000);
   
       if (clearForm) {
@@ -331,16 +331,15 @@ export default function Timesheet() {
       }
   
     } catch (err) {
-      console.error('Rivin lisääminen epäonnistui:', err);
+      console.error('Rivin lisääminen ei onnistunut:', err);
       if (err.response?.data?.errors) {
         console.log('Validation errors:', err.response.data.errors);
       }
-      setStatusMessage('Rivin lisääminen epäonnistui.');
+      setStatusMessage(strings.errorSend);
       setTimeout(() => setStatusMessage(''), 3000);
     }
   };
   
-
   const queueSaveRow = (rowId) => {
     if (!timesheetId) return;
     if (saveTimers.current[rowId]) clearTimeout(saveTimers.current[rowId]);
@@ -414,11 +413,11 @@ export default function Timesheet() {
         memo: ''
       }));
   
-      setStatusMessage('Kaikki tiedot tyhjennetty.');
+      setStatusMessage(strings.successClear);
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (e) {
       console.error("Clear failed", e);
-      setStatusMessage('Tyhjennys epäonnistui.');
+      setStatusMessage(strings.errorClear);
       setTimeout(() => setStatusMessage(''), 3000);
     }
   };
@@ -464,41 +463,60 @@ export default function Timesheet() {
     );
   };  
 
-  const NumberValidator = ({ value, min = 0.1, max = 999.99, 
-    messageTooBig = "Liian iso luku", 
-    messageTooSmall = "Ei ole kelvollinen luku" }) => {
-
+  const NumberValidator = ({ value, min = 0.1, max = 999.99 }) => {
+    const { strings } = useContext(LanguageContext); 
+  
     if (value === '' || value === null) return null;
   
     const val = Number(value);
   
     if (val < min) {
-      return <Form.Text className="text-danger">{messageTooSmall}</Form.Text>;
+      return <Form.Text className="text-danger">{strings.messageTooSmall}</Form.Text>;
     }
   
     if (val > max) {
-      return <Form.Text className="text-danger">{messageTooBig}</Form.Text>;
+      return <Form.Text className="text-danger">{strings.messageTooBig}</Form.Text>;
     }
   
     return null;
   };
-  
+
+  const [submitted, setSubmitted] = useState(false);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    createAndSaveRow(meta, true); // true = tyhjentää lähetykset jälkeen
+    setSubmitted(true);
+  
+    if (!meta.nimi || 
+        !meta.tyontekija || 
+        !meta.ammattinimike || 
+        !meta.project || 
+        !meta.pvm ||
+        !meta.klo_alku ||
+        !meta.klo_loppu ||
+        meta.norm === '' || 
+        Number(meta.norm) <= 0
+      ) {
+      return; 
+    }
+    
+    // true = tyhjentää lähetykset jälkeen
+    createAndSaveRow(meta, true); 
+    setSubmitted(false);
   };
 
   const toggleExtras = () => {
     setShowExtras(s => !s);
     setShowExtrasMessage(true);
-    setTimeout(() => setShowExtrasMessage(true)); //jos haluaa aikarajan -> setShowExtrasMessage(false), 4000);
+    //jos haluaa aikarajan -> setShowExtrasMessage(false), 4000);
+    setTimeout(() => setShowExtrasMessage(true)); 
   };
 
   const toggleOvertime = () => {
     setShowOvertime(s => !s);
     setShowOvertimeMessage(true);
     setTimeout(() => setShowOvertimeMessage(true));
-  }
+  };
 
   /* ====== TÄSTÄ ALASPÄIN: sinun alkuperäinen renderöinti (lyhennetty header…) ====== */
   return (
@@ -508,6 +526,7 @@ export default function Timesheet() {
           <Card.Body>
             <Form onSubmit={handleSubmit}>
               <Row className="g-3">
+
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label className="small text-muted">{strings.timesheetNameLabel}</Form.Label>
@@ -515,8 +534,10 @@ export default function Timesheet() {
                       value={meta.nimi} 
                       onChange={e=>setMeta({...meta, nimi:e.target.value})} 
                       placeholder={strings.timesheetNamePlaceholder}
-                      required
                     /> 
+                   {submitted && !meta.nimi && (
+                      <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                    )}
                   </Form.Group>
                 </Col>
 
@@ -527,8 +548,10 @@ export default function Timesheet() {
                       value={meta.tyontekija} 
                       onChange={e=>setMeta({...meta, tyontekija:e.target.value})} 
                       placeholder={strings.employeePlaceholder}
-                      required
                     />
+                    {submitted && !meta.tyontekija && (
+                      <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                    )}
                   </Form.Group>
                 </Col>
 
@@ -539,8 +562,10 @@ export default function Timesheet() {
                       value={meta.ammattinimike} 
                       onChange={e=>setMeta({...meta, ammattinimike:e.target.value})} 
                       placeholder={strings.jobTitlePlaceholder}
-                      required
                     />
+                    {submitted && !meta.ammattinimike && (
+                      <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                    )}
                   </Form.Group>
                 </Col>
 
@@ -553,8 +578,10 @@ export default function Timesheet() {
                       value={meta.project} 
                       onChange={e=>setMeta({...meta, project:e.target.value})} 
                       placeholder={strings.projectPlaceholder}
-                      required
                     />
+                    {submitted && !meta.project && (
+                      <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                    )}
                   </Form.Group>
                 </Col>
 
@@ -566,8 +593,10 @@ export default function Timesheet() {
                       key={`pvm-${meta.pvm}`}
                       value={meta.pvm} 
                       onChange={e=>setMeta({...meta, pvm:e.target.value})}
-                      required
                     />
+                    {submitted && !meta.pvm && (
+                      <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                    )}
                   </Form.Group>
                 </Col>
 
@@ -577,11 +606,13 @@ export default function Timesheet() {
                     <Form.Control 
                       className="flex-grow-1"
                       type="time"
-                      required
                       key={`klo_alku-${meta.klo_alku}`}
                       value={meta.klo_alku || ''} 
                       onChange={e => setMeta({ ...meta, klo_alku: e.target.value })}
                     />
+                    {submitted && !meta.klo_alku && (
+                      <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                    )}
                   </Form.Group>
                 </Col>
 
@@ -591,11 +622,13 @@ export default function Timesheet() {
                     <Form.Control 
                       className="flex-grow-1"
                       type="time" 
-                      required
                       key={`klo_loppu-${meta.klo_loppu}`}
                       value={meta.klo_loppu || ''} 
                       onChange={e => setMeta({ ...meta, klo_loppu: e.target.value })}
                     />
+                    {submitted && !meta.klo_loppu && (
+                      <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                    )}
                   </Form.Group>
                 </Col>
 
@@ -608,8 +641,10 @@ export default function Timesheet() {
                       value={meta.norm} 
                       onChange={e=>setMeta({...meta, norm:e.target.value})} 
                       placeholder={strings.normalHoursPlaceholder}
-                      required
                     />
+                    {submitted && (meta.norm === '' || Number(meta.norm) <= 0) && (
+                      <span className="error" style={{ color: 'red' }}>{strings.requiredField}</span>
+                    )}
                     <NumberValidator value={meta.norm} min={0.1} max={999.99} message="Liian iso luku" />
                   </Form.Group>
                 </Col>
@@ -879,7 +914,7 @@ export default function Timesheet() {
                 <Col xs="auto"><Button size="sm" variant="primary" onClick={toggleExtras}>{showExtras? strings.toggleExtrasHide : strings.toggleExtrasShow}</Button></Col>
                 <Col xs="auto"><Button size="sm" variant="secondary" onClick={toggleOvertime}>{showOvertime? strings.toggleOvertimeHide : strings.toggleOvertimeShow}</Button></Col>
                 <Col className="text-end">
-                  <Button size="sm" variant="success" className="me-2" onClick={addRow}>{strings.addRowButton}</Button>
+                  <Button size="sm" variant="success" className="me-2" type="submit">{strings.addRowButton}</Button>
                   <Button size="sm" variant="outline-danger" onClick={clearAll}>{strings.clearAllButton}</Button>
                 </Col>
               </Row>

@@ -67,6 +67,7 @@
 .save-status.success {
   background-color: #4caf50;
   color: white;
+  margin-top: 6px;
   padding: 6px 12px;
   border-radius: 4px;
 }
@@ -74,6 +75,7 @@
 .save-status.error {
   background-color: #f44336;
   color: white;
+  margin-top: 6px;
   padding: 6px 12px;
   border-radius: 4px;
 }
