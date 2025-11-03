@@ -165,6 +165,8 @@ function Header(props) {
         { text: "stlViewer", link: "/stl-viewer" },
         { text: "videoPhoto", link: "/video-photo" },
         { text: "chat", link: "/pusher-chat" },
+        { text: "timesheet", link: "/timesheet" },
+
         {
           text: "manageUsers",
           link: "/manage-users",

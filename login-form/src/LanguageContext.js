@@ -97,11 +97,11 @@ const strings = new LocalizedStrings({
 
     requiredField: "This field is required",
     
-    successSend: "Row added successfully",
-    errorSend: "Failed to add row",
+    successSendForm: "Row added successfully",
+    errorSendForm: "Failed to add row",
 
-    successClear: "All data cleared",
-    errorClear: "Failed to clear data",
+    successClearForm: "All data cleared",
+    errorClearForm: "Failed to clear data",
 
     //summary
     summaryHeader: "Summary",
@@ -200,11 +200,11 @@ const strings = new LocalizedStrings({
 
     requiredField: "Tämä kenttä on pakollinen",
 
-    successSend: "Rivi lisätty onnistuneesti",
-    errorSend: "Rivin lisääminen epäonnistui",
+    successSendForm: "Rivi lisätty onnistuneesti",
+    errorSendForm: "Rivin lisääminen epäonnistui",
 
-    successClear: "Kaikki tiedot tyhjennetty",
-    errorClear: "Tyhjennys epäonnistui",
+    successClearForm: "Kaikki tiedot tyhjennetty",
+    errorClearForm: "Tyhjennys epäonnistui",
 
     //yhteenveto
     summaryHeader: "Yhteenveto",
@@ -299,11 +299,11 @@ const strings = new LocalizedStrings({
 
     requiredField: "Detta fält är obligatoriskt",
 
-    successSend: "Raden har lagts till",
-    errorSend: "Det gick inte att lägga till raden",
+    successSendForm: "Raden har lagts till",
+    errorSendForm: "Det gick inte att lägga till raden",
 
-    successClear: "All data har rensats",
-    errorClear: "Rensning misslyckades",
+    successClearForm: "All data har rensats",
+    errorClearForm: "Rensning misslyckades",
 
     //sammanfattning
     summaryHeader: "Sammanfattning",

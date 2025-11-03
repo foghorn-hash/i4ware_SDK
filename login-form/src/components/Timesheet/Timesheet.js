@@ -7,17 +7,35 @@ import { API_BASE_URL,  API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME } from "../../co
 import { LanguageContext } from "../../LanguageContext";
 
 /** === API setup === */
-const API_BASE = API_BASE_URL;
-const AUTH_TOKEN = localStorage.getItem(ACCESS_TOKEN_NAME); // esim. "eyJhbGciOi..."
-
 const api = axios.create({
-  baseURL: API_BASE,
-  headers: { 
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${AUTH_TOKEN}`
-  }
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" } // НЕ ставим Authorization здесь
 });
-if (AUTH_TOKEN) api.defaults.headers.common["Authorization"] = `Bearer ${AUTH_TOKEN}`;
+
+function getStoredToken() {
+  try {
+    const raw = localStorage.getItem(ACCESS_TOKEN_NAME);
+    if (!raw) return null;
+
+    // Если это JSON (объект) — попробуем распарсить и взять поле token
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed) return null;
+      // возможные имена поля: token, access_token, authToken
+      return parsed.token ?? parsed.access_token ?? parsed.authToken ?? null;
+    } catch (err) {
+      // не JSON — возможно это уже «чистая» строка токена
+      return raw;
+    }
+  } catch (e) {
+    console.error("getStoredToken error", e);
+    return null;
+  }
+}
+
+const unwrap = (res) => {
+  return res?.data?.data ?? res?.data ?? res;
+};
 
 /** === helpers: camelCase <-> snake_case === */
 const toApiRow = (r, userId, timesheetId, rowNo) => ({
@@ -106,9 +124,43 @@ const makeRow = (id) => ({
 });
 
 export default function Timesheet() {
+
   const CURRENT_USER_ID = 1; // hae oikeasti authista
   const [timesheetId, setTimesheetId] = useState(null);
   const { strings } = useContext(LanguageContext); //käännös
+
+  // --- NEW: track token in state so effects can re-run when token appears/changes
+  const [authToken, setAuthToken] = useState(() => getStoredToken());
+
+  // whenever authToken is set in state, ensure axios has header
+  useEffect(() => {
+    if (authToken) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+      console.log("✅ api Authorization set to JWT (first 20 chars):", authToken?.slice?.(0,20) + "...");
+    } else {
+      delete api.defaults.headers.common["Authorization"];
+      console.log("ℹ️ api Authorization removed");
+    }
+  }, [authToken]);
+
+  // listen storage events so authToken updates when login happens in other window/tab
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === ACCESS_TOKEN_NAME) {
+        setAuthToken(e.newValue);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  // Helper: also expose a global event listener so your login flow can dispatch
+  // window.dispatchEvent(new Event('auth:changed')) after setting localStorage, if you want.
+  useEffect(() => {
+    const onAuthChanged = () => setAuthToken(localStorage.getItem(ACCESS_TOKEN_NAME));
+    window.addEventListener('auth:changed', onAuthChanged);
+    return () => window.removeEventListener('auth:changed', onAuthChanged);
+  }, []);
 
   const [meta, setMeta] = useState({
     nimi: '',
@@ -139,69 +191,107 @@ export default function Timesheet() {
   });
 
   const [rows, setRows] = useState(() => Array.from({ length: 0 }, (_, i) => makeRow(i + 1)));
+
   const [showExtras, setShowExtras] = useState(true);
   const [showOvertime, setShowOvertime] = useState(true);
   const [showExtrasMessage, setShowExtrasMessage] = useState(false);
   const [showOvertimeMessage, setShowOvertimeMessage] = useState(false);
+
   const saveTimers = useRef({}); // debounce per rowId
   const metaTimer = useRef(null);
 
-  /** === INIT: varmista tuntikortti + lataa rivit === */
-  useEffect(() => {
-    (async () => {
-      try {
-        // Haetaan käyttäjän viimeisin tuntikortti
-        const search = await api.get('/api/timesheet/timesheets', { 
-          params: { user_id: CURRENT_USER_ID, per_page: 1, order_by: 'created_at desc' } 
-        });
-        let ts = search.data?.data?.[0];
-  
-        // Jos yhtään tuntikorttia ei löytynyt, luodaan uusi
-        if (!ts) {
-          const created = await api.post('/api/timesheet/timesheets', {
-            user_id: Number(CURRENT_USER_ID),
-            nimi: '',
-            tyontekija: '',
-            ammattinimike: '',
-            status: 'Luotu',
-            domain: '',
-          });
-          ts = created.data;
-        }
-  
-        // Tallennetaan tuntikortin ID tilaan
-        setTimesheetId(ts.id);
-  
-        // Päivitetään vain metatiedot (nimi, työntekijä, ammattinimike)
-        setMeta(prev => ({
-          ...prev,
-          nimi: ts.nimi,
-          tyontekija: ts.tyontekija,
-          ammattinimike: ts.ammattinimike || ''
-        }));
-  
-        // Rivien (rows) latausta ei tehdä vielä tässä vaiheessa
-  
-      } catch (e) {
-        console.error("Init failed", e);
+    /** === varmista että api käyttää oikeaa tokenia === */
+    useEffect(() => {
+      const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+      if (token) {
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        console.log("✅ Authorization header asetettu");
+        setAuthToken(token); // <-- tämä on tärkein, triggeraa initin
+      } else {
+        console.warn("⚠️ Ei tokenia localStoragessa — käyttäjä ei ole kirjautunut sisään?");
       }
-    })();
-  }, []);
+    }, []); // vain kerran mountissa
+  
+    /** === INIT: varmista tuntikortti + lataa rivit === */
+    useEffect(() => {
+      if (!authToken) {
+        console.log("⏳ Odotetaan tokenia ennen init()");
+        return;
+      }
+  
+      (async () => {
+        try {
+          console.log("🚀 INIT alkaa, token:", authToken);
+          api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+  
+          // 1️⃣ Hae viimeisin timesheet
+          const res = await api.get('/api/timesheet/timesheets', {
+            params: { user_id: CURRENT_USER_ID, per_page: 1, order_by: 'created_at desc' }
+          });
+  
+          const data = res.data?.data ?? res.data;
+          const ts = Array.isArray(data) ? data[0] : data;
+  
+          let timesheet = ts;
+          if (!timesheet?.id) {
+            // 2️⃣ Jos ei löydy, luodaan uusi
+            const createRes = await api.post('/api/timesheet/timesheets', {
+              user_id: CURRENT_USER_ID,
+              nimi: '',
+              tyontekija: '',
+              ammattinimike: '',
+              status: 'Luotu',
+              domain: '',
+            });
+            timesheet = createRes.data;
+          }
+  
+          if (!timesheet?.id) {
+            console.error("❌ Ei saatu timesheet-id:tä API:sta");
+            return;
+          }
+  
+          console.log("✅ Löytyi timesheet:", timesheet.id);
+          setTimesheetId(timesheet.id);
+  
+          // 3️⃣ Päivitä metatiedot
+          setMeta(prev => ({
+            ...prev,
+            nimi: timesheet.nimi ?? prev.nimi,
+            tyontekija: timesheet.tyontekija ?? prev.tyontekija,
+            ammattinimike: timesheet.ammattinimike ?? prev.ammattinimike ?? ''
+          }));
+  
+          // 4️⃣ Lataa rivit
+          const rowsRes = await api.get(`/api/timesheet/timesheets/${timesheet.id}/rows`);
+          const rowData = rowsRes.data?.data ?? rowsRes.data ?? [];
+          setRows(rowData.map(fromApiRow));
+  
+          console.log("✅ INIT valmis — rivit ladattu:", rowData.length);
+        } catch (err) {
+          console.error("❌ INIT epäonnistui:", err);
+        }
+      })();
+    }, [authToken]); // käynnistyy heti, kun token oikeasti on asetettu  
 
   useEffect(() => {
-    if (!timesheetId) return; // Odotetaan, että timesheetId on asetettu
+    if (!timesheetId) {
+      console.log("⏳ Waiting for timesheetId...");
+      return;
+    }
   
     (async () => {
       try {
-        // Haetaan valitun tuntikortin rivit 
         const res = await api.get(`/api/timesheet/timesheets/${timesheetId}/rows`);
-        const rawRows = Array.isArray(res.data.data) ? res.data.data : [];
-        setRows(rawRows.map(fromApiRow));  // Muunnetaan rivit sovelluksen sisäiseen muotoon
+        const rawRows = Array.isArray(unwrap(res)) ? unwrap(res) : [];
+        setRows(rawRows.map(fromApiRow));
+        console.log("✅ Rows loaded:", rawRows.length, "for timesheet", timesheetId);
       } catch (e) {
-        console.error("Failed to fetch rows", e);
+        console.error("❌ Failed to fetch rows", e);
       }
     })();
   }, [timesheetId]);
+  
 
   /** === meta-autosave (debounce) === */
   useEffect(() => {
@@ -250,8 +340,6 @@ export default function Timesheet() {
     });
   }, [rows]);
   
-  
-  
   /** === server-sync helpers === */
   const createAndSaveRow = async (metaData, clearForm = false) => {
     if (!timesheetId) {
@@ -292,12 +380,13 @@ export default function Timesheet() {
   
       // POST serveriin — backend luo id
       const created = await api.post(`/api/timesheet/timesheets/${timesheetId}/rows`, payload);
-      const newRow = fromApiRow(created.data);
+      const createdPayload = unwrap(created);
+      const newRow = fromApiRow(Array.isArray(createdPayload) ? createdPayload[0] : createdPayload);
   
       // lisää lokaalisesti rows
       setRows(prev => [...prev, newRow]);
   
-      setStatusMessage(strings.successSend);
+      setStatusMessage(strings.successSendForm);
       setTimeout(() => setStatusMessage(''), 3000);
   
       if (clearForm) {
@@ -413,11 +502,11 @@ export default function Timesheet() {
         memo: ''
       }));
   
-      setStatusMessage(strings.successClear);
+      setStatusMessage(strings.successClearForm);
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (e) {
       console.error("Clear failed", e);
-      setStatusMessage(strings.errorClear);
+      setStatusMessage(strings.errorClearForm);
       setTimeout(() => setStatusMessage(''), 3000);
     }
   };
@@ -487,21 +576,25 @@ export default function Timesheet() {
     e.preventDefault();
     setSubmitted(true);
   
-    if (!meta.nimi || 
-        !meta.tyontekija || 
-        !meta.ammattinimike || 
-        !meta.project || 
-        !meta.pvm ||
-        !meta.klo_alku ||
-        !meta.klo_loppu ||
-        meta.norm === '' || 
-        Number(meta.norm) <= 0
-      ) {
-      return; 
+    const missingRequired =
+      !meta.nimi ||
+      !meta.tyontekija ||
+      !meta.ammattinimike ||
+      !meta.project ||
+      !meta.pvm ||
+      !meta.klo_alku ||
+      !meta.klo_loppu ||
+      meta.norm === "" ||
+      Number(meta.norm) <= 0;
+  
+    if (missingRequired) {
+      setStatusMessage(strings.successErrorForm);
+      setTimeout(() => setStatusMessage(''), 4000);
+      return;
     }
-    
-    // true = tyhjentää lähetykset jälkeen
-    createAndSaveRow(meta, true); 
+  
+    // jos kaikki kunnossa – luodaan rivi
+    createAndSaveRow(meta, true); // true = tyhjentää lomakkeen lähetyksen jälkeen
     setSubmitted(false);
   };
 
