@@ -135,7 +135,7 @@ for part in parts[1:]:
 # === Laravel Path Handling ===
 laravel_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 stl_path = os.path.join(laravel_root, 'storage', 'app', 'public', 'stl-files', f'{filename}.stl')
-screenshot_path = os.path.join(laravel_root, 'storage', 'app', 'public', 'stl-screenshots', f'screenshot_{filename}.png')
+screenshot_path = os.path.join(laravel_root, 'storage', 'app', 'stl-screenshots', f'screenshot_{filename}.png')
 
 os.makedirs(os.path.dirname(stl_path), exist_ok=True)
 os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)

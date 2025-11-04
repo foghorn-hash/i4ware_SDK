@@ -1,6 +1,16 @@
 .DS_Store
+
+# Documentation (local only - not for GitHub)
 CLAUDE.md
 daily.md
 dailyw.md
 dailyf.md
 
+# IDE/Editor configuration
+.markdownlint.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.sample
