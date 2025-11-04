@@ -284,7 +284,7 @@ curl -X GET http://localhost/i4ware_SDK/saas-app/public/api/netvisor/invoices \
     {
       "invoice_number": "2025-001",
       "customer_name": "Test Company Oy",
-      "total_amount": 122.76,
+      "total_amount": 124.25,
       "invoice_date": "2025-10-21",
       ...
     }
@@ -309,8 +309,8 @@ curl -X POST http://localhost/i4ware_SDK/saas-app/public/api/netvisor/invoices \
     "customer_number": "TEST001",
     "customer_name": "Test Company Oy",
     "amount": 99.00,
-    "vat_amount": 23.76,
-    "total_amount": 122.76,
+    "vat_amount": 25.25,
+    "total_amount": 124.25,
     "lines": [
       {
         "productname": "i4ware SaaS - Monthly Subscription",
@@ -358,7 +358,7 @@ curl -X GET http://localhost/i4ware_SDK/saas-app/public/api/netvisor/invoices/78
   "invoice": {
     "invoice_number": "2025-001",
     "customer_name": "Test Company Oy",
-    "total_amount": 122.76,
+    "total_amount": 124.25,
     "invoice_lines": [...]
   }
 }
@@ -408,7 +408,7 @@ Found 1 domains to bill
 Would create invoice for Test Company Oy:
   Customer Code: TEST001
   Reference: TEST0012510254 (viitenumero with check digit)
-  Amount: €122.76 (€99.00 + €23.76 VAT)
+  Amount: €124.25 (€99.00 + €25.25 VAT)
 
 ✅ Successfully processed: 1
 🔍 This was a dry run. Use without --dry-run to send invoices.
@@ -417,7 +417,7 @@ Would create invoice for Test Company Oy:
 **✅ PASS if:**
 - Finds active domains with customer_code
 - Generates Finnish reference number correctly
-- Calculates pricing: €99 + 24% VAT = €122.76
+- Calculates pricing: €99 + 25.5% VAT = €124.25
 - Shows progress bar
 - NO actual invoices sent
 
@@ -502,7 +502,7 @@ Found 1 domains to bill
 1. Check Netvisor portal for new invoice
 2. Check invoice details match:
    - Customer: TEST001
-   - Amount: €122.76
+   - Amount: €124.25
    - Reference number: Correct viitenumero
    - Date: Today's date
 
@@ -802,7 +802,7 @@ php artisan netvisor:send-monthly-invoices
 1. ✅ 2 invoices created in Netvisor (CUST001, CUST002)
 2. ✅ CUST003 skipped (inactive)
 3. ✅ Both invoices have correct:
-   - Amount: €122.76
+   - Amount: €124.25
    - Reference numbers (different for each)
    - Customer details
    - Date: today

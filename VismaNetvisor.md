@@ -613,7 +613,7 @@ protected function createInvoice(Domain $domain)
 
     // Calculate monthly subscription amount
     $monthlyFee = 99.00; // €99/month
-    $vatRate = 0.24; // 24% VAT (Finland)
+    $vatRate = 0.255; // 25.5% VAT (Finland, effective September 2024)
     $vatAmount = round($monthlyFee * $vatRate, 2);
     $totalAmount = $monthlyFee + $vatAmount;
 
@@ -687,7 +687,7 @@ $bar->finish();
 - Dry-run mode for testing
 - Single domain targeting for debugging
 - Progress bar with success/failure tracking
-- Automatic VAT calculation (24% Finland)
+- Automatic VAT calculation (25.5% Finland)
 - Configurable payment terms per domain
 - Transaction logging
 
@@ -1434,9 +1434,9 @@ Date: 2025-10-14 15:30:45
 Found 25 domain(s) to process
  25/25 [============================] 100%
 
-✓ Invoice created for example1.com: €122.76
-✓ Invoice created for example2.com: €122.76
-✓ Invoice created for example3.com: €122.76
+✓ Invoice created for example1.com: €124.25
+✓ Invoice created for example2.com: €124.25
+✓ Invoice created for example3.com: €124.25
 
 === Invoice Generation Complete ===
 Successfully sent: 23
@@ -1480,10 +1480,10 @@ Currently hardcoded in [SendMonthlyInvoices.php:123](saas-app/app/Console/Comman
 
 ```php
 $monthlyFee = 99.00; // €99/month
-$vatRate = 0.24; // 24% VAT (Finland)
+$vatRate = 0.255; // 25.5% VAT (Finland, effective September 2024)
 ```
 
-**Total:** €99.00 + €23.76 VAT = **€122.76**
+**Total:** €99.00 + €25.25 VAT = **€124.25**
 
 ### **Domain Requirements**
 
@@ -1673,8 +1673,8 @@ const createInvoice = async () => {
         due_date: '2025-10-28',
         reference_number: '123452025103',
         amount: 99.00,
-        vat_amount: 23.76,
-        total_amount: 122.76,
+        vat_amount: 25.25,
+        total_amount: 124.25,
         seller: 'John Doe',
         status: 'unsent',
         customer_number: '12345',
@@ -1686,7 +1686,7 @@ const createInvoice = async () => {
           product_code: 'SUB-MONTHLY',
           quantity: 1,
           unit_price: 99.00,
-          vat_percent: 24,
+          vat_percent: 25.5,
           description: 'Monthly subscription for October 2025'
         }
       ]
@@ -1786,8 +1786,8 @@ class ExampleController extends Controller
             'due_date' => date('Y-m-d', strtotime('+14 days')),
             'reference_number' => '123452025103',
             'amount' => 99.00,
-            'vat_amount' => 23.76,
-            'total_amount' => 122.76,
+            'vat_amount' => 25.25,
+            'total_amount' => 124.25,
             'seller' => 'Sales Person',
             'status' => 'unsent',
             'customer_number' => '12345',
@@ -1800,7 +1800,7 @@ class ExampleController extends Controller
                 'product_code' => 'SUB-MONTHLY',
                 'quantity' => 1,
                 'unit_price' => 99.00,
-                'vat_percent' => 24,
+                'vat_percent' => 25.5,
                 'description' => 'Monthly subscription for October 2025'
             ]
         ];
@@ -1859,7 +1859,7 @@ Date: 2025-10-14 15:30:45
 Found 1 domain(s) to process
  1/1 [============================] 100%
 
-✓ Invoice created for example.com: €122.76
+✓ Invoice created for example.com: €124.25
 
 === Invoice Generation Complete ===
 Successfully sent: 1
@@ -1881,9 +1881,9 @@ Date: 2025-10-14 15:30:45
 Found 25 domain(s) to process
  25/25 [============================] 100%
 
-✓ Invoice created for example1.com: €122.76
-✓ Invoice created for example2.com: €122.76
-✓ Invoice created for example3.com: €122.76
+✓ Invoice created for example1.com: €124.25
+✓ Invoice created for example2.com: €124.25
+✓ Invoice created for example3.com: €124.25
 ...
 
 === Invoice Generation Complete ===
@@ -2058,7 +2058,7 @@ login-form/
 - ✅ Options: `--domain=` (specific domain), `--dry-run` (test mode)
 - ✅ Queries active domains: `where('is_active', true)->where('is_synced', true)->whereNotNull('customer_code')`
 - ✅ Finnish reference number generation with modulo-10 check digit
-- ✅ Monthly fee: €99.00 + 24% VAT = €122.76 total
+- ✅ Monthly fee: €99.00 + 25.5% VAT = €124.25 total
 - ✅ Progress bar with success/failure tracking
 - ✅ Updates `last_synced_at` timestamp on success
 - ✅ Comprehensive error logging

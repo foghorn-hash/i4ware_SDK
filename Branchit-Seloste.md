@@ -490,9 +490,9 @@ protected function generateReferenceNumber(Domain $domain)
 **Hinnoittelu:**
 ```php
 $monthlyFee = 99.00;     // €99/kk
-$vatRate = 0.24;         // 24% ALV (Suomi)
-$vatAmount = 23.76;      // €23.76
-$totalAmount = 122.76;   // €122.76 yhteensä
+$vatRate = 0.255;        // 25.5% ALV (Suomi, voimassa syyskuu 2024)
+$vatAmount = 25.25;      // €25.25
+$totalAmount = 124.25;   // €124.25 yhteensä
 ```
 
 ### **Hyödyt:**

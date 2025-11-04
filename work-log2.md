@@ -460,9 +460,9 @@ class SendMonthlyInvoices extends Command
                 // Generate Finnish reference number
                 $referenceNumber = $this->generateReferenceNumber($domain);
 
-                // Calculate invoice amounts (€99/month + 24% VAT)
+                // Calculate invoice amounts (€99/month + 25.5% VAT)
                 $baseAmount = 99.00;
-                $vatRate = 0.24;
+                $vatRate = 0.255;
                 $vatAmount = $baseAmount * $vatRate;
                 $totalAmount = $baseAmount + $vatAmount;
 
@@ -592,8 +592,8 @@ php artisan netvisor:send-monthly-invoices
 
 **Pricing:**
 - Base: €99.00/month
-- VAT (24%): €23.76
-- Total: €122.76
+- VAT (25.5%): €25.25
+- Total: €124.25
 
 **Location:** `saas-app/app/Console/Commands/SendMonthlyInvoices.php:1-228`
 

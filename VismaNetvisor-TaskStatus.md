@@ -224,8 +224,8 @@
        - Format: [customer_code][YYYYMM][check_digit]
      - Pricing (hardcoded):
        - Base: €99.00/month
-       - VAT: 24% = €23.76
-       - Total: €122.76
+       - VAT: 25.5% = €25.25
+       - Total: €124.25
      - Error handling per domain
      - Summary report (success/fail counts)
    - Usage:

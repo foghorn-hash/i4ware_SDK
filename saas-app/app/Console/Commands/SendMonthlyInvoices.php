@@ -63,8 +63,8 @@ class SendMonthlyInvoices extends Command
 
         // Get domains to invoice
         $query = Domain::where('is_active', true)
-                       ->where('is_synced', true)
-                       ->whereNotNull('customer_code');
+            ->where('is_synced', true)
+            ->whereNotNull('customer_code');
 
         if ($specificDomain) {
             $query->where('domain', $specificDomain);
@@ -93,12 +93,12 @@ class SendMonthlyInvoices extends Command
                     $this->line("[DRY RUN] Would create invoice for: {$domain->domain} ({$domain->customer_code})");
                     $referenceNumber = $this->generateReferenceNumber($domain);
                     $this->line("[DRY RUN] Reference number would be: {$referenceNumber}");
-                    $this->line("[DRY RUN] Amount: €122.76 (€99.00 + €23.76 VAT)");
+                    $this->line("[DRY RUN] Amount: €124.25 (€99.00 + €25.25 VAT)");
                 } else {
                     $this->createInvoice($domain);
                     $successCount++;
                     $this->newLine();
-                    $this->info("✓ Invoice created for {$domain->domain}: €122.76");
+                    $this->info("✓ Invoice created for {$domain->domain}: €124.25");
                 }
             } catch (\Exception $e) {
                 $failureCount++;
@@ -141,7 +141,7 @@ class SendMonthlyInvoices extends Command
 
         // Calculate monthly subscription amount
         $monthlyFee = 99.00; // €99/month
-        $vatRate = 0.24; // 24% VAT (Finland)
+        $vatRate = 0.255; // 25.5% VAT (Finland, effective September 2024)
         $vatAmount = round($monthlyFee * $vatRate, 2);
         $totalAmount = $monthlyFee + $vatAmount;
 
@@ -165,7 +165,7 @@ class SendMonthlyInvoices extends Command
                 'product_code' => 'SUB-MONTHLY',
                 'quantity' => 1,
                 'unit_price' => $monthlyFee,
-                'vat_percent' => 24,
+                'vat_percent' => 25.5,
                 'description' => "Monthly subscription for {$currentDate->format('F Y')}"
             ]
         ];

@@ -402,7 +402,7 @@ Found 1 domain(s) to process
 
 [DRY RUN] Would create invoice for: test-company.com (TEST001)
 [DRY RUN] Reference number would be: TEST0012510X
-[DRY RUN] Amount: €122.76 (€99.00 + €23.76 VAT)
+[DRY RUN] Amount: €124.25 (€99.00 + €25.25 VAT)
 
 === Invoice Generation Complete ===
 ```
@@ -411,7 +411,7 @@ Found 1 domain(s) to process
 - Found domains count > 0
 - Dry run message appears
 - Reference number generated correctly
-- Amount calculated: €99 + 24% VAT = €122.76
+- Amount calculated: €99 + 25.5% VAT = €124.25
 
 ### **3. Test Specific Domain:**
 
@@ -430,7 +430,7 @@ Found 1 domain(s) to process
 
 [DRY RUN] Would create invoice for: test-company.com (TEST001)
 [DRY RUN] Reference number would be: TEST0012510X
-[DRY RUN] Amount: €122.76 (€99.00 + €23.76 VAT)
+[DRY RUN] Amount: €124.25 (€99.00 + €25.25 VAT)
 
 === Invoice Generation Complete ===
 ```
@@ -479,7 +479,7 @@ Found 1 domain(s) to process
 
  1/1 [============================] 100%
 
-✓ Invoice created for test-company.com: €122.76
+✓ Invoice created for test-company.com: €124.25
 
 === Invoice Generation Complete ===
 Successfully sent: 1
@@ -494,7 +494,7 @@ tail -f storage/logs/laravel.log
 **Success Log:**
 ```
 [2025-10-17 15:30:00] local.INFO: Invoice created successfully for domain: test-company.com
-{"reference_number":"TEST0012510X","total_amount":122.76}
+{"reference_number":"TEST0012510X","total_amount":124.25}
 ```
 
 **Verify in Database:**
@@ -604,7 +604,7 @@ curl -X GET http://localhost:8000/api/netvisor/invoices \
         "InvoiceNumber": "INV-001",
         "InvoiceDate": "2025-10-17",
         "CustomerName": "Test Company",
-        "InvoiceSum": "122.76"
+        "InvoiceSum": "124.25"
       }
     ]
   }
@@ -698,7 +698,7 @@ Replace `12345` with actual Netvisor invoice key.
     "InvoiceNumber": "INV-001",
     "InvoiceDate": "2025-10-17",
     "CustomerName": "Test Company",
-    "InvoiceSum": "122.76",
+    "InvoiceSum": "124.25",
     "InvoiceLines": { ... }
   }
 }
@@ -718,8 +718,8 @@ curl -X POST http://localhost:8000/api/netvisor/invoices \
       "delivery_date": "2025-10-17",
       "reference_number": "TEST0012510X",
       "amount": 99.00,
-      "vat_amount": 23.76,
-      "total_amount": 122.76,
+      "vat_amount": 25.25,
+      "total_amount": 124.25,
       "seller": "Sales Person",
       "status": "unsent",
       "customer_number": "TEST001",
@@ -985,7 +985,7 @@ Use this checklist to verify all features work:
 - [ ] Command exists: `php artisan list | grep netvisor`
 - [ ] Dry run works with test domain
 - [ ] Dry run shows correct reference number
-- [ ] Dry run calculates €122.76 total
+- [ ] Dry run calculates €124.25 total
 - [ ] Real invoice creation works (optional)
 - [ ] Failed invoices show error message
 - [ ] Success updates `last_synced_at` in database
@@ -1097,7 +1097,7 @@ After testing, document your results:
 ### Automated Billing
 - [ ] PASS / [ ] FAIL - Dry run works
 - [ ] PASS / [ ] FAIL - Reference number generated correctly
-- [ ] PASS / [ ] FAIL - Amount calculated correctly (€122.76)
+- [ ] PASS / [ ] FAIL - Amount calculated correctly (€124.25)
 - [ ] PASS / [ ] FAIL - Real invoice creation (optional)
 
 ## Issues Found
