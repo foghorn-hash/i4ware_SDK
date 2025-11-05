@@ -36,13 +36,19 @@ class NetvisorAPIService
         $this->transactionId = uniqid();
         date_default_timezone_set('UTC');
         $this->timestamp = now()->format('Y-m-d H:i:s.u');
-        $this->timestamp = substr($this->timestamp, 0, 23); // Reduce the last numbers to 3
+        $this->timestamp = substr($this->timestamp, 0, 23);
 
         $this->client = new Client([
             'timeout'  => 10.0,
         ]);
     }
 
+    /**
+     * Generate MAC hash for Netvisor API authentication
+     *
+     * @param string $url
+     * @return string
+     */
     public function getMAC($url)
     {
         $parameters = array(
@@ -57,177 +63,98 @@ class NetvisorAPIService
             $this->partnerKey,
         );
 
-        // Ensure all parameters are string type
         $parameters = array_map('strval', $parameters);
-
-        // Encode all parameters to ISO-8859-15
-        //$encodedParameters = array_map(function($param) {
-        //$encodedParam = mb_convert_encoding($param, 'ISO-8859-15', 'UTF-8');
-        //return $encodedParam;
-        //}, $parameters);
-
-        // Concatenate the encoded parameters into a single string
         $sha256string = implode('&', $parameters);
-
-        // Calculate the HMAC using SHA-256
         $h_mac = hash("sha256", $sha256string);
 
-        // Log the calculated HMAC for debugging purposes
         Log::info('Calculated HMAC: ' . $h_mac);
 
-        // Return the calculated HMAC
         return $h_mac;
     }
 
-    public function getHeaders($url)
+    /**
+     * Send HTTP request to Netvisor API
+     *
+     * @param string $endpoint
+     * @param string $method
+     * @param array|null $body
+     * @return array
+     */
+    public function sendRequest($endpoint, $method = 'GET', $body = null)
     {
+        $url = $this->baseUrl . $endpoint;
         $mac = $this->getMAC($url);
 
-        return [
-            'Content-Type' => 'text/plain',
+        $headers = [
             'X-Netvisor-Authentication-Sender' => $this->sender,
             'X-Netvisor-Authentication-CustomerId' => $this->customerId,
             'X-Netvisor-Authentication-PartnerId' => $this->partnerId,
             'X-Netvisor-Authentication-Timestamp' => $this->timestamp,
             'X-Netvisor-Authentication-TransactionId' => $this->transactionId,
+            'X-Netvisor-Authentication-MAC' => $mac,
             'X-Netvisor-Interface-Language' => $this->language,
             'X-Netvisor-Organisation-ID' => $this->organisationId,
-            'X-Netvisor-Authentication-MAC' => $mac,
-            'X-Netvisor-Authentication-MACHashCalculationAlgorithm' => 'SHA256',
+            'Content-Type' => 'text/xml; charset=utf-8'
         ];
-    }
 
-    public function saveTransaction()
-    {
-        NetvisorTransaction::create([
-            'timestamp' => $this->timestamp,
-            'language' => $this->language,
-            'transaction_id' => $this->transactionId,
-        ]);
-    }
+        $options = [
+            'headers' => $headers,
+        ];
 
-    public function sendRequest($method, $endpoint, $data = [], $sendAsXml = false)
-    {
-        $url = $this->baseUrl . $endpoint;
+        if ($body) {
+            $options['body'] = $body;
+        }
 
         try {
-            $mac = $this->getMAC($url);
-            $headers = $this->getHeaders($url);
-            $options = ['headers' => $headers];
-
-            if ($sendAsXml) {
-                $xmlBody = ArrayToXml::convert($data, 'root', true, 'UTF-8'); // You can change 'root' to 'customer' if needed
-                $options['body'] = $xmlBody;
-                $options['headers']['Content-Type'] = 'text/xml';
-            } else {
-                $options['json'] = $data;
-            }
-
             $response = $this->client->request($method, $url, $options);
+            $xmlResponse = $response->getBody()->getContents();
 
-            $this->saveTransaction();
+            // Store transaction
+            NetvisorTransaction::create([
+                'timestamp' => $this->timestamp,
+                'language' => $this->language,
+                'transaction_id' => $this->transactionId,
+            ]);
 
-            $body = $response->getBody()->getContents();
-
-            // Parse the XML response
-            $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA);
-            $json = json_encode($xml);
-            $responseArray = json_decode($json, true);
-
-            return $responseArray;
-            // return json_decode($response->getBody(), true);
-        } catch (RequestException $e) {
-            Log::error('Netvisor API request failed', ['message' => $e->getMessage()]);
             return [
-                'error' => true,
-                'message' => $e->getMessage(),
+                'status' => 'success',
+                'data' => simplexml_load_string($xmlResponse),
+                'raw' => $xmlResponse
+            ];
+
+        } catch (RequestException $e) {
+            Log::error('Netvisor API Error: ' . $e->getMessage());
+
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage()
             ];
         }
     }
 
+    /**
+     * Get list of customers from Netvisor
+     *
+     * @return array
+     */
     public function getCustomers()
     {
-        return $this->sendRequest('GET', '/customerlist.nv');
-    }
-
-    public function getProducts()
-    {
-        return $this->sendRequest('GET', '/productlist.nv');
-    }
-
-    public function getSalesInvoices()
-    {
-        return $this->sendRequest('GET', '/salesinvoicelist.nv');
-    }
-
-    public function addCustomer(array $customerBaseInfo, array $finvoiceDetails = [], array $deliveryDetails = [], array $contactDetails = [], array $additionalInfo = [], array $dimensionDetails = [])
-    {
-        return $this->sendRequest('POST', '/customer.nv?method=add', [
-            'customer' => [
-                'customerbaseinformation' => $customerBaseInfo,
-                'customerfinvoicedetails' => $finvoiceDetails,
-                'customerdeliverydetails' => $deliveryDetails,
-                'customercontactdetails' => $contactDetails,
-                'customeradditionalinformation' => $additionalInfo,
-                'customerdimensiondetails' => $dimensionDetails
-            ]
-        ]);
+        return $this->sendRequest('/customerlist.nv', 'GET');
     }
 
     /**
-     * Get customer details by Netvisor ID
+     * Get single sales invoice by Netvisor key
      *
-     * @param int $netvisorId
+     * @param string $netvisorKey
      * @return array
      */
-    public function getCustomer($netvisorId)
+    public function getSalesInvoice($netvisorKey)
     {
-        return $this->sendRequest('GET', '/getcustomer.nv', [
-            'id' => $netvisorId
-        ]);
+        return $this->sendRequest('/getsalesinvoice.nv?netvisorkey=' . $netvisorKey, 'GET');
     }
 
     /**
-     * Delete customer by Netvisor ID
-     *
-     * @param int $netvisorId
-     * @return array
-     */
-    public function deleteCustomer($netvisorId)
-    {
-        return $this->sendRequest('GET', '/deletecustomer.nv', [
-            'id' => $netvisorId
-        ]);
-    }
-
-    /**
-     * Add customer office details
-     *
-     * @param array $officeData
-     * @return array
-     */
-    public function addCustomerOffice(array $officeData)
-    {
-        return $this->sendRequest('POST', '/office.nv', [
-            'office' => $officeData
-        ]);
-    }
-
-    /**
-     * Add customer contact person
-     *
-     * @param array $contactPersonData
-     * @return array
-     */
-    public function addContactPerson(array $contactPersonData)
-    {
-        return $this->sendRequest('POST', '/contactperson.nv', [
-            'contactperson' => $contactPersonData
-        ]);
-    }
-
-    /**
-     * Create a sales invoice in Netvisor
+     * Create new sales invoice in Netvisor
      *
      * @param array $invoiceData
      * @param array $invoiceLines
@@ -235,184 +162,37 @@ class NetvisorAPIService
      */
     public function createSalesInvoice(array $invoiceData, array $invoiceLines = [])
     {
+        // Build invoice XML structure
         $invoice = [
-            'salesinvoice' => [
-                'salesinvoicedate' => $invoiceData['invoice_date'] ?? date('Y-m-d'),
-                'salesinvoicedeliverydate' => $invoiceData['delivery_date'] ?? date('Y-m-d'),
-                'salesinvoicereferencenumber' => $invoiceData['reference_number'] ?? '',
-                'salesinvoiceamount' => $invoiceData['amount'] ?? 0,
-                'salesinvoicevatamount' => $invoiceData['vat_amount'] ?? 0,
-                'salesinvoicetotalamount' => $invoiceData['total_amount'] ?? 0,
-                'salesinvoiceseller' => $invoiceData['seller'] ?? '',
-                'invoicingstatus' => $invoiceData['status'] ?? 'unsent',
-                'customernumber' => $invoiceData['customer_number'] ?? '',
-                'customername' => $invoiceData['customer_name'] ?? '',
-                'invoicelines' => [
-                    'invoiceline' => $invoiceLines
-                ]
+            'SalesInvoice' => [
+                'SalesInvoiceDate' => $invoiceData['invoice_date'] ?? date('Y-m-d'),
+                'SalesInvoiceDeliveryDate' => $invoiceData['delivery_date'] ?? date('Y-m-d'),
+                'SalesInvoiceDueDate' => $invoiceData['due_date'] ?? date('Y-m-d', strtotime('+14 days')),
+                'SalesInvoiceReferenceNumber' => $invoiceData['reference_number'] ?? '',
+                'SalesInvoiceAmount' => $invoiceData['amount'] ?? 0,
+                'SellerIdentifier' => $invoiceData['seller'] ?? '',
+                'InvoiceStatus' => $invoiceData['status'] ?? 'unsent',
+                'SalesInvoiceCustomerCode' => $invoiceData['customer_number'] ?? '',
+                'InvoiceLines' => []
             ]
         ];
 
-        return $this->sendRequest('POST', '/salesinvoice.nv', $invoice, true);
-    }
+        // Add invoice lines
+        foreach ($invoiceLines as $line) {
+            $invoice['SalesInvoice']['InvoiceLines'][] = [
+                'InvoiceLine' => [
+                    'ProductName' => $line['product_name'] ?? '',
+                    'ProductCode' => $line['product_code'] ?? '',
+                    'Quantity' => $line['quantity'] ?? 1,
+                    'UnitPrice' => $line['unit_price'] ?? 0,
+                    'VatPercent' => $line['vat_percent'] ?? 25.5,
+                    'Description' => $line['description'] ?? ''
+                ]
+            ];
+        }
 
-    /**
-     * Get a specific sales invoice by Netvisor key
-     *
-     * @param string $netvisorKey
-     * @return array
-     */
-    public function getSalesInvoice(string $netvisorKey)
-    {
-        return $this->sendRequest('GET', "/getsalesinvoice.nv?netvisorkey={$netvisorKey}");
-    }
+        $xml = ArrayToXml::convert($invoice, 'Root');
 
-    /**
-     * Get sales order details
-     *
-     * @param string $netvisorKey
-     * @return array
-     */
-    public function getOrder(string $netvisorKey)
-    {
-        return $this->sendRequest('GET', "/getorder.nv?netvisorkey={$netvisorKey}");
+        return $this->sendRequest('/salesinvoice.nv', 'POST', $xml);
     }
-
-    /**
-     * Delete sales invoice
-     *
-     * @param int $netvisorKey
-     * @return array
-     */
-    public function deleteSalesInvoice($netvisorKey)
-    {
-        return $this->sendRequest('GET', '/deletesalesinvoice.nv', [
-            'netvisorkey' => $netvisorKey
-        ]);
-    }
-
-    /**
-     * Update sales invoice status
-     *
-     * @param array $statusData
-     * @return array
-     */
-    public function updateSalesInvoiceStatus(array $statusData)
-    {
-        return $this->sendRequest('POST', '/updatesalesinvoicestatus.nv', [
-            'salesinvoicestatus' => $statusData
-        ]);
-    }
-
-    /**
-     * Get deleted sales invoices
-     *
-     * @return array
-     */
-    public function getDeletedSalesInvoices()
-    {
-        return $this->sendRequest('GET', '/deletedsalesinvoices.nv');
-    }
-
-    /**
-     * Get deleted sales orders
-     *
-     * @return array
-     */
-    public function getDeletedSalesOrders()
-    {
-        return $this->sendRequest('GET', '/deletedsalesorders.nv');
-    }
-
-    /**
-     * Add comment to sales invoice/order
-     *
-     * @param array $commentData
-     * @return array
-     */
-    public function addSalesInvoiceComment(array $commentData)
-    {
-        return $this->sendRequest('POST', '/salesinvoicecomment.nv', [
-            'salesinvoicecomment' => $commentData
-        ]);
-    }
-
-    /**
-     * Get payment term list
-     *
-     * @return array
-     */
-    public function getPaymentTerms()
-    {
-        return $this->sendRequest('GET', '/paymenttermlist.nv');
-    }
-
-    /**
-     * Get sales personnel list
-     *
-     * @return array
-     */
-    public function getSalesPersonnel()
-    {
-        return $this->sendRequest('GET', '/salespersonnellist.nv');
-    }
-
-    /**
-     * Get sales payment list
-     *
-     * @return array
-     */
-    public function getSalesPayments()
-    {
-        return $this->sendRequest('GET', '/salespaymentlist.nv');
-    }
-
-    /**
-     * Add sales payment
-     *
-     * @param array $paymentData
-     * @return array
-     */
-    public function addSalesPayment(array $paymentData)
-    {
-        return $this->sendRequest('POST', '/salespayment.nv', [
-            'salespayment' => $paymentData
-        ]);
-    }
-
-    /**
-     * Delete sales payment
-     *
-     * @param int $netvisorKey
-     * @return array
-     */
-    public function deleteSalesPayment($netvisorKey)
-    {
-        return $this->sendRequest('POST', '/deletesalespayment.nv', [
-            'netvisorkey' => $netvisorKey
-        ]);
-    }
-
-    /**
-     * Get deleted sales payments
-     *
-     * @return array
-     */
-    public function getDeletedSalesPayments()
-    {
-        return $this->sendRequest('GET', '/deletedsalespayments.nv');
-    }
-
-    /**
-     * Match payment to invoice
-     *
-     * @param array $matchData
-     * @return array
-     */
-    public function matchPayment(array $matchData)
-    {
-        return $this->sendRequest('POST', '/matchpayment.nv', [
-            'paymentmatching' => $matchData
-        ]);
-    } // Add more methods as needed for other API endpoints
 }
