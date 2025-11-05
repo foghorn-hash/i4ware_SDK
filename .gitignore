@@ -1,1 +1,7 @@
 .DS_Store
+
+# Documentation - local only, do not push to GitHub
+*.md
+!README.md
+!CONTRIBUTING.md
+!LICENSE.md
