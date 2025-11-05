@@ -413,10 +413,72 @@ class ChatController extends Controller
         ]);
     }
 
+    /**
+     * Detect if text contains programming code (8 languages supported)
+     * Same logic as frontend detectCode() function
+     */
+    private function detectCode($text)
+    {
+        if (empty($text) || trim($text) === '') {
+            return false;
+        }
+
+        // 1. Detect code blocks (``` ```)
+        if (preg_match('/```[\s\S]*?```/i', $text)) {
+            return true;
+        }
+
+        // 2. Programming language patterns (8 languages)
+        $patterns = [
+            // JavaScript: if, for, while, const, let, function, class, console.log, =>, try
+            'javascript' => '/(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\b|\blet\b|\bfunction\b|\bclass\b|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/i',
+
+            // PHP: <?php, $var=, function, echo, public function
+            'php' => '/(<?php|\$\w+\s*=|function\s+\w+\s*\(|echo\s+|public\s+function)/i',
+
+            // TypeScript: interface, type, public:, private:, :string, :number
+            'typescript' => '/(interface\s+\w+|type\s+\w+\s*=|public\s+\w+:|private\s+\w+:|:\s*string|:\s*number)/i',
+
+            // Python: def, class:, import, from...import, print
+            'python' => '/(\bdef\s+\w+\s*\(|\bclass\s+\w+\s*:|\bimport\s+\w+|\bfrom\s+\w+\s+import|\bprint\s*\()/i',
+
+            // Java: public class, public static void, System.out.println, private
+            'java' => '/(public\s+class\s+\w+|public\s+static\s+void|System\.out\.println|private\s+\w+\s+\w+)/i',
+
+            // C#: using System, namespace, public class, Console.WriteLine, private/public typed vars
+            'csharp' => '/(using\s+System|namespace\s+\w+|public\s+class\s+\w+|Console\.WriteLine|private\s+\w+\s+\w+|public\s+\w+\s+\w+)/i',
+
+            // Go: func main, package main, fmt.Println, import "fmt", :=
+            'go' => '/(\bfunc\s+main\s*\(|\bpackage\s+main|fmt\.Println|import\s+"fmt"|\w+\s*:=)/i',
+
+            // Rust: fn main, let mut, println!, impl, use std::
+            'rust' => '/(\bfn\s+main\s*\(|\blet\s+mut\b|println!\s*\(|\bimpl\s+\w+|use\s+std::)/i',
+        ];
+
+        foreach ($patterns as $language => $pattern) {
+            if (preg_match($pattern, $text)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function generateWordFile(Request $request)
     {
         $prompt = $request->input('prompt');
         $aiResponse = $this->openAiService->askChatGPT($prompt);
+
+        // Check if AI response contains code - if yes, don't generate Word file
+        if ($this->detectCode($aiResponse)) {
+            return response()->json([
+                'success' => false,
+                'filename' => null,
+                'message' => $aiResponse,
+                'code_detected' => true,
+                'reason' => 'Word document generation disabled for code snippets'
+            ]);
+        }
 
         // Generate unique filename
         $filename = 'chatgpt_output_' . uniqid() . '.docx';
