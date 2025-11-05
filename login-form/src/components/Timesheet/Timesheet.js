@@ -9,7 +9,7 @@ import { LanguageContext } from "../../LanguageContext";
 /** === API setup === */
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: { "Content-Type": "application/json" } // НЕ ставим Authorization здесь
+  headers: { "Content-Type": "application/json" } 
 });
 
 function getStoredToken() {
@@ -17,14 +17,14 @@ function getStoredToken() {
     const raw = localStorage.getItem(ACCESS_TOKEN_NAME);
     if (!raw) return null;
 
-    // Если это JSON (объект) — попробуем распарсить и взять поле token
+    // Jos on JSON objekti — analysoi ja ottaa kenttä token
     try {
       const parsed = JSON.parse(raw);
       if (!parsed) return null;
-      // возможные имена поля: token, access_token, authToken
+      // mahdolliset kenttien nimet: token, access_token, authToken
       return parsed.token ?? parsed.access_token ?? parsed.authToken ?? null;
     } catch (err) {
-      // не JSON — возможно это уже «чистая» строка токена
+      // ei JSON — mahdollisesti se on «puhdas» token kenttä
       return raw;
     }
   } catch (e) {
