@@ -391,9 +391,6 @@ export default function Timesheet() {
   
       if (clearForm) {
         setMeta({
-          nimi: '',
-          tyontekija: '',
-          ammattinimike: '',
           project: '',
           pvm: '',
           klo_alku: '',
@@ -588,7 +585,7 @@ export default function Timesheet() {
       Number(meta.norm) <= 0;
   
     if (missingRequired) {
-      setStatusMessage(strings.successErrorForm);
+      setStatusMessage(strings.errorSendForm);
       setTimeout(() => setStatusMessage(''), 4000);
       return;
     }
