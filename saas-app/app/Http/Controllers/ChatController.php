@@ -430,8 +430,8 @@ class ChatController extends Controller
 
         // 2. Programming language patterns (8 languages)
         $patterns = [
-            // JavaScript: if, for, while, const, let, function, class, console.log, =>, try
-            'javascript' => '/(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\b|\blet\b|\bfunction\b|\bclass\b|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/i',
+            // JavaScript: if, for, while, const, let, function declaration, class, console.log, =>, try
+            'javascript' => '/(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\b|\blet\b|function\s+\w+\s*\(|\bclass\b|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/i',
 
             // PHP: <?php, $var=, function, echo, public function
             'php' => '/(<?php|\$\w+\s*=|function\s+\w+\s*\(|echo\s+|public\s+function)/i',
