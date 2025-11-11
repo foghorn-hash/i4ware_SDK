@@ -136,10 +136,10 @@ export default function Timesheet() {
   useEffect(() => {
     if (authToken) {
       api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
-      console.log("✅ api Authorization set to JWT (first 20 chars):", authToken?.slice?.(0,20) + "...");
+      // console.log("✅ api Authorization set to JWT (first 20 chars):", authToken?.slice?.(0,20) + "...");
     } else {
       delete api.defaults.headers.common["Authorization"];
-      console.log("ℹ️ api Authorization removed");
+      // console.log("ℹ️ api Authorization removed");
     }
   }, [authToken]);
 
@@ -205,10 +205,10 @@ export default function Timesheet() {
       const token = localStorage.getItem(ACCESS_TOKEN_NAME);
       if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        console.log("✅ Authorization header asetettu");
+        // console.log("✅ Authorization header asetettu");
         setAuthToken(token); // <-- tämä on tärkein, triggeraa initin
       } else {
-        console.warn("⚠️ Ei tokenia localStoragessa — käyttäjä ei ole kirjautunut sisään?");
+        // console.warn("⚠️ Ei tokenia localStoragessa — käyttäjä ei ole kirjautunut sisään?");
       }
     }, []); // vain kerran mountissa
   
@@ -221,7 +221,7 @@ export default function Timesheet() {
   
       (async () => {
         try {
-          console.log("🚀 INIT alkaa, token:", authToken);
+          // console.log("🚀 INIT alkaa, token:", authToken);
           api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
   
           // 1️⃣ Hae viimeisin timesheet
@@ -251,7 +251,7 @@ export default function Timesheet() {
             return;
           }
   
-          console.log("✅ Löytyi timesheet:", timesheet.id);
+          // console.log("✅ Löytyi timesheet:", timesheet.id);
           setTimesheetId(timesheet.id);
   
           // 3️⃣ Päivitä metatiedot
@@ -267,16 +267,16 @@ export default function Timesheet() {
           const rowData = rowsRes.data?.data ?? rowsRes.data ?? [];
           setRows(rowData.map(fromApiRow));
   
-          console.log("✅ INIT valmis — rivit ladattu:", rowData.length);
+          // console.log("✅ INIT valmis — rivit ladattu:", rowData.length);
         } catch (err) {
-          console.error("❌ INIT epäonnistui:", err);
+          // console.error("❌ INIT epäonnistui:", err);
         }
       })();
     }, [authToken]); // käynnistyy heti, kun token oikeasti on asetettu  
 
   useEffect(() => {
     if (!timesheetId) {
-      console.log("⏳ Waiting for timesheetId...");
+      // console.log("⏳ Waiting for timesheetId...");
       return;
     }
   
@@ -285,9 +285,9 @@ export default function Timesheet() {
         const res = await api.get(`/api/timesheet/timesheets/${timesheetId}/rows`);
         const rawRows = Array.isArray(unwrap(res)) ? unwrap(res) : [];
         setRows(rawRows.map(fromApiRow));
-        console.log("✅ Rows loaded:", rawRows.length, "for timesheet", timesheetId);
+        // console.log("✅ Rows loaded:", rawRows.length, "for timesheet", timesheetId);
       } catch (e) {
-        console.error("❌ Failed to fetch rows", e);
+        // console.error("❌ Failed to fetch rows", e);
       }
     })();
   }, [timesheetId]);
@@ -617,7 +617,7 @@ export default function Timesheet() {
             <Form onSubmit={handleSubmit}>
               <Row className="g-3">
 
-                <Col md={6}>
+                <Col md>
                   <Form.Group>
                     <Form.Label className="small text-muted">{strings.timesheetNameLabel}</Form.Label>
                     <Form.Control 
@@ -631,7 +631,7 @@ export default function Timesheet() {
                   </Form.Group>
                 </Col>
 
-                <Col md={6}>
+                <Col md>
                   <Form.Group>
                     <Form.Label className="small text-muted">{strings.employeeLabel}</Form.Label>
                     <Form.Control 
@@ -922,20 +922,7 @@ export default function Timesheet() {
                   </Form.Group>
                 </Col>
 
-                <Col md>
-                  <Form.Group>
-                    <Form.Label className="small text-muted">{strings.toolCompLabel}</Form.Label>
-                    <Form.Control 
-                      type="number" 
-                      value={meta.tyokalukorvaus} 
-                      onChange={e=>setMeta({...meta, tyokalukorvaus:e.target.value})} 
-                      placeholder={strings.toolCompPlaceholder}
-                    />
-                    <NumberValidator value={meta.tyokalukorvaus} min={0.1} max={999.99} message="Liian iso luku" />
-                  </Form.Group>
-                </Col>
-
-              {parseFloat(meta.km) > 0 && (
+                {parseFloat(meta.km) > 0 && (
                 <Col md>
                   <Form.Group>
                     <Form.Label className="small text-muted">{strings.kmNoteLabel}</Form.Label>
@@ -951,6 +938,19 @@ export default function Timesheet() {
                   </Form.Group>
                 </Col>
               )}
+
+                <Col md>
+                  <Form.Group>
+                    <Form.Label className="small text-muted">{strings.toolCompLabel}</Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      value={meta.tyokalukorvaus} 
+                      onChange={e=>setMeta({...meta, tyokalukorvaus:e.target.value})} 
+                      placeholder={strings.toolCompPlaceholder}
+                    />
+                    <NumberValidator value={meta.tyokalukorvaus} min={0.1} max={999.99} message="Liian iso luku" />
+                  </Form.Group>
+                </Col>
 
                 <Col md>
                   <Form.Group>
@@ -991,21 +991,45 @@ export default function Timesheet() {
                   </Form.Group>
                 </Col>
               </Row>
+
               {statusMessage && (
-                <Row className="mb-2">
-                  <Col>
-                    <div className={`save-status ${statusMessage.includes('epäonnistui') ? 'error' : 'success'}`}>
-                      {statusMessage}
-                    </div>
-                  </Col>
-                </Row>
+              <Row className="mb-2">
+                <Col>
+                  <div className={`save-status ${statusMessage.includes('epäonnistui') ? 'error' : 'success'}`}>
+                    {statusMessage}
+                  </div>
+                </Col>
+              </Row>
               )}
+
               <Row className="g-2 mt-3">
-                <Col xs="auto"><Button size="sm" variant="primary" onClick={toggleExtras}>{showExtras? strings.toggleExtrasHide : strings.toggleExtrasShow}</Button></Col>
-                <Col xs="auto"><Button size="sm" variant="secondary" onClick={toggleOvertime}>{showOvertime? strings.toggleOvertimeHide : strings.toggleOvertimeShow}</Button></Col>
+                <Col xs="auto">
+                  <Button 
+                    size="sm" 
+                    variant="primary" 
+                    onClick={toggleExtras}>{showExtras? strings.toggleExtrasHide : strings.toggleExtrasShow}
+                  </Button>
+
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    onClick={toggleOvertime}>{showOvertime? strings.toggleOvertimeHide : strings.toggleOvertimeShow}
+                  </Button>
+                </Col>
+                
                 <Col className="text-end">
-                  <Button size="sm" variant="success" className="me-2" type="submit">{strings.addRowButton}</Button>
-                  <Button size="sm" variant="outline-danger" onClick={clearAll}>{strings.clearAllButton}</Button>
+                  <Button 
+                    size="sm" 
+                    variant="success" 
+                    className="me-2" 
+                    type="submit">{strings.addRowButton}
+                  </Button>
+
+                  <Button 
+                    size="sm" 
+                    variant="outline-danger" 
+                    onClick={clearAll}>{strings.clearAllButton}
+                  </Button>
                 </Col>
               </Row>
             </Form>

@@ -1,82 +1,357 @@
+/* ===================== MUUTTUJAT ===================== */
 :root {
-  --col1: 160px;   /* Hyväk./Hylä. */
+  --col1: 160px;   /* Hyväksytty / Hylätty */
   --col2: 260px;   /* Projekti */
   --col3: 120px;   /* PVM */
   --col4: 90px;    /* Klo */
 }
 
-.table-light th  {
+/* ===================== TAULUKKO ===================== */
+.table-light th {
   background-color: #4e4e4e; /* Bootstrapin .table-light taustaväri */
   color: #ffffff;
 }
+
 .table-lock thead th {
   white-space: nowrap;
-  word-break: normal;       /* override break-all */
+  word-break: normal;
   overflow-wrap: normal;
-  overflow: hidden;         /* prevent spill */
-  text-overflow: ellipsis;  /* show … if too narrow */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  writing-mode: initial;
+  text-orientation: mixed;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #555;
+  color: #fff;
+  font-weight: bold;
 }
 
-.table-lock thead th { writing-mode: initial; text-orientation: mixed; }
-
-/* if any global rule set vertical text, nuke it */
-.table-lock thead th { position: sticky; top: 0; z-index: 5; writing-mode: initial; text-orientation: mixed; background: #555; color: #fff; font-weight: bold; }
-
-.table-lock-wrap { position: relative; overflow-x: auto; }
-
-/* sticky left columns (header + body) */
-.sticky-col,.sticky-col-2,.sticky-col-3,.sticky-col-4 {
-  position: sticky; background:#fff; z-index:30; box-shadow:1px 0 0 rgba(0,0,0,.08);
+.table-lock-wrap {
+  position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1.5rem;
 }
 
-.sticky-col   { left:0; }
-.sticky-col-2 { left:var(--col1); }
-.sticky-col-3 { left:calc(var(--col1) + var(--col2)); }
-.sticky-col-4 { left:calc(var(--col1) + var(--col2) + var(--col3)); }
+/* Sticky-sarakkeet */
+.sticky-col,
+.sticky-col-2,
+.sticky-col-3,
+.sticky-col-4 {
+  position: sticky;
+  background: #fff;
+  z-index: 30;
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.08);
+}
 
-/* fixed widths */
-.w-col1{min-width:var(--col1); width:var(--col1);}
-.w-col2{min-width:var(--col2); width:var(--col2);}
-.w-col3{min-width:var(--col3); width:var(--col3);}
-.w-col4{min-width:var(--col4); width:var(--col4);}
+.sticky-col   { left: 0; }
+.sticky-col-2 { left: var(--col1); }
+.sticky-col-3 { left: calc(var(--col1) + var(--col2)); }
+.sticky-col-4 { left: calc(var(--col1) + var(--col2) + var(--col3)); }
+
+/* Sarakeleveys */
+.w-col1 { min-width: var(--col1); width: var(--col1); }
+.w-col2 { min-width: var(--col2); width: var(--col2); }
+.w-col3 { min-width: var(--col3); width: var(--col3); }
+.w-col4 { min-width: var(--col4); width: var(--col4); }
 
 .right-border {
-  border-right: 2px grey solid !important; /* Bootstrapin .table-border-color */
+  border-right: 2px grey solid !important;
 }
 
 .table {
-  box-shadow:4px 0 0 rgba(0,0,0,.08) !important; /* Bootstrapin .table-border-color */
+  box-shadow: 4px 0 0 rgba(0, 0, 0, 0.08) !important;
   border-radius: 10px !important;
 }
 
+/* Poistorivi */
 .deleteRow {
   width: 40px !important;
-  background: #555 !important; /* Bootstrapin .table-danger taustaväri */
-  color: #721c24 !important;       /* Bootstrapin .table-danger teksti */
+  background: #555 !important;
+  color: #721c24 !important;
 }
 
+/* ===================== PÄÄKONTEKSTI ===================== */
 .tcontainer {
   border-radius: 10px;
-  box-shadow:4px 0 0 rgb(255, 0, 0,.08) !important;
+  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+  padding: 1rem;
 }
 
 .shadow-sm {
   color: black;
 }
 
-.save-status.success {
-  background-color: #4caf50;
-  color: white;
-  margin-top: 6px;
-  padding: 6px 12px;
-  border-radius: 4px;
+/* ===================== KORTTI ===================== */
+.card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
+.card-body {
+  padding: 2rem;
+  background-color: #f8f9fa;
+}
+
+/* ===================== LOMAKE ===================== */
+form {
+  width: 100%;
+}
+
+form .form-label {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+form .form-control {
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.g-3 > * {
+  margin-bottom: 0.5rem;
+}
+
+/* ===================== TILASANOMAT ===================== */
+.save-status.success,
 .save-status.error {
-  background-color: #f44336;
-  color: white;
+  display: inline-block;
+  text-align: center;
+  font-weight: 600;
+  color: #fff;
   margin-top: 6px;
   padding: 6px 12px;
   border-radius: 4px;
 }
 
+.save-status.success { background-color: #4caf50; }
+.save-status.error { background-color: #f44336; }
+
+/* ===================== PAINIKKEET ===================== */
+.row .btn {
+  min-width: 120px;
+}
+
+.text-end {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.text-end .btn {
+  margin-left: 8px;
+}
+
+/* Painikkeiden rivi */
+.row.g-2.mt-3 {
+  align-items: center;
+}
+
+/* Perustyyli kaikille painikkeille */
+.row.g-2.mt-3 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;       /* yhtenäinen leveys */
+  height: 38px;           /* yhtenäinen korkeus */
+  font-size: 0.95rem;     /* sama tekstikoko */
+  font-weight: 500;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+}
+
+/* Hover-efekti pehmeä */
+.row.g-2.mt-3 .btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Vasemman puolen painikkeet */
+.row.g-2.mt-3 > .col-auto:first-child {
+  display: flex;
+  align-items: center;
+  gap: 1.3rem;            /* väli "Lisät" ja "Ylityöt" painikkeiden välillä */
+}
+
+/* Oikean puolen painikkeet */
+.row.g-2.mt-3 > .text-end {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.2rem;
+}
+
+/* Pieni hienosäätö kortin sisällä */
+.card-body .row.g-2.mt-3 {
+  margin-top: 1rem;
+}
+
+/* ===================== MEDIAKYSYMYKSET ===================== */
+
+/* Pienet ja keskitason näytöt */
+@media (max-width: 1000px) {
+
+  .row.g-2.mt-3 > .col-auto:first-child,
+  .row.g-2.mt-3 > .col:first-child,
+  .row.g-2.mt-3 > div:first-child {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.6rem !important;     
+    width: 100% !important;
+    margin-bottom: 0.6rem !important;
+    padding: 0 !important;
+  }
+
+  .row.g-2.mt-3 > .col-auto:first-child .btn,
+  .row.g-2.mt-3 > .col:first-child .btn,
+  .row.g-2.mt-3 > div:first-child .btn {
+    display: block !important;
+    width: 90% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  .row.g-2.mt-3 > .text-end {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 0rem !important;
+    width: 100% !important;
+  }
+
+  .row.g-2.mt-3 > .text-end .btn {
+    width: 44% !important;
+    min-width: 120px !important;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+
+  /* Yksipalstainen lomake */
+  .row.g-3 > [class*="col-"],
+  .row.g-2 > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* Taulukko kompaktimpi */
+  .table {
+    font-size: 0.9rem;
+  }
+
+  /* Sticky-sarakkeet pois päältä pienessä näkymässä */
+  .sticky-col,
+  .sticky-col-2,
+  .sticky-col-3,
+  .sticky-col-4 {
+    position: static !important;
+    box-shadow: none !important;
+  }
+
+  /* Painikkeet keskelle ja rivittäin */
+  .row.g-2.mt-3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  text-align: center;
+}
+
+  .row.g-2.mt-3 > .col,
+  .row.g-2.mt-3 > .col-xs-auto {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .row.g-2.mt-3 > .col-xs-auto:first-child .btn {
+    display: block;
+    width: 90%;
+    margin: 0 auto 0.6rem auto; /* väli alapuolelle */
+  }
+
+  .text-end {
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.4rem;
+  }
+
+  .text-end .btn {
+    width: 48%;
+    min-width: 130px;
+  }
+
+  .row.g-2.mt-3 .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.9rem;
+  }
+
+   /* Järjestetään molemmat painikkeet päällekkäin keskelle */
+   .row.g-2.mt-3 > .col-xs-auto:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem; /* väli painikkeiden väliin */
+    margin-bottom: 0.8rem;
+  }
+
+  .row.g-2.mt-3 > .col-xs-auto:first-child .btn {
+    width: 90%;
+    min-width: 130px;
+  }
+
+  /* Myös oikean reunan painikkeet keskitetään ja yhtenäistetään */
+  .row.g-2.mt-3 .text-end {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 0.6rem;
+  }
+
+  .row.g-2.mt-3 .text-end .btn {
+    width: 45%;
+    min-width: 130px;
+  }
+}
+
+/* Keskikokoiset näytöt (tabletit) */
+@media (min-width: 901px) {
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .row.g-3 > [class*="col-md-6"],
+  .row.g-2 > [class*="col-md-6"] {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .row.g-2.mt-3 > .col-xs-auto:first-child .btn + .btn {
+    margin-left: 0.6rem; /* pieni vaakasuuntainen väli */
+  }
+
+  .text-end {
+    justify-content: flex-end;
+    gap: 0.8rem;
+  }
+
+  .row.g-2.mt-3 .btn {
+    font-size: 0.95rem;
+  }
+}
+
+/* Suuret näytöt */
+@media (min-width: 1201px) {
+  .card-body {
+    padding: 2rem;
+  }
+}
