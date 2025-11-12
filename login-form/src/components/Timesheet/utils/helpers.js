@@ -4,6 +4,7 @@ const calculateTotals = (rows) => {
       ylityoVrk50:0, ylityoVrk100:0, ylityoVko50:0, ylityoVko100:0,
       atv:0, matk:0, ateriakorvaus:0, km:0, tyokalukorvaus:0
     };
+    
     return rows.reduce((acc, r) => ({
       norm: acc.norm + Number(r.norm||0),
       lisatLa: acc.lisatLa + Number(r.lisatLa||0),

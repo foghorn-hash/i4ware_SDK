@@ -8,7 +8,6 @@ use Illuminate\Http\Response;
 
 class TimesheetController extends Controller
 {
-
     public function __construct()
     {
         //$this->apiToken = uniqid(base64_encode(Str::random(40)));
@@ -28,7 +27,6 @@ class TimesheetController extends Controller
         return $data;
     }
 
-    
     // GET /api/timesheets
     public function index(Request $request)
     {

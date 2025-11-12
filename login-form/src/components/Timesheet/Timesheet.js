@@ -13,15 +13,16 @@ import { useTimesheet } from './hooks/useTimesheet';
 import { useAutosaveMeta, useAutosaveRows } from './hooks/useAutosave';
 import { useRowActions } from "./hooks/useRowActions";
 
-
 export default function Timesheet() {
 
-  const CURRENT_USER_ID = 1; // hae oikeasti authista
+  // const CURRENT_USER_ID = 1; // hae oikeasti authista
   const { strings } = useContext(LanguageContext); //käännös
-  const { authToken, userId } = useAuthToken();
+  const userId = 1;
+  const { authToken } = useAuthToken();
+  const [statusMessage, setStatusMessage] = useState('');
 
   const { timesheetId, rows, setRows, meta, setMeta } =
-    useTimesheet(CURRENT_USER_ID, authToken);
+    useTimesheet(userId, authToken);
 
   const [showExtras, setShowExtras] = useState(true);
   const [showOvertime, setShowOvertime] = useState(true);
@@ -62,18 +63,6 @@ export default function Timesheet() {
     })();
   }, [timesheetId]);
   
-
-  
-  
-  
-
-
-
-  const [statusMessage, setStatusMessage] = useState('');
-
-  
-  
-
   const clearAll = async () => {
     try {
   

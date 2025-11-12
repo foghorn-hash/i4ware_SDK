@@ -10,7 +10,8 @@ export const useRowActions = (
     meta, 
     setMeta, 
     setStatusMessage, 
-    strings) => {
+    strings
+) => {
     
     const { queueSaveRow } = useAutosaveRows(rows, timesheetId, userId);
 

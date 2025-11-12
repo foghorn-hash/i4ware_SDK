@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_BASE_URL, ACCESS_TOKEN_NAME } from '../../../constants/apiConstants';
-import jwtDecode from "jwt-decode";
 
 /** === API setup === */
 export const api = axios.create({
@@ -28,12 +27,6 @@ export function useAuthToken() {
     useEffect(() => {
       if (authToken) {
         api.defaults.headers.common.Authorization = `Bearer ${authToken}`;
-        try {
-          const decoded = jwtDecode(authToken);
-          setUserId(decoded.user_id || decoded.id);
-        } catch (e) {
-          setUserId(null);
-        }
       } else {
         delete api.defaults.headers.common.Authorization;
       }
@@ -48,4 +41,4 @@ export function useAuthToken() {
     }, []);
   
     return { authToken, setAuthToken };
-  }
+}

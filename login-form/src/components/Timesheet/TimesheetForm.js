@@ -19,7 +19,7 @@ const NumberValidator = ({ value, min = 0.1, max = 999.99 }) => {
     }
   
     return null;
-  };
+};
 
 export default function Timesheet({
     meta,
@@ -44,7 +44,7 @@ export default function Timesheet({
             <Form.Group>
                 <Form.Label className="small text-muted">{strings.timesheetNameLabel}</Form.Label>
                 <Form.Control 
-                value={meta.nimi} 
+                value={meta.nimi || ""} 
                 onChange={e=>setMeta({...meta, nimi:e.target.value})} 
                 placeholder={strings.timesheetNamePlaceholder}
                 /> 
@@ -58,7 +58,7 @@ export default function Timesheet({
             <Form.Group>
                 <Form.Label className="small text-muted">{strings.employeeLabel}</Form.Label>
                 <Form.Control 
-                value={meta.tyontekija} 
+                value={meta.tyontekija || ""} 
                 onChange={e=>setMeta({...meta, tyontekija:e.target.value})} 
                 placeholder={strings.employeePlaceholder}
                 />
@@ -72,7 +72,7 @@ export default function Timesheet({
             <Form.Group>
                 <Form.Label className="small text-muted">{strings.jobTitleLabel}</Form.Label>
                 <Form.Control 
-                value={meta.ammattinimike} 
+                value={meta.ammattinimike || ""} 
                 onChange={e=>setMeta({...meta, ammattinimike:e.target.value})} 
                 placeholder={strings.jobTitlePlaceholder}
                 />
@@ -88,7 +88,7 @@ export default function Timesheet({
             <Form.Group>
                 <Form.Label className="small text-muted">{strings.projectLabel}</Form.Label>
                 <Form.Control 
-                value={meta.project} 
+                value={meta.project || ""} 
                 onChange={e=>setMeta({...meta, project:e.target.value})} 
                 placeholder={strings.projectPlaceholder}
                 />
@@ -104,7 +104,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="date" 
                 key={`pvm-${meta.pvm}`}
-                value={meta.pvm} 
+                value={meta.pvm || ""} 
                 onChange={e=>setMeta({...meta, pvm:e.target.value})}
                 />
                 {submitted && !meta.pvm && (
@@ -151,7 +151,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number" 
                 step={0.1} 
-                value={meta.norm} 
+                value={meta.norm  || ""} 
                 onChange={e=>setMeta({...meta, norm:e.target.value})} 
                 placeholder={strings.normalHoursPlaceholder}
                 />
@@ -170,7 +170,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.lisatLa} 
+                value={meta.lisatLa || ""} 
                 onChange={e=>setMeta({...meta, lisatLa:e.target.value})} 
                 placeholder={strings.extrasPlaceholder}
                 />
@@ -185,7 +185,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.lisatSu} 
+                value={meta.lisatSu  || ""} 
                 onChange={e=>setMeta({...meta, lisatSu:e.target.value})} 
                 placeholder={strings.extrasPlaceholder}
                 />
@@ -200,7 +200,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.lisatIlta} 
+                value={meta.lisatIlta || ""} 
                 onChange={e=>setMeta({...meta, lisatIlta:e.target.value})} 
                 placeholder={strings.extrasPlaceholder}
                 />
@@ -215,7 +215,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.lisatYo} 
+                value={meta.lisatYo || ""} 
                 onChange={e=>setMeta({...meta, lisatYo:e.target.value})} 
                 placeholder={strings.extrasPlaceholder}
                 />
@@ -234,7 +234,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.ylityoVrk50} 
+                value={meta.ylityoVrk50 || ""} 
                 onChange={e=>setMeta({...meta, ylityoVrk50:e.target.value})} 
                 placeholder={strings.overtimePlaceholder}
                 />
@@ -249,7 +249,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.ylityoVrk100} 
+                value={meta.ylityoVrk100 || ""} 
                 onChange={e=>setMeta({...meta, ylityoVrk100:e.target.value})} 
                 placeholder={strings.overtimePlaceholder}
                 />
@@ -264,7 +264,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.ylityoVko50} 
+                value={meta.ylityoVko50 || ""} 
                 onChange={e=>setMeta({...meta, ylityoVko50:e.target.value})} 
                 placeholder={strings.overtimePlaceholder}
                 />
@@ -279,7 +279,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number"
                 step={0.1} 
-                value={meta.ylityoVko100} 
+                value={meta.ylityoVko100 || ""} 
                 onChange={e=>setMeta({...meta, ylityoVko100:e.target.value})} 
                 placeholder={strings.overtimePlaceholder}
                 />
@@ -296,7 +296,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number" 
                 step={0.1} 
-                value={meta.atv} 
+                value={meta.atv || ""} 
                 onChange={e=>setMeta({...meta, atv:e.target.value})} 
                 placeholder={strings.extrasPlaceholder}
                 />
@@ -310,7 +310,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number" 
                 step={0.1} 
-                value={meta.matk} 
+                value={meta.matk || ""} 
                 onChange={e=>setMeta({...meta, matk:e.target.value})} 
                 placeholder={strings.extrasPlaceholder}
                 />
@@ -323,7 +323,7 @@ export default function Timesheet({
                 <Form.Label className="small text-muted">{strings.mealLabel}</Form.Label>
                 <Form.Control 
                 type="number"
-                value={meta.ateriakorvaus} 
+                value={meta.ateriakorvaus || ""} 
                 onChange={e=>setMeta({...meta, ateriakorvaus:e.target.value})}
                 placeholder={strings.mealLabel}
                 />
@@ -337,7 +337,7 @@ export default function Timesheet({
                 <Form.Control 
                 type="number" 
                 step={0.1} 
-                value={meta.km} 
+                value={meta.km || ""} 
                 onChange={e=>setMeta({...meta, km:e.target.value})}
                 placeholder={strings.kmPlaceholder}
                 />
@@ -351,7 +351,7 @@ export default function Timesheet({
                 <Form.Label className="small text-muted">{strings.kmNoteLabel}</Form.Label>
                 <Form.Control 
                 as="textarea" 
-                value={meta.km_selite} 
+                value={meta.km_selite || ""} 
                 onChange={e=>setMeta({...meta, km_selite:e.target.value})} 
                 placeholder={strings.kmNotePlaceholder}
                 />
@@ -367,7 +367,7 @@ export default function Timesheet({
                 <Form.Label className="small text-muted">{strings.toolCompLabel}</Form.Label>
                 <Form.Control 
                 type="number" 
-                value={meta.tyokalukorvaus} 
+                value={meta.tyokalukorvaus || ""} 
                 onChange={e=>setMeta({...meta, tyokalukorvaus:e.target.value})} 
                 placeholder={strings.toolCompPlaceholder}
                 />
@@ -395,7 +395,7 @@ export default function Timesheet({
                 <Form.Label className="small text-muted">{strings.noteLabel}</Form.Label>
                 <Form.Control 
                 as="textarea" 
-                value={meta.huom} 
+                value={meta.huom || ""} 
                 onChange={e=>setMeta({...meta, huom:e.target.value})} 
                 placeholder={strings.notePlaceholder}
                 />
@@ -407,7 +407,7 @@ export default function Timesheet({
                 <Form.Label className="small text-muted">{strings.memoLabel}</Form.Label>
                 <Form.Control 
                 as="textarea" 
-                value={meta.memo} 
+                value={meta.memo || ""} 
                 onChange={e=>setMeta({...meta, memo:e.target.value})} 
                 placeholder={strings.memoPlaceholder}
                 />
