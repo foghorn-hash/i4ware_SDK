@@ -423,15 +423,20 @@ class ChatController extends Controller
             return false;
         }
 
-        // 1. Detect code blocks (``` ```)
+        // Detect code blocks with language identifiers (```php, ```python, etc.)
+        if (preg_match('/```(php|python|py|java|javascript|js|typescript|ts|csharp|cs|c#|go|rust|rs|ruby|rb|perl|pl|c\+\+|cpp|c|html|css|sql|bash|sh|json|xml|yaml|yml)/i', $text)) {
+            return true;
+        }
+
+        // Detect generic code blocks (``` ```)
         if (preg_match('/```[\s\S]*?```/i', $text)) {
             return true;
         }
 
-        // 2. Programming language patterns (8 languages)
+        // Programming language patterns (8 languages)
         $patterns = [
             // JavaScript: if, for, while, const, let, function declaration, class, console.log, =>, try
-            'javascript' => '/(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\b|\blet\b|function\s+\w+\s*\(|\bclass\b|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/i',
+            'javascript' => '/(\bif\s*\(|\bfor\s*\(|\bwhile\s*\(|\bconst\s+\w+|\blet\s+\w+|class\s+[A-Z]\w*|class\s+\w+\s*[\{]|class\s+\w+\s+extends|function\s+\w+\s*\(|console\.log\s*\(|\=\>\s*\{|\btry\s*\{)/',
 
             // PHP: <?php, $var=, function, echo, public function
             'php' => '/(<?php|\$\w+\s*=|function\s+\w+\s*\(|echo\s+|public\s+function)/i',
