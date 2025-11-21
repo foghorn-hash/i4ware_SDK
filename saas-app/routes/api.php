@@ -71,6 +71,10 @@ Route::group(['prefix' => 'manage', 'middleware' => 'CORS'], function ($router) 
 
 	Route::post('/updateSettings', [SettingsController::class, 'updateSettings'])->name('manage.updateSettings');
 
+	// Monthly billing settings
+	Route::get('/price-per-user', [SettingsController::class, 'getPricePerUser'])->name('manage.getPricePerUser');
+	Route::post('/price-per-user', [SettingsController::class, 'updatePricePerUser'])->name('manage.updatePricePerUser');
+
 });
 
 Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
