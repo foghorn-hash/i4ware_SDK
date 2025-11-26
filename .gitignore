@@ -28,3 +28,5 @@ login-form/.env
 # Keep .env.example files in git but with placeholder values only
 # Real credentials should only be in .env files (which are ignored)
 vismalog1.md
+billing-log.md
+disable-word-log.md
