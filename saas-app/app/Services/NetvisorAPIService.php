@@ -154,6 +154,44 @@ class NetvisorAPIService
     }
 
     /**
+     * Create new customer in Netvisor
+     *
+     * @param array $customerData
+     * @return array
+     */
+    public function createCustomer(array $customerData)
+    {
+        // Build customer XML structure
+        $customer = [
+            'Customer' => [
+                'CustomerBaseInformation' => [
+                    'Name' => $customerData['name'] ?? '',
+                    'Code' => $customerData['code'] ?? '',
+                    'OrganisationIdentifier' => $customerData['business_id'] ?? '',
+                ],
+                'CustomerContactDetails' => [
+                    'Email' => $customerData['email'] ?? '',
+                    'PhoneNumber' => $customerData['phone'] ?? '',
+                ],
+                'CustomerDeliveryDetails' => [
+                    'DeliveryStreetAddress' => $customerData['address'] ?? '',
+                    'DeliveryPostNumber' => $customerData['postcode'] ?? '',
+                    'DeliveryCity' => $customerData['city'] ?? '',
+                    'DeliveryCountry' => $customerData['country'] ?? 'FI',
+                ],
+                'CustomerAdditionalInformation' => [
+                    'CustomerAuxiliaryName' => $customerData['auxiliary_name'] ?? '',
+                    'IsActive' => $customerData['is_active'] ?? 1,
+                ],
+            ]
+        ];
+
+        $xml = ArrayToXml::convert($customer, 'Root');
+
+        return $this->sendRequest('/customer.nv', 'POST', $xml);
+    }
+
+    /**
      * Create new sales invoice in Netvisor
      *
      * @param array $invoiceData
