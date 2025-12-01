@@ -117,7 +117,8 @@ form .form-control {
 
 /* ===================== TILASANOMAT ===================== */
 .save-status.success,
-.save-status.error {
+.save-status.error,
+.status-message.info {
   display: inline-block;
   text-align: center;
   font-weight: 600;
@@ -129,6 +130,7 @@ form .form-control {
 
 .save-status.success { background-color: #4caf50; }
 .save-status.error { background-color: #f44336; }
+.status-message.info { background-color: rgb(0, 119, 255); }
 
 /* ===================== PAINIKKEET ===================== */
 .row .btn {

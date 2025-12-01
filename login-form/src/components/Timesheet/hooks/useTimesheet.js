@@ -2,22 +2,22 @@ import { useEffect, useState } from "react";
 import { api } from "./useAuthToken";
 import { fromApiRow, makeRow } from "../utils/helpers";
 
-export const useTimesheet = (userId, authToken) => {
-    const [timesheetId, setTimesheetId] = useState(null);
-    const [rows, setRows] = useState(() => Array.from({ length: 0 }, (_, i) => makeRow(i + 1)));
+export const useTimesheet = (authToken) => {
+    const [timesheet, setTimesheet] = useState(null);
+    const [rows, setRows] = useState(() => []);
     const [meta, setMeta] = useState({
         nimi: '',
         tyontekija: '',
         ammattinimike: '',
         project: '',
         pvm: '',
-        klo_alku: '', 
-        klo_loppu: '', 
-        norm: '', 
-        lisatLa: '', 
-        lisatSu: '', 
-        lisatIlta: '', 
-        lisatYo: '', 
+        klo_alku: '',
+        klo_loppu: '',
+        norm: '',
+        lisatLa: '',
+        lisatSu: '',
+        lisatIlta: '',
+        lisatYo: '',
         ylityoVrk50: '',
         ylityoVrk100: '',
         ylityoVko50: '',
@@ -33,67 +33,61 @@ export const useTimesheet = (userId, authToken) => {
         memo: ''
     });
 
-    /** === INIT: varmista tuntikortti + lataa rivit === */
     useEffect(() => {
-    if (!authToken) {
-        // console.log("⏳ Odotetaan tokenia ennen init()");
-        return;
-    }
+        if (!authToken) return;
 
-    (async () => {
-        try {
-        // console.log("🚀 INIT alkaa, token:", authToken);
-        api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+        (async () => {
+            try {
+                api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
 
-        // 1️⃣ Hae viimeisin timesheet
-        const res = await api.get('/api/timesheet/timesheets', {
-            params: { user_id: userId, per_page: 1, order_by: 'created_at desc' }
-        });
+                // 1) Hae viimeisin timesheet
+                const res = await api.get('/api/timesheet/timesheets', {
+                    params: { per_page: 1, order_by: 'created_at desc' }
+                });
 
-        const data = res.data?.data ?? res.data;
-        const ts = Array.isArray(data) ? data[0] : data;
+                const data = res.data?.data ?? res.data;
+                let ts = Array.isArray(data) ? data[0] : data;
 
-        let timesheet = ts;
-        if (!timesheet?.id) {
-            // 2️⃣ Jos ei löydy, luodaan uusi
-            const createRes = await api.post('/api/timesheet/timesheets', {
-            user_id: userId,
-            nimi: '',
-            tyontekija: '',
-            ammattinimike: '',
-            status: 'Luotu',
-            domain: '',
-            });
-            timesheet = createRes.data;
-        }
+                // 2) Jos ei löydy, luodaan uusi
+                if (!ts?.id) {
+                    const createRes = await api.post('/api/timesheet/timesheets', {
+                        nimi: '',
+                        tyontekija: '',
+                        ammattinimike: '',
+                        status: 'Luotu',
+                        domain: '',
+                    });
+                    ts = createRes.data;
+                }
 
-        if (!timesheet?.id) {
-            // console.error("❌ Ei saatu timesheet-id:tä API:sta");
-            return;
-        }
+                setTimesheet(ts);
 
-        // console.log("✅ Löytyi timesheet:", timesheet.id);
-        setTimesheetId(timesheet.id);
+                // 3) Päivitä meta
+                setMeta(prev => ({
+                    ...prev,
+                    nimi: ts.nimi ?? '',
+                    tyontekija: ts.tyontekija ?? '',
+                    ammattinimike: ts.ammattinimike ?? ''
+                }));
 
-        // 3️⃣ Päivitä metatiedot
-        setMeta(prev => ({
-            ...prev,
-            nimi: timesheet.nimi ?? prev.nimi,
-            tyontekija: timesheet.tyontekija ?? prev.tyontekija,
-            ammattinimike: timesheet.ammattinimike ?? prev.ammattinimike ?? ''
-        }));
+                // 4) Lataa rivit
+                const rowsRes = await api.get(`/api/timesheet/timesheets/${ts.id}/rows`);
+                const rowData = rowsRes.data?.data ?? rowsRes.data ?? [];
+                setRows(rowData.map(fromApiRow));
 
-        // 4️⃣ Lataa rivit
-        const rowsRes = await api.get(`/api/timesheet/timesheets/${timesheet.id}/rows`);
-        const rowData = rowsRes.data?.data ?? rowsRes.data ?? [];
-        setRows(rowData.map(fromApiRow));
+            } catch (err) {
+                console.error("INIT failed:", err);
+            }
+        })();
+    }, [authToken]);
 
-        // console.log("✅ INIT valmis — rivit ladattu:", rowData.length);
-        } catch (err) {
-        // console.error("❌ INIT epäonnistui:", err);
-        }
-    })();
-    }, [authToken, userId]); // käynnistyy heti, kun token oikeasti on asetettu  
-
-    return { timesheetId, rows, setRows, meta, setMeta };
-}
+    return {
+        timesheet,
+        timesheetId: timesheet?.id ?? null,
+        userId: timesheet?.user_id ?? null,
+        rows,
+        setRows,
+        meta,
+        setMeta
+    };
+};

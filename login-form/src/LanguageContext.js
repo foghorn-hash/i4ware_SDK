@@ -67,6 +67,12 @@ const strings = new LocalizedStrings({
     toolCompLabel: "Tool compensation",
     toolCompPlaceholder: "Enter euros",
 
+    //daily allowance
+    dailyAllowance: "Daily allowance",
+    none: "No",
+    partial: "Partial",
+    full: "Full",
+
     //km
     kmLabel: "Mileage",
     kmPlaceholder: "Enter kilometers",
@@ -102,6 +108,9 @@ const strings = new LocalizedStrings({
 
     successClearForm: "All data cleared",
     errorClearForm: "Failed to clear data",
+    emptyClearForm: "Nothing to clear because the form is empty",
+
+    timeValidationMessage: "Start time can not be later than end time",
 
     //summary
     summaryHeader: "Summary",
@@ -121,32 +130,32 @@ const strings = new LocalizedStrings({
     revenueReport: "Liikevaihtod",
     timesheet: "Tuntikortti",
 
-    /*Timesheetin käännökset*/
+    /*Timesheet's translations - finnish*/
     timesheetNameLabel: "Tuntikortin nimi",
     timesheetNamePlaceholder: "Syötä tuntikortin nimi",
 
-    //työntekijä
+    //emplyee
     employeeLabel: "Työntekijä",
     employeePlaceholder: "Syötä nimesi",
 
-    //ammatti
+    //job
     jobTitleLabel: "Ammattinimike",
     jobTitlePlaceholder: "Syötä ammatti",
 
-    //projekti
+    //project
     projectLabel: "Kustannuspaikka ja/tai projekti",
     projectPlaceholder: "Syötä kustannuspaikka tai projekti",
 
-    //pvm ja aika
+    //date and time
     dateLabel: "PVM ",
     startTimeLabel: "Työajan alku",
     endTimeLabel: "Työajan loppu",
 
-    //tavalliset tunnit
+    //normal hours
     normalHoursLabel: "Norm. tunnit",
     normalHoursPlaceholder: "Syötä tehdyt työtunnit",
     
-    //lisät
+    //extras
     extrasLaLabel: "Lisät la",
     extrasSuLabel: "Lisät su",
     extrasEveningLabel: "Lisät Ilta",
@@ -154,7 +163,7 @@ const strings = new LocalizedStrings({
     extrasPlaceholder: "Syötä tunteina, jos on",
     showExtrasPlaceholder: "Täytä",
 
-    //ylityöt
+    //overtimes
     overtimeVrk50Label: "Ylityö vrk 50%",
     overtimeVrk100Label: "Ylityö vrk 100%",
     overtimeVko50Label: "Ylityö vko 50%",
@@ -162,7 +171,7 @@ const strings = new LocalizedStrings({
     overtimePlaceholder: "Syötä tunteina, jos on",
     showOvertimePlaceholder: "Täytä", 
 
-    //kompensaatiot
+    //compensations
     atvLabel: "ATV (arkipyhättunnit)",
     travelLabel: "Matkatunnit",
     mealLabel: "Ateriakorvaus",
@@ -170,21 +179,27 @@ const strings = new LocalizedStrings({
     toolCompLabel: "Työkalukorvaus",
     toolCompPlaceholder: "Syötä euroina",
 
-    //kilometrit
+    //daily allowance
+    dailyAllowance: "Päiväraha",
+    none: "Ei",
+    partial: "Osa",
+    full: "Koko",
+
+    //kilometers
     kmLabel: "Kilometrikorvaus",
     kmPlaceholder: "Syötä kilometrit",
     kmNoteLabel: "Kilometrikorvaus selite",
     kmNotePlaceholder: "Matkan tarkoitus (esim. työpalaveri)",
     kmDescInfo: "Täytä",
 
-    //huomiot ja memo
+    //notes and memo
     noteLabel: "Huomioita",
     notePlaceholder: "Lyhyt huomio, esim. myöhästyminen tai erityisolosuhde",
 
     memoLabel: "MEMO",
     memoPlaceholder: "Kirjoita tarkempi selite tai muistiinpano tähän",
 
-    //napit
+    //buttons
     toggleExtrasShow: "Lisät näkyviin",
     toggleExtrasHide: "Lisät piiloon",
 
@@ -194,7 +209,7 @@ const strings = new LocalizedStrings({
     addRowButton: "➕ Lisää rivi",
     clearAllButton: "🗑 Tyhjennä kaikki",
 
-    //tarkistukset ja viestit
+    //validations and messages
     messageTooBig: "Liian iso luku",
     messageTooSmall: "Ei ole kelvollinen luku",
 
@@ -205,8 +220,11 @@ const strings = new LocalizedStrings({
 
     successClearForm: "Kaikki tiedot tyhjennetty",
     errorClearForm: "Tyhjennys epäonnistui",
+    emptyClearForm: "Nollaa ei voi, koska lomake on tyhjä",
 
-    //yhteenveto
+    timeValidationMessage: "Alku aika ei voi olla myöhempi kuin loppu aika",
+
+    //summary
     summaryHeader: "Yhteenveto",
   },
   sv: {
@@ -224,19 +242,19 @@ const strings = new LocalizedStrings({
     revenueReport: "Intäkter",
     timesheet: "Tidrapport",
 
-    /*Översättningar för tidrapporten*/
+    /*Timesheet's translations - swedish*/
     timesheetNameLabel: "Tidkortets namn",
     timesheetNamePlaceholder: "Ange tidkortets namn",
 
-    //anställd
+    //employee
     employeeLabel: "Anställd",
     employeePlaceholder: "Ange ditt namn",
 
-    //yrke
+    //job
     jobTitleLabel: "Jobbtitel",
     jobTitlePlaceholder: "Ange jobbtitel",
 
-    //projekt
+    //project
     projectLabel: "Kostnadsställe / Projekt",
     projectPlaceholder: "Ange kostnadsställe eller projekt",
     dateLabel: "Datum",
@@ -245,7 +263,7 @@ const strings = new LocalizedStrings({
     normalHoursLabel: "Normaltimmar",
     normalHoursPlaceholder: "Ange arbetade timmar",
 
-    //tillägg
+    //extras
     extrasLaLabel: "Tillägg lör",
     extrasSuLabel: "Tillägg sön",
     extrasEveningLabel: "Tillägg kväll",
@@ -253,7 +271,7 @@ const strings = new LocalizedStrings({
     extrasPlaceholder: "Ange timmar om det finns",
     showExtrasPlaceholder: "Fylla i",
 
-    //övertid
+    //overtimes
     overtimeVrk50Label: "Övertid dag 50%",
     overtimeVrk100Label: "Övertid dag 100%",
     overtimeVko50Label: "Övertid vecka 50%",
@@ -261,7 +279,7 @@ const strings = new LocalizedStrings({
     overtimePlaceholder: "Ange timmar om det finns",
     showOvertimePlaceholder: "Fylla i",  
 
-    //kompensationer
+    //compensations
     atvLabel: "ATV (helgtimmar)",
     travelLabel: "Resetimmar",
     mealLabel: "Måltidsersättning",
@@ -269,21 +287,27 @@ const strings = new LocalizedStrings({
     toolCompLabel: "Verktygsersättning",
     toolCompPlaceholder: "Ange i euro",
 
-    //kilometer
+    //daily allowance
+    dailyAllowance: "Dagtraktamente",
+    none: "Ingen",
+    partial: "Del",
+    full: "Hel",
+
+    //kilometers
     kmLabel: "Kilometersättning",
     kmPlaceholder: "Ange kilometer",
     kmNoteLabel: "Kilometersättning anteckning",
     kmNotePlaceholder: "Syfte med resan (t.ex. möte)",
     kmDescInfo: "Fylla i",
 
-    //anteckningar och memo
+    //notes and memo
     noteLabel: "Noteringar",
     notePlaceholder: "Kort notering, t.ex. försening eller särskilda omständigheter",
 
     memoLabel: "MEMO",
     memoPlaceholder: "Skriv detaljerad beskrivning eller anteckning här",
 
-    //knappar
+    //buttons
     toggleExtrasShow: "Visa tillägg",
     toggleExtrasHide: "Dölj tillägg",
 
@@ -293,19 +317,22 @@ const strings = new LocalizedStrings({
     addRowButton: "➕ Lägg till rad",
     clearAllButton: "🗑 Rensa allt",
 
-    //kontroller och meddelanden
-    messageTooBig: "Liian iso luku",
-    messageTooSmall: "Ei ole kelvollinen luku",
+    //validations and messages
+    messageTooBig: "För stort tal",
+    messageTooSmall: "Ogiltigt tal",
 
     requiredField: "Detta fält är obligatoriskt",
 
     successSendForm: "Raden har lagts till",
     errorSendForm: "Det gick inte att lägga till raden",
 
-    successClearForm: "All data har rensats",
+    successClearForm: "Alla data har rensats",
     errorClearForm: "Rensning misslyckades",
+    emptyClearForm: "Inget att rensa eftersom formuläret är tomt",
 
-    //sammanfattning
+    timeValidationMessage: "Starttiden kan inte vara senare än sluttiden",
+
+    //summary
     summaryHeader: "Sammanfattning",
   },
 });

@@ -14,37 +14,48 @@ import { useAutosaveMeta, useAutosaveRows } from './hooks/useAutosave';
 import { useRowActions } from "./hooks/useRowActions";
 
 export default function Timesheet() {
-
   // const CURRENT_USER_ID = 1; // hae oikeasti authista
+  // const userId = 1; //tilapäinen
+
   const { strings } = useContext(LanguageContext); //käännös
-  const userId = 1;
   const { authToken } = useAuthToken();
-  const [statusMessage, setStatusMessage] = useState('');
-
-  const { timesheetId, rows, setRows, meta, setMeta } =
-    useTimesheet(userId, authToken);
-
-  const [showExtras, setShowExtras] = useState(true);
-  const [showOvertime, setShowOvertime] = useState(true);
-  const [showExtrasMessage, setShowExtrasMessage] = useState(false);
-  const [showOvertimeMessage, setShowOvertimeMessage] = useState(false);
-
-  const { setR, removeRow, addRow, unwrap, createAndSaveRow } = useRowActions(
+  
+  const {
+    timesheet,
     timesheetId,
+    userId,
     rows,
     setRows,
-    userId,
     meta,
-    setMeta,
-    setStatusMessage,
-    strings
+    setMeta
+  } = useTimesheet(authToken);
+
+  const { 
+    unwrap,
+    submitted,
+    handleSubmit,
+    clearAll,
+    toggleExtras,
+    toggleOvertime,
+    showExtras,
+    showOvertime,
+    showExtrasMessage,
+    showOvertimeMessage,
+    statusMessage,
+    statusType,
+    handleMetaChange
+  } 
+  = useRowActions( 
+    timesheetId, 
+    timesheet,
+    rows, 
+    setRows, 
+    userId,
+    meta, 
+    setMeta, 
+    strings,
   );
-
-  const saveTimers = useRef({}); // debounce per rowId
-  const metaTimer = useRef(null);
   
-  useAutosaveMeta(meta, timesheetId);
-
   useEffect(() => {
     if (!timesheetId) {
       // console.log("⏳ Waiting for timesheetId...");
@@ -62,86 +73,6 @@ export default function Timesheet() {
       }
     })();
   }, [timesheetId]);
-  
-  const clearAll = async () => {
-    try {
-  
-      // tyhjennä lomakkeen meta-tiedot
-      setMeta(prev => ({
-        ...prev,
-        project: '',
-        pvm: undefined,
-        klo_alku: null,
-        klo_loppu: null,
-        norm: '',
-        lisatLa: '',
-        lisatSu: '',
-        lisatIlta: '',
-        lisatYo: '',
-        ylityoVrk50: '',
-        ylityoVrk100: '',
-        ylityoVko50: '',
-        ylityoVko100: '',
-        atv: '',
-        matk: '',
-        paivaraha: '',
-        ateriakorvaus: '',
-        km: '',
-        tyokalukorvaus: '',
-        km_selite: '',
-        huom: '',
-        memo: ''
-      }));
-  
-      setStatusMessage(strings.successClearForm);
-      setTimeout(() => setStatusMessage(''), 3000);
-    } catch (e) {
-      console.error("Clear failed", e);
-      setStatusMessage(strings.errorClearForm);
-      setTimeout(() => setStatusMessage(''), 3000);
-    }
-  };
-
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
-  
-    const missingRequired =
-      !meta.nimi ||
-      !meta.tyontekija ||
-      !meta.ammattinimike ||
-      !meta.project ||
-      !meta.pvm ||
-      !meta.klo_alku ||
-      !meta.klo_loppu ||
-      meta.norm === "" ||
-      Number(meta.norm) <= 0;
-  
-    if (missingRequired) {
-      setStatusMessage(strings.errorSendForm);
-      setTimeout(() => setStatusMessage(''), 4000);
-      return;
-    }
-  
-    // jos kaikki kunnossa – luodaan rivi
-    createAndSaveRow(meta, true); // true = tyhjentää lomakkeen lähetyksen jälkeen
-    setSubmitted(false);
-  };
-
-  const toggleExtras = () => {
-    setShowExtras(s => !s);
-    setShowExtrasMessage(true);
-    //jos haluaa aikarajan -> setShowExtrasMessage(false), 4000);
-    setTimeout(() => setShowExtrasMessage(true)); 
-  };
-
-  const toggleOvertime = () => {
-    setShowOvertime(s => !s);
-    setShowOvertimeMessage(true);
-    setTimeout(() => setShowOvertimeMessage(true));
-  };
 
   const totals = useMemo(() => calculateTotals(rows), [rows]);
 
@@ -165,11 +96,11 @@ export default function Timesheet() {
               showOvertimeMessage={showOvertimeMessage}
               strings={strings}
               statusMessage={statusMessage}
+              statusType={statusType}
+              handleMetaChange={handleMetaChange} 
             />
           </Card.Body>
-        </Card>
-        
-        <SummaryPanel strings={strings} totals={totals} />
+        </Card><SummaryPanel strings={strings} totals={totals} />
       </Container>
     </Container>
   );

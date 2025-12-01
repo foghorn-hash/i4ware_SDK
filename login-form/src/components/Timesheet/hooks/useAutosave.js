@@ -3,7 +3,7 @@ import { api } from "./useAuthToken";
 import { toApiRow } from "../utils/helpers";
 
 /** === meta-autosave (debounce) === */
-export const useAutosaveMeta = (meta, timesheetId) => {
+export const useAutosaveMeta = (meta, setMeta, timesheetId) => {
 const metaTimer = useRef(null);
 
     useEffect(() => {
@@ -26,7 +26,7 @@ const metaTimer = useRef(null);
         return () => {
             if (metaTimer.current) clearTimeout(metaTimer.current);
         };
-    }, [meta, timesheetId]);
+    }, [meta, setMeta, timesheetId]);
 }
     
 /** === AUTOSAVE ROWS === */
