@@ -116,6 +116,7 @@ Route::group(['prefix' => 'chat', 'middleware' => 'CORS'], function ($router) {
 Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router) {
 	// Customers
 	Route::get('/customers', [NetvisorController::class, 'getCustomers']);
+	Route::post('/customers', [NetvisorController::class, 'addCustomer']);
 
 	// Invoices
 	Route::get('/invoices/{netvisorKey}', [NetvisorController::class, 'getInvoice']);

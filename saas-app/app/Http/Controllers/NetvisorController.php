@@ -36,6 +36,37 @@ class NetvisorController extends Controller
     }
 
     /**
+     * Add a new customer to Netvisor
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function addCustomer(Request $request)
+    {
+        try {
+            $customerData = [
+                'name' => $request->input('name'),
+                'code' => $request->input('code'),
+                'business_id' => $request->input('business_id'),
+                'email' => $request->input('email'),
+                'phone' => $request->input('phone'),
+                'address' => $request->input('address'),
+                'postcode' => $request->input('postcode'),
+                'city' => $request->input('city'),
+                'country' => $request->input('country', 'FI'),
+                'auxiliary_name' => $request->input('auxiliary_name', ''),
+                'is_active' => $request->input('is_active', 1),
+            ];
+
+            $response = $this->netvisorAPI->createCustomer($customerData);
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error adding customer: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to add customer'], 500);
+        }
+    }
+
+    /**
      * Create a new sales invoice in Netvisor
      *
      * @param Request $request
