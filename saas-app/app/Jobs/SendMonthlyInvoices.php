@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Services\NetvisorAPIService;
 use App\Models\User;
+use App\Models\Domain;
 use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -135,34 +136,68 @@ class SendMonthlyInvoices implements ShouldQueue
     private function sendInvoiceToNetvisor($domain, $userCount, $pricePerUser, $totalAmount)
     {
         try {
+            // Get domain data from database
+            $domainData = Domain::where('domain', $domain)->first();
+
+            if (!$domainData) {
+                Log::error("Domain not found in database: {$domain}");
+                return false;
+            }
+
+            // Check if domain has customer_code (required for Netvisor)
+            if (empty($domainData->customer_code)) {
+                Log::error("Domain {$domain} does not have customer_code. Please sync customer to Netvisor first.");
+                return false;
+            }
+
             // Get current date for invoice
             $currentDate = date('Y-m-d');
             $dueDate = date('Y-m-d', strtotime('+14 days')); // 14 days payment term
 
             // Invoice description
-            $description = "Kuukausimaksu - {$userCount} käyttäjää × €" . number_format($pricePerUser, 2, ',', ' ');
+            $productName = "Kuukausimaksu - i4ware SaaS";
+            $description = "{$userCount} käyttäjää × €" . number_format($pricePerUser, 2, ',', ' ');
 
-            // Prepare invoice data for Netvisor
+            // Calculate amount without VAT
+            $amountWithoutVat = $totalAmount;
+            $vatAmount = $amountWithoutVat * 0.255;
+            $totalWithVat = $amountWithoutVat + $vatAmount;
+
+            // Prepare invoice data for Netvisor API
             $invoiceData = [
-                'customer_domain' => $domain,
                 'invoice_date' => $currentDate,
+                'delivery_date' => $currentDate,
                 'due_date' => $dueDate,
-                'description' => $description,
-                'quantity' => $userCount,
-                'unit_price' => $pricePerUser,
-                'total_amount' => $totalAmount,
-                'vat_percent' => 25.5, // Finnish VAT rate
+                'customer_number' => $domainData->customer_code,
+                'amount' => round($totalWithVat, 2),
+                'reference_number' => '', // Netvisor generates this
+                'status' => 'unsent',
             ];
 
-            // TODO: Implement actual Netvisor API call when createSalesInvoice() is available
-            // $response = $this->netvisorAPI->createSalesInvoice($invoiceData);
+            // Prepare invoice lines
+            $invoiceLines = [
+                [
+                    'product_name' => $productName,
+                    'product_code' => 'SAAS-MONTHLY',
+                    'quantity' => $userCount,
+                    'unit_price' => round($pricePerUser, 2),
+                    'vat_percent' => 25.5,
+                    'description' => $description,
+                ]
+            ];
 
-            // For now, log the invoice data
-            Log::info('Invoice data prepared for Netvisor:', $invoiceData);
+            Log::info("Sending invoice to Netvisor for domain: {$domain}, Customer code: {$domainData->customer_code}");
 
-            // Return true for testing purposes
-            // Change this when actual API integration is complete
-            return true;
+            // Send invoice to Netvisor
+            $response = $this->netvisorAPI->createSalesInvoice($invoiceData, $invoiceLines);
+
+            if ($response && isset($response['status']) && $response['status'] === 'ok') {
+                Log::info("Invoice created successfully for domain: {$domain}");
+                return true;
+            } else {
+                Log::error("Failed to create invoice for domain: {$domain}", ['response' => $response]);
+                return false;
+            }
 
         } catch (\Exception $e) {
             Log::error("Error creating invoice for domain {$domain}: " . $e->getMessage());
