@@ -20,6 +20,28 @@ class Domain extends Model
     protected $fillable = [
         'domain',
         'token',
+        'customer_code',
+        'business_id',
+        'phone',
+        'email',
+        'e_invoice_address',
+        'e_invoice_operator',
+        'is_active',
+        'customer_group',
+        'price_group',
+        'invoice_language',
+        'payment_term',
+        'default_seller',
+        'delivery_address',
+        'delivery_postcode',
+        'delivery_city',
+        'delivery_country',
+        'contact_person',
+        'contact_person_phone',
+        'contact_person_email',
+        'private_customer',
+        'last_synced_at',
+        'is_synced',
     ];
 
     /**

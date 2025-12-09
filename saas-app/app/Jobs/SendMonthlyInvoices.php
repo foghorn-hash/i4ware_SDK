@@ -191,7 +191,7 @@ class SendMonthlyInvoices implements ShouldQueue
             // Send invoice to Netvisor
             $response = $this->netvisorAPI->createSalesInvoice($invoiceData, $invoiceLines);
 
-            if ($response && isset($response['status']) && $response['status'] === 'ok') {
+            if ($response && isset($response['status']) && $response['status'] === 'success') {
                 Log::info("Invoice created successfully for domain: {$domain}");
                 return true;
             } else {
