@@ -10,7 +10,7 @@ const VerifyNetvisorButton = ({ API_BASE_URL, token }) => {
   const handleVerifyNetvisor = async () => {
     try {
       const response = await Axios.get(
-        `${API_BASE_URL}/api/netvisor/invoices`,
+        `${API_BASE_URL}/api/netvisor/customers`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -19,7 +19,7 @@ const VerifyNetvisorButton = ({ API_BASE_URL, token }) => {
         }
       );
       console.log("Netvisor Response:", response.data);
-      setAlertMessage("Netvisor Connection Succeessful!");
+      setAlertMessage("Netvisor Connection Successful!");
       setAlertVariant("success");
       setShowAlert(true);
     } catch (error) {
