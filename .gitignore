@@ -2,19 +2,10 @@
 
 # Internal documentation (do not push to GitHub)
 CLAUDE.md
-work-log.md
-work-log*.md
-WorkLog*.md
-daily*.md
-fixed.md
-COMM-log.md
-VismaNetvisor.md
-VismaNetvisor-TaskStatus.md
-VismaTest.md
-Branchit-Seloste.md
-TIEDOSTOPOLUT.md
-NETVISOR-TESTING-GUIDE.md
-timesheet-summary.md
+NetvisorCronWorkFlow.md
+NetvisorAPI.md
+NetvisorAPICron.md
+joulukuu-timesheet.md
 
 # IDE/Editor configuration
 .markdownlint.json
@@ -27,10 +18,3 @@ login-form/.env
 
 # Keep .env.example files in git but with placeholder values only
 # Real credentials should only be in .env files (which are ignored)
-vismalog1.md
-billing-log.md
-disable-word-log.md
-timesheet-visma-billing.md
-projekti-timesheet.md
-tamk-timesheet.md
-screenshot-storage-seloste.md
