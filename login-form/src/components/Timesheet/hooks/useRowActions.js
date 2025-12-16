@@ -8,10 +8,10 @@ export const useRowActions = (
     timesheet,
     rows, 
     setRows, 
-    userId,
     meta, 
     setMeta, 
     strings,
+    createTimesheet 
 ) => {
     const [submitted, setSubmitted] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
@@ -21,8 +21,8 @@ export const useRowActions = (
     const [showExtrasMessage, setShowExtrasMessage] = useState(false);
     const [showOvertimeMessage, setShowOvertimeMessage] = useState(false);
     
-    useAutosaveMeta(meta, timesheetId);
-    const { queueSaveRow } = useAutosaveRows(rows, timesheetId, userId);
+    useAutosaveMeta(meta, setMeta, timesheetId);
+    const { queueSaveRow } = useAutosaveRows(rows, timesheetId);
 
     const unwrap = (res) => res?.data?.data ?? res?.data ?? res;
 
@@ -53,18 +53,12 @@ export const useRowActions = (
     };
 
     /** === server-sync helpers === */
-    const createAndSaveRow = async (metaData, clearForm = false) => {
-        
-        if (!timesheetId) {
-            setStatusMessage('Timesheet ei ole vielä valmis');
-        return;
-        }
+    const createAndSaveRow = async (metaData, clearForm = false, realTimesheetId = null) => {
+        const effectiveId = realTimesheetId ?? timesheetId;
     
         try {
         // luo payload serveriä varten
         const payload = {
-            user_id: Number(userId),
-            timesheet_id: Number(timesheetId),
             row_no: (rows?.length || 0) + 1,
             status: 'Luotu',
             project: metaData.project || null,
@@ -92,7 +86,7 @@ export const useRowActions = (
         };
     
         // POST serveriin — backend luo id
-        const created = await api.post(`/api/timesheet/timesheets/${timesheetId}/rows`, payload);
+        const created = await api.post(`/api/timesheet/timesheets/${effectiveId}/rows`, payload);
         const createdPayload = unwrap(created);
         const newRow = fromApiRow(Array.isArray(createdPayload) ? createdPayload[0] : createdPayload);
     
@@ -144,7 +138,7 @@ export const useRowActions = (
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitted(true);
     
@@ -169,9 +163,15 @@ export const useRowActions = (
         }, 4000);
         return;
     }
+
+    let id = timesheetId;
+    if (!id) {
+        id = await createTimesheet();
+        if (!id) return; 
+    }
     
     // jos kaikki kunnossa – luodaan rivi
-        createAndSaveRow(meta, true); // true = tyhjentää lomakkeen lähetyksen jälkeen
+        createAndSaveRow(meta, true, id); // true = tyhjentää lomakkeen lähetyksen jälkeen
         setSubmitted(false);
     };
     
@@ -254,8 +254,15 @@ export const useRowActions = (
         setTimeout(() => setShowOvertimeMessage(false), 4000);
     };
 
-    const addRow = () => createAndSaveRow(meta, false);
-
+    const addRow = async () => {
+        let id = timesheetId;
+        if (!id && createTimesheet) {
+            id = await createTimesheet();   
+            if (!id) return; 
+        }
+        createAndSaveRow(meta, false);
+    };
+    
     const handleMetaChange = (field, value) => {
         const updated = { ...meta, [field]: value };
     

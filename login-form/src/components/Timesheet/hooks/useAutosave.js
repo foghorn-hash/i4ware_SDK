@@ -13,10 +13,12 @@ const metaTimer = useRef(null);
 
         metaTimer.current = setTimeout(async () => {
             try {
+                if (!meta.nimi && !meta.tyontekija && !meta.ammattinimike) return;
+ 
                 await api.put(`/api/timesheet/timesheets/${timesheetId}`, {
-                    nimi: meta.nimi,
-                    tyontekija: meta.tyontekija,
-                    ammattinimike: meta.ammattinimike,
+                    nimi: meta.nimi ?? '',
+                    tyontekija: meta.tyontekija ?? '',
+                    ammattinimike: meta.ammattinimike ?? '',
                 });
             } catch (e) {
                 console.error("Meta save failed", e);
@@ -30,7 +32,7 @@ const metaTimer = useRef(null);
 }
     
 /** === AUTOSAVE ROWS === */
-export const useAutosaveRows = (rows, timesheetId, userId) => {
+export const useAutosaveRows = (rows, timesheetId) => {
 
     const saveTimers = useRef({});
 
@@ -44,7 +46,7 @@ export const useAutosaveRows = (rows, timesheetId, userId) => {
             const r = rows.find(x => x.id === rowId);
             if (!r) return;
         
-            const payload = toApiRow(r, userId, timesheetId);
+            const payload = toApiRow(r, r.row_no);
             await api.put(`/api/timesheet/timesheets/${timesheetId}/rows/${r.id}`, payload);
             } catch (e) {
             console.error("Row save failed", e);

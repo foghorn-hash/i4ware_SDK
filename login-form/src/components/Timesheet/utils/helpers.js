@@ -28,9 +28,9 @@ const calculateTotals = (rows) => {
 };  
 
 /** === helpers: camelCase <-> snake_case === */
-const toApiRow = (r, userId, timesheetId, rowNo) => ({
-    user_id: userId,
-    timesheet_id: timesheetId,
+const toApiRow = (r, rowNo) => ({
+    // user_id: userId,
+    // timesheet_id: timesheetId,
     row_no: rowNo,
     status: r.status,
     project: r.project || null,

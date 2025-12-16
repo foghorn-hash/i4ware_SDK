@@ -33,6 +33,33 @@ export const useTimesheet = (authToken) => {
         memo: ''
     });
 
+    const createTimesheet = async () => {
+        if (timesheet?.id) return timesheet.id; // if id exist - return
+
+        try {
+            const payload = {
+                nimi: meta.nimi,
+                tyontekija: meta.tyontekija,
+                ammattinimike: meta.ammattinimike,
+                status: 'Luotu',
+                domain: meta.domain
+            };            
+
+            const res = await api.post('/api/timesheet/timesheets', payload);
+            const ts = res.data?.data ?? res.data;
+
+            setTimesheet(ts);
+
+            return ts.id;
+        } catch (err) {
+            console.error('Timesheet creation failed:', err);
+            if (err.response?.data?.errors) {
+                console.log('Validation errors:', err.response.data.errors);
+            }
+            return null;
+        }
+    };
+
     useEffect(() => {
         if (!authToken) return;
 
@@ -48,29 +75,25 @@ export const useTimesheet = (authToken) => {
                 const data = res.data?.data ?? res.data;
                 let ts = Array.isArray(data) ? data[0] : data;
 
-                // 2) Jos ei löydy, luodaan uusi
+                // 2) Jos ei löydy, käyttää createTimesheet
                 if (!ts?.id) {
-                    const createRes = await api.post('/api/timesheet/timesheets', {
-                        nimi: '',
-                        tyontekija: '',
-                        ammattinimike: '',
-                        status: 'Luotu',
-                        domain: '',
-                    });
-                    ts = createRes.data;
+                    setTimesheet(null);
+                    return;
                 }
-
+                
                 setTimesheet(ts);
 
                 // 3) Päivitä meta
                 setMeta(prev => ({
-                    ...prev,
-                    nimi: ts.nimi ?? '',
-                    tyontekija: ts.tyontekija ?? '',
-                    ammattinimike: ts.ammattinimike ?? ''
+                    nimi: ts.nimi ?? prev.nimi,
+                    tyontekija: ts.tyontekija ?? prev.tyontekija,
+                    ammattinimike: ts.ammattinimike ?? prev.ammattinimike,
+                    domain: ts.domain || prev.domain
                 }));
 
-                // 4) Lataa rivit
+                // 4) Lataa rivit, jos on id
+                if (!ts.id) return;
+
                 const rowsRes = await api.get(`/api/timesheet/timesheets/${ts.id}/rows`);
                 const rowData = rowsRes.data?.data ?? rowsRes.data ?? [];
                 setRows(rowData.map(fromApiRow));
@@ -84,10 +107,10 @@ export const useTimesheet = (authToken) => {
     return {
         timesheet,
         timesheetId: timesheet?.id ?? null,
-        userId: timesheet?.user_id ?? null,
         rows,
         setRows,
         meta,
-        setMeta
+        setMeta,
+        createTimesheet 
     };
 };

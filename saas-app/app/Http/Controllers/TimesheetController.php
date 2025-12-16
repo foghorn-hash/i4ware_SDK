@@ -50,13 +50,14 @@ class TimesheetController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id'       => ['required','integer'],
             'nimi'          => ['required','string','max:255'],
             'tyontekija'    => ['required','string','max:255'],
-            'ammattinimike' => ['nullable','string','max:255'],
+            'ammattinimike' => ['required','string','max:255'],
             'status'        => ['nullable','in:Luotu,Hyväksytty,Hylätty'],
             'domain'        => ['nullable','string','max:255'],
         ]);
+
+        $data['user_id'] = auth()->id();
 
         $data = $this->sanitize($data);
 
@@ -92,6 +93,7 @@ class TimesheetController extends Controller
         ]);
 
         $data = $this->sanitize($data);
+        unset($data['user_id']); 
 
         $fieldsToCheck = $data;
         unset($fieldsToCheck['timesheet_id'], $fieldsToCheck['row_no']);

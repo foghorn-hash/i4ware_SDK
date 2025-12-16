@@ -14,20 +14,18 @@ import { useAutosaveMeta, useAutosaveRows } from './hooks/useAutosave';
 import { useRowActions } from "./hooks/useRowActions";
 
 export default function Timesheet() {
-  // const CURRENT_USER_ID = 1; // hae oikeasti authista
-  // const userId = 1; //tilapäinen
 
-  const { strings } = useContext(LanguageContext); //käännös
+  const { strings } = useContext(LanguageContext); //translate
   const { authToken } = useAuthToken();
   
   const {
     timesheet,
     timesheetId,
-    userId,
     rows,
     setRows,
     meta,
-    setMeta
+    setMeta,
+    createTimesheet 
   } = useTimesheet(authToken);
 
   const { 
@@ -50,10 +48,10 @@ export default function Timesheet() {
     timesheet,
     rows, 
     setRows, 
-    userId,
     meta, 
     setMeta, 
     strings,
+    createTimesheet 
   );
   
   useEffect(() => {

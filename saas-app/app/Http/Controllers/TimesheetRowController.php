@@ -58,6 +58,7 @@ class TimesheetRowController extends Controller
     {
         $data = $this->validateRow($request, true);
         $data = $this->sanitize($data);
+        $data['user_id'] = $timesheet->user_id;
         $data['timesheet_id'] = $timesheet->id;
 
         $fieldsToCheck = $data;
@@ -83,6 +84,9 @@ class TimesheetRowController extends Controller
     // PUT /api/timesheets/{timesheet}/rows/{row}
     public function update(Request $request, Timesheet $timesheet, TimesheetRow $row)
     {
+        unset($data['user_id']); 
+        $row->update($data);
+        
         $this->assertBelongs($row, $timesheet);
         $data = $this->validateRow($request, false);
         $data = $this->sanitize($data);
@@ -106,8 +110,8 @@ class TimesheetRowController extends Controller
     private function validateRow(Request $request, bool $creating): array
     {
         $rules = [
-            'user_id'        => ['required','integer'],
-            'timesheet_id'   => ['required','integer'],
+            // 'user_id'        => ['required','integer'],
+            // 'timesheet_id'   => ['required','integer'],
             'row_no'         => ['nullable','integer','min:1'],
 
             'status'         => ['nullable','in:Luotu,Hyväksytty,Hylätty'],
