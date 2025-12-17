@@ -1,0 +1,116 @@
+const calculateTotals = (rows) => {
+    if (!Array.isArray(rows) || rows.length === 0) return {
+      norm:0, lisatLa:0, lisatSu:0, lisatIlta:0, lisatYo:0,
+      ylityoVrk50:0, ylityoVrk100:0, ylityoVko50:0, ylityoVko100:0,
+      atv:0, matk:0, ateriakorvaus:0, km:0, tyokalukorvaus:0
+    };
+    
+    return rows.reduce((acc, r) => ({
+      norm: acc.norm + Number(r.norm||0),
+      lisatLa: acc.lisatLa + Number(r.lisatLa||0),
+      lisatSu: acc.lisatSu + Number(r.lisatSu||0),
+      lisatIlta: acc.lisatIlta + Number(r.lisatIlta||0),
+      lisatYo: acc.lisatYo + Number(r.lisatYo||0),
+      ylityoVrk50: acc.ylityoVrk50 + Number(r.ylityoVrk50||0),
+      ylityoVrk100: acc.ylityoVrk100 + Number(r.ylityoVrk100||0),
+      ylityoVko50: acc.ylityoVko50 + Number(r.ylityoVko50||0),
+      ylityoVko100: acc.ylityoVko100 + Number(r.ylityoVko100||0),
+      atv: acc.atv + Number(r.atv||0),
+      matk: acc.matk + Number(r.matk||0),
+      ateriakorvaus: acc.ateriakorvaus + Number(r.ateriakorvaus||0),
+      km: acc.km + Number(r.km||0),
+      tyokalukorvaus: acc.tyokalukorvaus + Number(r.tyokalukorvaus||0),
+    }), {
+      norm:0, lisatLa:0, lisatSu:0, lisatIlta:0, lisatYo:0,
+      ylityoVrk50:0, ylityoVrk100:0, ylityoVko50:0, ylityoVko100:0,
+      atv:0, matk:0, ateriakorvaus:0, km:0, tyokalukorvaus:0
+    });
+};  
+
+/** === helpers: camelCase <-> snake_case === */
+const toApiRow = (r, rowNo) => ({
+    // user_id: userId,
+    // timesheet_id: timesheetId,
+    row_no: rowNo,
+    status: r.status,
+    project: r.project || null,
+    pvm: r.pvm || null,
+    klo_alku: r.klo_alku || null,
+    klo_loppu: r.klo_loppu || null,
+    norm: Number(r.norm || 0),
+    lisat_la: Number(r.lisatLa || 0),
+    lisat_su: Number(r.lisatSu || 0),
+    lisat_ilta: Number(r.lisatIlta || 0),
+    lisat_yo: Number(r.lisatYo || 0),
+    ylityo_vrk_50: Number(r.ylityoVrk50 || 0),
+    ylityo_vrk_100: Number(r.ylityoVrk100 || 0),
+    ylityo_vko_50: Number(r.ylityoVko50 || 0),
+    ylityo_vko_100: Number(r.ylityoVko100 || 0),
+    atv: Number(r.atv || 0),
+    matk: Number(r.matk || 0),
+    paivaraha: r.paivaraha || 'ei',
+    ateriakorvaus: Number(r.ateriakorvaus || 0),
+    km: Number(r.km || 0),
+    tyokalukorvaus: Number(r.tyokalukorvaus || 0),
+    km_selite: r.km_selite || "",
+    huom: r.huom || "",
+    memo: r.memo || "",
+  });
+  
+  const fromApiRow = (r) => ({
+    id: r.id,                  // käytetään serverin id:tä rivin tunnisteena
+    row_no: r.row_no ?? 0,
+    status: r.status,
+    project: r.project ?? "",
+    pvm: r.pvm ?? "",
+    klo_alku: r.klo_alku ?? "00:00",
+    klo_loppu: r.klo_loppu ?? "00:00",
+    norm: Number(r.norm ?? 0),
+    lisatLa: Number(r.lisat_la ?? 0),
+    lisatSu: Number(r.lisat_su ?? 0),
+    lisatIlta: Number(r.lisat_ilta ?? 0),
+    lisatYo: Number(r.lisat_yo ?? 0),
+    ylityoVrk50: Number(r.ylityo_vrk_50 ?? 0),
+    ylityoVrk100: Number(r.ylityo_vrk_100 ?? 0),
+    ylityoVko50: Number(r.ylityo_vko_50 ?? 0),
+    ylityoVko100: Number(r.ylityo_vko_100 ?? 0),
+    atv: Number(r.atv ?? 0),
+    matk: Number(r.matk ?? 0),
+    paivaraha: r.paivaraha ?? "ei",
+    ateriakorvaus: Number(r.ateriakorvaus ?? 0),
+    km: Number(r.km ?? 0),
+    tyokalukorvaus: Number(r.tyokalukorvaus ?? 0),
+    km_selite: r.km_selite ?? "",
+    huom: r.huom ?? "",
+    memo: r.memo ?? "",
+  });
+  
+  /** === tee uusi lokaali rivi kun lisäät + ennen serveriä === */
+  const makeRow = (id) => ({
+    id,
+    status: 'Luotu',
+    project: '',
+    pvm: '',
+    klo_alku: '00:00',
+    klo_loppu: '00:00',
+    norm: 0,
+    lisatLa: 0,
+    lisatSu: 0,
+    lisatIlta: 0,
+    lisatYo: 0,
+    ylityoVrk50: 0,
+    ylityoVrk100: 0,
+    ylityoVko50: 0,
+    ylityoVko100: 0,
+    atv: 0,
+    matk: 0,
+    paivaraha: 'ei',
+    ateriakorvaus: 0,
+    km: 0,
+    tyokalukorvaus: 0,
+    km_selite: '',
+    huom: '',
+    memo: '',
+  });
+
+  export { toApiRow, fromApiRow, makeRow, calculateTotals };

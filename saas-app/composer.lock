@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5e06eb9017f7eaccd2ab38f76db6a1fd",
+    "content-hash": "16d8d9d2a16401c1cfe83f58046243db",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -485,6 +485,7 @@
             "time": "2024-07-08T12:26:09+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "doctrine/dbal",
             "version": "4.0.0",
             "source": {
@@ -641,6 +642,8 @@
             "time": "2025-04-07T20:06:18+00:00"
         },
         {
+=======
+>>>>>>> timesheet-user_id-and-timesheet_id-fix/Oleg781
             "name": "doctrine/inflector",
             "version": "2.1.0",
             "source": {

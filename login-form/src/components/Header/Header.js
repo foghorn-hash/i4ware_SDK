@@ -165,6 +165,8 @@ function Header(props) {
         { text: "stlViewer", link: "/stl-viewer" },
         { text: "videoPhoto", link: "/video-photo" },
         { text: "chat", link: "/pusher-chat" },
+        { text: "timesheet", link: "/timesheet" },
+
         {
           text: "manageUsers",
           link: "/manage-users",
@@ -318,6 +320,15 @@ function Header(props) {
                     to="/pusher-chat"
                   >
                     {strings.chat}
+                  </NavLink>
+                )}
+                {authState.isLogged && (
+                  <NavLink
+                    className="Header-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                    to="/timesheet"
+                  >
+                    {strings.timesheet}
                   </NavLink>
                 )}
                 {authState.isLogged && (
