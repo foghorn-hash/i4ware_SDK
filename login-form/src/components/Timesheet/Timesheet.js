@@ -65,9 +65,9 @@ export default function Timesheet() {
         const res = await api.get(`/api/timesheet/timesheets/${timesheetId}/rows`);
         const rawRows = Array.isArray(unwrap(res)) ? unwrap(res) : [];
         setRows(rawRows.map(fromApiRow));
-        // console.log("✅ Rows loaded:", rawRows.length, "for timesheet", timesheetId);
+        // console.log("Rows loaded:", rawRows.length, "for timesheet", timesheetId);
       } catch (e) {
-        // console.error("❌ Failed to fetch rows", e);
+        // console.error("Failed to fetch rows", e);
       }
     })();
   }, [timesheetId]);

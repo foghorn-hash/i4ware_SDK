@@ -41,7 +41,7 @@ export default function Timesheet({
 
 {
     return (
-        <Form onSubmit={handleSubmit}>
+        <Form className="timesheet-form" onSubmit={handleSubmit}>
             <Row className="g-3">
 
                 <Col md>

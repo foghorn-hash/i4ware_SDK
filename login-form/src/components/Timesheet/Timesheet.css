@@ -97,16 +97,16 @@
 }
 
 /* ===================== LOMAKE ===================== */
-form {
+form.timesheet-form {
   width: 100%;
 }
 
-form .form-label {
+form.timesheet-form .form-label {
   font-size: 0.9rem;
   color: #555;
 }
 
-form .form-control {
+form.timesheet-form .form-control {
   border-radius: 6px;
   font-size: 0.95rem;
 }
