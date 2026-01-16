@@ -57,6 +57,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
         <td align="center"><a href="https://github.com/blackberry2024"><img src="https://avatars.githubusercontent.com/u/163501390?v=4" width="100" height="100" alt=""/><br /><sub><b>Halit Berat</b></sub></a><br /><a href="#" title="Code">💻</a></td>
         <td align="center"><a href="https://github.com/Makuzaza"><img src="https://avatars.githubusercontent.com/u/142216993?v=4" width="100" height="100" alt=""/><br /><sub><b>Maria Kuznetsova</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   </tr>
+  <tr>
+        <td align="center"><a href="https://github.com/jmthdev"><img src="https://avatars.githubusercontent.com/u/176908779?v=4" width="100" height="100" alt=""/><br /><sub><b>Joni Haarala</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+	   <td align="center" colspan="2"><a href="https://github.com/Oleg781"><img src="https://avatars.githubusercontent.com/u/185757895?v=4" width="100" height="100" alt=""/><br /><sub><b>Oleg Fedjuk</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-enable -->
