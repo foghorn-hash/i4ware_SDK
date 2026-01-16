@@ -163,6 +163,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <td align="center"><a href="https://github.com/Makuzaza"><img src="https://avatars.githubusercontent.com/u/142216993?v=4" width="100" height="100" alt=""/><br /><sub><b>Maria Kuznetsova</b></sub></a><br /><a href="#" title="Code">💻</a></td>
 	  <td align="center"><a href="https://github.com/rohitchelat2"><img src="https://avatars.githubusercontent.com/u/157241551?v=4" width="100" height="100" alt=""/><br /><sub><b>Rohit Chelat</b></sub></a><br /><a href="#" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/dohonglong"><img src="https://avatars.githubusercontent.com/u/46486856?v=4" width="100" height="100" alt=""/><br /><sub><b>Long Do</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jmthdev"><img src="https://avatars.githubusercontent.com/u/176908779?v=4" width="100" height="100" alt=""/><br /><sub><b>Joni Haarala</b></sub></a><br /><a href="#" title="Code">💻</a></td>
+	   <td align="center" colspan="3"><a href="https://github.com/Oleg781"><img src="https://avatars.githubusercontent.com/u/185757895?v=4" width="100" height="100" alt=""/><br /><sub><b>Oleg Fedjuk</b></sub></a><br /><a href="#" title="Code">💻</a></td>
   </tr>
 </table>
 
