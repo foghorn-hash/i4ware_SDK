@@ -311,21 +311,49 @@ class PermissionSeeder extends Seeder
                 Settings::updateOrCreate([
                     'setting_key' => "show_captcha",
                     'setting_value' => 1,
+                    'system_var' => 1,
                 ]);
                 
                 Settings::updateOrCreate([
                     'setting_key' => "disable_registeration_from_others",
                     'setting_value' => 1,
+                    'system_var' => 1,
+                ]);
+
+                Settings::updateOrCreate([
+                    'setting_key' => "enable_netvisor",
+                    'setting_value' => 0,
+                    'system_var' => 1,
+                ]);
+
+                Settings::updateOrCreate([
+                    'setting_key' => "disable_license_details",
+                    'setting_value' => 0,
+                    'system_var' => 1,
                 ]);
             } else {
                 Settings::updateOrCreate([
                     'setting_key' => "show_captcha",
                     'setting_value' => 1,
+                    'system_var' => 1,
                 ]);
                 
                 Settings::updateOrCreate([
                     'setting_key' => "disable_registeration_from_others",
                     'setting_value' => 0,
+                    'system_var' => 1,
+                ]);
+
+                Settings::updateOrCreate([
+                    'setting_key' => "enable_netvisor",
+                    'setting_value' => 0,
+                    'system_var' => 1,
+                ]);
+
+                Settings::updateOrCreate([
+                    'setting_key' => "disable_license_details",
+                    'setting_value' => 0,
+                    'system_var' => 1,
                 ]);
             }
 

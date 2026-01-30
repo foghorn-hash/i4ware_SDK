@@ -446,17 +446,6 @@ class AuthController extends Controller
 				"roles.edit",
 				"roles.add",
 				"roles.actions",
-				"invoices.view",
-				"invoices.actions",
-				"invoices.add",
-				"invoices.edit",
-				"invoices.uploadLogo",
-				"invoice.uploadTemplates",
-				"customers.view",
-				"customers.add",
-				"customers.edit",
-				"customers.delete",
-				"customers.actions",
 				"settings.manage",
 			];
 
@@ -482,8 +471,6 @@ class AuthController extends Controller
 						'type' => "trial",
 						'created_at' => date('Y-m-d H:i:s'),
 						'updated_at' => date('Y-m-d H:i:s'),
-						'invoice_template_path' => null,
-						'invoice_start_number' => 1,
 
 					]
 				]);
@@ -611,116 +598,6 @@ class AuthController extends Controller
 							"created_at" => now(),
                             "updated_at" => now(),
 						]);
-					} else if ($permissions[$i] == "invoices.view") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "invoices.actions") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "invoices.add") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "invoices.edit") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "invoices.uploadLogo") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "invoice.uploadTemplates") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "customers.view") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "customers.add") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "customers.edit") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "customers.delete") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
-					} else if ($permissions[$i] == "customers.actions") {
-						RolePermissions::updateOrInsert([
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-						],[
-							"role_id" => $role->id,
-							"permission_id" => $permission->id,
-							"created_at" => now(),
-                            "updated_at" => now(),
-						]);
 					} else if ($permissions[$i] == "settings.manage") {
 						RolePermissions::updateOrInsert([
 							"role_id" => $role->id,
@@ -745,81 +622,6 @@ class AuthController extends Controller
 					"isActive" => true,
 					"domain" => $request->domain,
 				]);
-
-				$role = Role::updateOrCreate([
-					"name" => "book-keeprer",
-					"isActive" => true,
-					"domain" => $request->domain,
-				]);
-
-				// Luo yleisimmät maksuehdot käännöksineen
-				$paymentTerms = [
-					[
-						"days_to_pay" => 0,
-						"translations" => [
-							["locale" => "EN", "name" => "Due on receipt"],
-							["locale" => "FI", "name" => "HETI"],
-							["locale" => "SV", "name" => "Direkt"],
-						]
-					],
-					[
-						"days_to_pay" => 7,
-						"translations" => [
-							["locale" => "EN", "name" => "Net 7"],
-							["locale" => "FI", "name" => "7 pv netto"],
-							["locale" => "SV", "name" => "Netto 7"],
-						]
-					],
-					[
-						"days_to_pay" => 14,
-						"translations" => [
-							["locale" => "EN", "name" => "Net 14"],
-							["locale" => "FI", "name" => "14 pv netto"],
-							["locale" => "SV", "name" => "Netto 14"],
-						]
-					],
-					[
-						"days_to_pay" => 15,
-						"translations" => [
-							["locale" => "EN", "name" => "Net 15"],
-							["locale" => "FI", "name" => "15 pv netto"],
-							["locale" => "SV", "name" => "Netto 15"],
-						]
-					],
-					[
-						"days_to_pay" => 30,
-						"translations" => [
-							["locale" => "EN", "name" => "Net 30"],
-							["locale" => "FI", "name" => "30 pv netto"],
-							["locale" => "SV", "name" => "Netto 30"],
-						]
-					],
-					[
-						"days_to_pay" => 60,
-						"translations" => [
-							["locale" => "EN", "name" => "Net 60"],
-							["locale" => "FI", "name" => "60 pv netto"],
-							["locale" => "SV", "name" => "Netto 60"],
-						]
-					],
-					[
-						"days_to_pay" => 90,
-						"translations" => [
-							["locale" => "EN", "name" => "Net 90"],
-							["locale" => "FI", "name" => "90 pv netto"],
-							["locale" => "SV", "name" => "Netto 90"],
-						]
-					],
-				];
-
-				foreach ($paymentTerms as $term) {
-					$paymentTerm = InvoicePaymentTerm::create([
-						"days_to_pay" => $term["days_to_pay"],
-						"domain" => $request->domain,
-					]);
-					
-					$paymentTerm->translations()->createMany($term["translations"]);
-				}
 
 				DB::commit();
 
