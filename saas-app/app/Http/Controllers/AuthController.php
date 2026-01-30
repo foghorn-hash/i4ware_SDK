@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Http\Controllers\Controller;
+use App\Models\InvoicePaymentTerm;
 use Illuminate\Support\Facades\Hash;
 use Auth;
 use App\Models\User;
@@ -18,27 +19,25 @@ use Validator;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Mail;
 use Illuminate\Support\Facades\View;
 use Storage;
-use App\Services\NetvisorAPIService;
-use Illuminate\Support\Facades\Log;
+use App\Models\Settings;
 
 class AuthController extends Controller
 {
 
 	//private $apiToken;
 	protected $user;
-	protected $netvisorAPI;
 
-	public function __construct(NetvisorAPIService $netvisorAPI)
+	public function __construct()
 	{
 		//$this->apiToken = uniqid(base64_encode(Str::random(40)));
 		$this->middleware("auth:api", ["except" => ["showResetPasswordForm", "submitForgetPasswordForm", "login", "register", "logout", "verifyAccount", "checkIfEmailVerified", "me", "submitResetPasswordForm"]]);
 		$this->user = new User;
-		$this->netvisorAPI = $netvisorAPI;
 	}
 
 	/**
@@ -58,6 +57,38 @@ class AuthController extends Controller
 	 */
 	public function submitForgetPasswordForm(Request $request)
 	{
+
+		$show_captcha = DB::table('settings')->select('setting_value')->where('setting_key', '=', 'show_captcha')->where('domain', '=', env('APP_DOMAIN_ADMIN'))->first();
+
+		//echo $show_captcha->setting_value;
+
+		if ($show_captcha->setting_value == '1') {
+
+			if (!$request->has('recaptcha')) {
+				return response()->json([
+					'success' => false,
+					'error' => 'Captcha verification failed (missing response)'
+				], 200);
+			}
+
+			$response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+				'secret'   => env('APP_RECAPTCHA_SECRET_KEY'),
+				'response' => $request->input('recaptcha'),
+				'remoteip' => $request->ip(),
+			]);
+
+			$result = $response->json();
+
+			if (!$result['success']) {
+				return response()->json([
+					'success' => false,
+					'error' => 'Captcha verification failed'
+				], 200);
+				abort(422, 'Captcha verification failed');
+			}
+
+		}
+
 		$request->validate([
 			'email' => 'required|email|exists:users',
 		]);
@@ -74,7 +105,11 @@ class AuthController extends Controller
 			$message->to($request->email);
 			$message->subject('Reset Password');
 		});
-		return back()->with('message', 'We have e-mailed your password reset link!');
+
+		return response()->json([
+			'success' => true,
+			'data' => 'We have e-mailed your password reset link!'
+		], 200);
 	}
 
 	/**
@@ -84,6 +119,37 @@ class AuthController extends Controller
 	 */
 	public function submitResetPasswordForm(Request $request)
 	{
+
+		$show_captcha = DB::table('settings')->select('setting_value')->where('setting_key', '=', 'show_captcha')->where('domain', '=', env('APP_DOMAIN_ADMIN'))->first();
+
+		//echo $show_captcha->setting_value;
+
+		if ($show_captcha->setting_value == '1') {
+
+			if (!$request->has('recaptcha')) {
+				return response()->json([
+					'success' => false,
+					'error' => 'Captcha verification failed (missing response)'
+				], 200);
+			}
+
+			$response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+				'secret'   => env('APP_RECAPTCHA_SECRET_KEY'),
+				'response' => $request->input('recaptcha'),
+				'remoteip' => $request->ip(),
+			]);
+
+			$result = $response->json();
+
+			if (!$result['success']) {
+				return response()->json([
+					'success' => false,
+					'error' => 'Captcha verification failed'
+				], 200);
+				abort(422, 'Captcha verification failed');
+			}
+
+		}
 
 		$updatePassword = DB::table('password_resets')
 			->where([
@@ -97,6 +163,7 @@ class AuthController extends Controller
 				'success' => false,
 				'data' => 'Invalid token!'
 			], 200);
+			abort(422, "Invalid token!");
 		}
 
 		//$password = Str::random(64);
@@ -107,7 +174,7 @@ class AuthController extends Controller
 		DB::table('password_resets')->where(['email' => $request->email])->delete();
 
 		return response()->json([
-			'success' => false,
+			'success' => true,
 			'data' => 'Password is now reseted!'
 		], 200);
 
@@ -147,44 +214,42 @@ class AuthController extends Controller
 
 					if (is_null($verifyUser) || $verifyUser->verified == 1 ) {
 
-						// Skip domain validity check if user's domain is the admin domain
-						if ($user->domain !== env('APP_DOMAIN_ADMIN')) {
-							if (
-								DB::table('domains')
-									->select('domain', 'valid_before')
-									->where('domain', $user->domain)
-									->whereDate('valid_before_at', '<=', Carbon::now())
-									->count()
-							) {
-								return response()->json([
-									'success' => false,
-									'data' => 'Username and password do not match or domain subscription is not valid or expired!'
-								], 200);
-							}
-						}
-
-						// Login and "remember" the given user...
-						//Auth::login($user, true);
-						//Setting login response
-						$accessToken = auth()->user()->createToken('authToken')->accessToken;
-						/*$success['token'] = $this->apiToken;
-						$success['name'] =  $user->name;
-						return response()->json([
-						'success' => true,
-						'data' => $success
-						], 200);*/
-						$user = auth()->user();
-						if(is_null($user->role_id)){
+						if (
+							DB::table('domains')
+								->select('domain', 'valid_before')
+								->where('domain', $user->domain)
+								->whereDate('valid_before_at', '<=', Carbon::now())
+								->count()
+						) {
 							return response()->json([
 								'success' => false,
-								'data' => 'Role is not assign to your account.'
+								'data' => 'Username and password do not match or domain subscription is not valid or expired!'
 							], 200);
+
+						} else {
+							// Login and "remember" the given user...
+							//Auth::login($user, true);
+							//Setting login response
+							$accessToken = auth()->user()->createToken('authToken')->accessToken;
+							/*$success['token'] = $this->apiToken;
+							$success['name'] =  $user->name;
+							return response()->json([
+							'success' => true,
+							'data' => $success
+							], 200);*/
+							$user = auth()->user();
+							if(is_null($user->role_id)){
+								return response()->json([
+									'success' => false,
+									'data' => 'Role is not assign to your account.'
+								], 200);
+							}
+							
+							
+							$responseMessage = "Login Successful";
+							
+							return $this->respondWithToken($accessToken, $responseMessage, auth()->user());
 						}
-						
-						
-						$responseMessage = "Login Successful";
-						
-						return $this->respondWithToken($accessToken, $responseMessage, auth()->user());
 
 					} else {
 						return response()->json([
@@ -218,9 +283,37 @@ class AuthController extends Controller
 	public function register(Request $request)
 	{
 
-		$disable_registeration_from_others = DB::table('settings')->select('setting_value')->where('setting_key', '=', 'disable_registeration_from_others')->first();
+		$disable_registeration_from_others = DB::table('settings')->select('setting_value')->where('setting_key', '=', 'disable_registeration_from_others')->where('domain', '=', env('APP_DOMAIN_ADMIN'))->first();
+		$show_captcha = DB::table('settings')->select('setting_value')->where('setting_key', '=', 'show_captcha')->where('domain', '=', env('APP_DOMAIN_ADMIN'))->first();
 
 		//echo $disable_registeration_from_others->setting_value;
+
+		if ($show_captcha->setting_value == '1') {
+
+			if (!$request->has('recaptcha')) {
+				return response()->json([
+					'success' => false,
+					'error' => 'Captcha verification failed (missing response)'
+				], 200);
+			}
+
+			$response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+				'secret'   => env('APP_RECAPTCHA_SECRET_KEY'),
+				'response' => $request->input('recaptcha'),
+				'remoteip' => $request->ip(),
+			]);
+
+			$result = $response->json();
+
+			if (!$result['success']) {
+				return response()->json([
+					'success' => false,
+					'error' => 'Captcha verification failed'
+				], 200);
+				abort(422, 'Captcha verification failed');
+			}
+
+		}
 
 		if ($disable_registeration_from_others->setting_value == '1') {
 			$validator = Validator::make($request->all(), [
@@ -232,8 +325,13 @@ class AuthController extends Controller
 			]);
 		} else {
 			$validator = Validator::make($request->all(), [
-				'email' => 'required|string|unique:users|email',
-				'name' => 'required|string',
+				'email'          => 'required|string|unique:users|email',
+				'name'           => 'required|string|max:32',
+				'company_name'   => 'required|string|max:255',
+				'business_id'    => 'required|string|max:32',
+				'address_line_1' => 'required|string|max:255',
+				'city'           => 'required|string|max:255',
+				'zip'            => 'required|string|max:255',
 				'gender' => 'required|string',
 				'domain' => 'required|string|unique:domains,domain|regex:/^(?:[-A-Za-z0-9]+\.)+[A-Za-z]{2,6}$/',
 				'password' => 'required|min:8',
@@ -257,10 +355,6 @@ class AuthController extends Controller
 				DB::table('users')->insert([
 					['name' => $request->name, 'gender' => $request->gender, 'email' => $request->email, 'password' => Hash::make($request->password), 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'), 'domain' => env('APP_DOMAIN_ADMIN'), 'role' => 'user', 'role_id' => 2]
 				]);
-
-				//echo "TEST!";
-
-				//DB::commit();
 
 				try {
 
@@ -291,8 +385,6 @@ class AuthController extends Controller
 						->select('verified')
 						->where('user_id', $id)
 						->first()->verified;
-
-						//echo $is_verified;
 
 						if ($is_verified == 0) {
 
@@ -339,30 +431,313 @@ class AuthController extends Controller
 			
 			DB::beginTransaction();
 
+			$permissions = [
+				"domain.view",
+				"domain.edit",
+				"domain.add",
+				"domain.actions",
+				"users.view",
+				"users.statusChange",
+				"users.changePassword",
+				"users.changeRole",
+				"users.addUser",
+				"users.verifyUser",    
+				"roles.view",
+				"roles.edit",
+				"roles.add",
+				"roles.actions",
+				"invoices.view",
+				"invoices.actions",
+				"invoices.add",
+				"invoices.edit",
+				"invoices.uploadLogo",
+				"invoice.uploadTemplates",
+				"customers.view",
+				"customers.add",
+				"customers.edit",
+				"customers.delete",
+				"customers.actions",
+				"settings.manage",
+			];
+
 			try {
 
 				DB::table('domains')->insert([
 					[
 						'domain' => $request->domain,
 						'valid_before_at' => date('Y-m-d H:i:s', strtotime("+30 day")),
-						'vat_id' => "-",
+						'mobile_no' => $request->mobile_no ?? "",
+						'company_name' => $request->company_name ?? "",
+						'vat_id' => $request->vat_id ?? "",
+						'business_id' => $request->busines_id ?? "",
 						'technical_contact_email' => $request->email,
 						'billing_contact_email' => $request->email,
-						'company_name' => "",
-						'address_line_1' => "",
-						'address_line_2' => "",
-						'zip' => "",
-						'city' => "",
-						'country' => "",
+						'company_name' => $request->company_name ?? "",
+						'address_line_1' => $request->address_line_1 ?? "",
+						'address_line_2' => $request->address_line_2 ?? "",
+						'zip' => $request->zip ?? "",
+						'city' => $request->city ?? "",
+						'country' => $request->country ?? "",
 						'is_admin' => false,
 						'type' => "trial",
 						'created_at' => date('Y-m-d H:i:s'),
 						'updated_at' => date('Y-m-d H:i:s'),
+						'invoice_template_path' => null,
+						'invoice_start_number' => 1,
+
 					]
 				]);
 
+				$role = Role::updateOrCreate([
+					"name" => "admin",
+					"isActive" => true,
+					"domain" => $request->domain,
+				]);
+
+				for ($i=0; $i < count($permissions); $i++) {
+                
+					$permission = Permission::updateOrCreate([
+						"permission_name" => $permissions[$i],
+						"desc" => $permissions[$i] . " desc"
+					]);
+					
+					if ($permissions[$i] == "domain.view") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "domain.edit") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "users.view") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "users.statusChange") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "users.changePassword") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "users.changeRole") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "users.addUser") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "roles.view") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "roles.edit") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "roles.add") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "roles.actions") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "invoices.view") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "invoices.actions") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "invoices.add") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "invoices.edit") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "invoices.uploadLogo") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "invoice.uploadTemplates") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "customers.view") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "customers.add") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "customers.edit") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "customers.delete") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "customers.actions") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else if ($permissions[$i] == "settings.manage") {
+						RolePermissions::updateOrInsert([
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+						],[
+							"role_id" => $role->id,
+							"permission_id" => $permission->id,
+							"created_at" => now(),
+                            "updated_at" => now(),
+						]);
+					} else {
+
+					}
+				}
+
 				DB::table('users')->insert([
-					['name' => $request->name, 'gender' => $request->gender, 'email' => $request->email, 'password' => Hash::make($request->password), 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'), 'domain' => $request->domain, 'role' => 'user', 'role_id' => 2]
+					['name' => $request->name, 'gender' => $request->gender, 'email' => $request->email, 'password' => Hash::make($request->password), 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'), 'domain' => $request->domain, 'role' => 'user', 'role_id' => $role->id]
 				]);
 
 				$role = Role::updateOrCreate([
@@ -371,92 +746,82 @@ class AuthController extends Controller
 					"domain" => $request->domain,
 				]);
 
-				DB::commit();
+				$role = Role::updateOrCreate([
+					"name" => "book-keeprer",
+					"isActive" => true,
+					"domain" => $request->domain,
+				]);
 
-				/*$customerBaseInfo = [ // Base information about the customer is aggregated in a single 'customerbaseinformation' key
-					//'internalidentifier' => '', // automatic (if given and customer code is left empty, the next free customer number is used automatically)
-					'externalidentifier' => $request->vatId, // Business ID or private customer's social security number
-					'organizationunitnumber' => '', // OVT identifier (Receiver's OVT identifier, if the information differs from the company's business ID)
-					'name' => $request->company,
-					//'nameextension' => 'NewCust',
-					'streetaddress' => $request->address1,
-					'additionaladdressline' => $request->address2,
-					'city' => $request->city,
-					'postnumber' => $request->zipCode,
-					'country' => 'FI', // Country code (if not provided, Finland is the default) and country code format is ISO-3166
-					//'customergroupname' => '', // Customer group name, customer is linked to the group by name. If the group does not exist, it is created.
-					'phonenumber' => $request->phone,
-					//'faxnumber' => '',
-					'email' => $request->email,
-					'homepageuri' => '',
-					'isactive' => 1, // 1 = active, 0 = inactive
-					'isprivatecustomer' => 0, // 1 = private customer, 0 = business customer
-					'emailinvoicingaddress' => $request->email, // Email invoicing address, must be a valid email address. Can be provided as a list separated by ;
+				// Luo yleisimmät maksuehdot käännöksineen
+				$paymentTerms = [
+					[
+						"days_to_pay" => 0,
+						"translations" => [
+							["locale" => "EN", "name" => "Due on receipt"],
+							["locale" => "FI", "name" => "HETI"],
+							["locale" => "SV", "name" => "Direkt"],
+						]
+					],
+					[
+						"days_to_pay" => 7,
+						"translations" => [
+							["locale" => "EN", "name" => "Net 7"],
+							["locale" => "FI", "name" => "7 pv netto"],
+							["locale" => "SV", "name" => "Netto 7"],
+						]
+					],
+					[
+						"days_to_pay" => 14,
+						"translations" => [
+							["locale" => "EN", "name" => "Net 14"],
+							["locale" => "FI", "name" => "14 pv netto"],
+							["locale" => "SV", "name" => "Netto 14"],
+						]
+					],
+					[
+						"days_to_pay" => 15,
+						"translations" => [
+							["locale" => "EN", "name" => "Net 15"],
+							["locale" => "FI", "name" => "15 pv netto"],
+							["locale" => "SV", "name" => "Netto 15"],
+						]
+					],
+					[
+						"days_to_pay" => 30,
+						"translations" => [
+							["locale" => "EN", "name" => "Net 30"],
+							["locale" => "FI", "name" => "30 pv netto"],
+							["locale" => "SV", "name" => "Netto 30"],
+						]
+					],
+					[
+						"days_to_pay" => 60,
+						"translations" => [
+							["locale" => "EN", "name" => "Net 60"],
+							["locale" => "FI", "name" => "60 pv netto"],
+							["locale" => "SV", "name" => "Netto 60"],
+						]
+					],
+					[
+						"days_to_pay" => 90,
+						"translations" => [
+							["locale" => "EN", "name" => "Net 90"],
+							["locale" => "FI", "name" => "90 pv netto"],
+							["locale" => "SV", "name" => "Netto 90"],
+						]
+					],
 				];
 
-				$finvoiceDetails = [ // Aggregated in a single 'customerfinvoicedetails' key
-					'finvoiceaddress' => '',
-					'finvoiceroutercode' => '',
+				foreach ($paymentTerms as $term) {
+					$paymentTerm = InvoicePaymentTerm::create([
+						"days_to_pay" => $term["days_to_pay"],
+						"domain" => $request->domain,
+					]);
 					
-				];
+					$paymentTerm->translations()->createMany($term["translations"]);
+				}
 
-				$deliveryDetails = [ // Aggregated in a single 'customerdeliverydetails' key
-					'deliveryname' => '',
-					'deliverystreetaddress' => '',
-					'deliverycity' => '',
-					'deliverypostnumber' => '',
-					'deliverycountry' => '', // Country code format, always ISO-3166
-				];
-
-				$contactDetails = [ //  	Aggregated in a single 'customercontactdetails' key
-					'contactname' => '',
-					'contactperson' => '',
-					'contactpersonemail' => '',
-					'contactpersonphone' => '',
-					'deliverycountry' => '',
-					'defaultsellername' => '',
-				];
-
-				$defaultsalesperson = [ // Aggregated in a single 'defaultsalesperson' key
-					'salespersonid' => '', // Salesperson ID, if not provided, the default salesperson is used
-				];
-
-				$additionalInfo = [
-					'comment' => '',
-					'customeragreementIdentifier' => '',
-					'usecreditorreferencenumber' => 0, // Use RF reference for invoicing, 1=on 0=off
-					'useorderreferencenumber' => 0, // Use order reference number for invoicing, 1=on 0=off
-					'invoicinglanguage' => '', // Customer's invoicing language, FI, EN, or SE. If this information is not provided in the message, the default language for the invoice is Finnish
-					'invoiceprintchannelformat' => 2, // Invoice print format, 1 = Invoice + bank transfer, 2 = Invoice
-					'yourdefaultreference' => '',
-					'defaulttextbeforeinvoicelines' => '',
-					'defaulttextafterinvoicelines' => '',
-					'defaultpaymentterm' => ' 	14 days net',
-					'defaultsecondname' => '',
-					'paymentinterest' => '',
-					'balancelimit' => '',
-					'receivablesmanagementautomationrule' => '',
-					'FactoringAccount' => '',
-					'taxhandlingtype' => '',
-					'eustandardfinvoice' => '',
-					'defaultsalesperson' => $defaultsalesperson, // Default salesperson information
-				];
-
-				$dimensionDetails = [
-					'dimension' => [
-						'dimensionname' => '',
-						'dimensionitem' => '',
-					]
-				];
-				
-				try {
-					$response = $this->netvisorAPI->addCustomer($customerBaseInfo, $finvoiceDetails, $deliveryDetails, $contactDetails, $additionalInfo, $dimensionDetails);
-					Log::info('Customer added successfully: ' . json_encode($response));
-					return response()->json($response, 201);
-				} catch (\Exception $e) {
-					Log::error('Error adding customer: ' . $e->getMessage());
-					return response()->json(['error' => 'Failed to add customer'], 500);
-				}*/
+				DB::commit();
 
 				try {
 
@@ -467,9 +832,9 @@ class AuthController extends Controller
 
 					$token = Str::random(64);
 
-					DB::table('users_verify')->insert([
-						['user_id' => $id, 'token' => $token, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]
-					]);
+				DB::table('users_verify')->insert([
+					['user_id' => $id, 'token' => $token, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]
+				]);
 
 				try {
 					Mail::send('emails.userverify', ['token' => $token], function ($message) use ($request) {
@@ -521,7 +886,28 @@ class AuthController extends Controller
 	 */
 	public function verifyAccount($token)
 	{
-		return redirect(env('APP_UI_URL') . '/#/verifyemail?token=' . $token);
+		$verifyUser = UserVerify::where('token', $token)->first();
+		$status = 'error';
+		$message = 'Sorry your email cannot be identified.';
+		
+		if (!is_null($verifyUser)) {
+			if ($verifyUser->verified === 0) {
+				$message = "Your e-mail is verified. You can now login.";
+				$status = 'success';
+			}
+			if ($verifyUser->verified === 1) {
+				$message = "Your e-mail is already verified. You can now login.";
+				$status = 'already-verified';
+			}
+			UserVerify::where('token', $token)->update([
+				'verified' => 1
+			]);
+			User::where('id', $verifyUser->user_id)->update([
+				'email_verified_at' => now()
+			]);
+		}
+		
+		return redirect(env('APP_UI_URL') . '/#/verifyemail?status=' . $status . '&message=' . $message);
 	}
 
 
@@ -548,12 +934,10 @@ class AuthController extends Controller
 				'email_verified_at' => now()
 			]);
 		}
-
 		return response()->json([
 			'success' => true,
 			'data' => $message
 		], 200);
-		
 	}
 
 	/**

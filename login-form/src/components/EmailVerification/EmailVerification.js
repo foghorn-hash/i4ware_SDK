@@ -50,11 +50,9 @@ function EmailVerification(props) {
         props.updateTitle('Login')
         props.history.push('/login'); 
     }
-	props.updateTitle('Email Verification');
 
     return(
         <div className="d-flex justify-content-center">
-            <div className="animated-card-verification">
                 <div className="card col-12 col-lg-4 verification-card mt-2 hv-center">
                     <VerificationComponent />
                     <div className="mt-2">
@@ -62,7 +60,6 @@ function EmailVerification(props) {
                         <span className="verificationText" onClick={() => redirectToLogin()}>{strings.loginHere}</span> 
                     </div>
                 </div>
-            </div>
         </div>
     )
 };

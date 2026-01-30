@@ -1,15 +1,8 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Controller;
-use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UsersController;
-use App\Http\Controllers\RolesController;
-use App\Http\Controllers\DomainsController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StlController;
 use App\Http\Controllers\GalleryController;
@@ -30,52 +23,48 @@ use App\Http\Controllers\TimesheetRowController;
 |
 */
 
-Route::group(['prefix' => 'users', 'middleware' => 'CORS'], function ($router) {
-
+Route::prefix('users')->group(function () {
 	Route::post('/register', [AuthController::class, 'register'])->name('register.auth');
 	Route::post('/login', [AuthController::class, 'login'])->name('login.auth');
 	Route::get('/userdata', [AuthController::class, 'userData'])->name('userdata.auth');
-	Route::get('/checkifemailverified/{token}', [AuthController::class, 'checkIfEmailVerified'])->name('user.verify');
+	Route::get('/checkifemailverified/{token}', [AuthController::class, 'checkIfEmailVerified'])->name('user.verify.api');
 	Route::get('/logout', [AuthController::class, 'logout'])->name('logout.auth');
 	Route::get('/me', [AuthController::class, 'me'])->name('me.auth');
-	Route::post('/forget-password', [AuthController::class, 'submitForgetPasswordForm'])->name('forget.password.post'); 
+	Route::post('/forget-password', [AuthController::class, 'submitForgetPasswordForm'])->name('forget.password.post');
 	Route::post('/reset-password', [AuthController::class, 'submitResetPasswordForm'])->name('reset.password.post');
 });
 
-Route::get('/settings', [SettingsController::class, 'settings'])->middleware('CORS')->name('settings.get');
+Route::get('/settings', [SettingsController::class, 'settings'])->name('settings.get');
 
-Route::group(['prefix' => 'manage', 'middleware' => 'CORS'], function ($router) {
+Route::prefix('manage')->group(function () {
+	Route::post('/users/change-status', [ProfileController::class, 'usersChangeStatus'])->name('manage.users-change-status');
+	Route::post('/users/verify', [ProfileController::class, 'usersVerify'])->name('manage.users-verify');
+	Route::post('/users/change-password', [ProfileController::class, 'usersChangePassword'])->name('manage.users-change-password');
+	Route::post('/users/add-user', [ProfileController::class, 'usersAdd'])->name('manage.users-add');
+	Route::get('/users', [ProfileController::class, 'users'])->name('manage.users');
 
-	
-	Route::post('/users/change-status', [UsersController::class, 'usersChangeStatus'])->name('manage.users-change-status');
-	Route::post('/users/verify', [UsersController::class, 'usersVerify'])->name('manage.users-verify');
-	Route::post('/users/change-password', [UsersController::class, 'usersChangePassword'])->name('manage.users-change-password');
-	Route::post('/users/add-user', [UsersController::class, 'usersAdd'])->name('manage.users-add');
-	Route::get('/users', [UsersController::class, 'users'])->name('manage.users');
+	Route::get('/domains', [ProfileController::class, 'domains'])->name('manage.domains');
+	Route::get('/domain-edit/{id}', [ProfileController::class, 'domainEdit'])->name('manage.domain-edit');
+	Route::post('/updateDomainRecord', [ProfileController::class, 'updateDomainRecord'])->name('manage.updateDomainRecord');
+	Route::put('/domains/{id}', [ProfileController::class, 'updateDomain'])->name('manage.updateDomain');
+	Route::delete('/domains/{id}', [ProfileController::class, 'removeDomain'])->name('manage.removeDomain');
+	Route::get('/settings', [ProfileController::class, 'settings'])->name('manage.settings');
+	Route::post('/updateSettings', [ProfileController::class, 'updateSettings'])->name('manage.updateSettings');
 
-    Route::get('/domains', [DomainsController::class, 'domains'])->name('manage.domains');
-    Route::post('/updateDomainRecord', [DomainsController::class, 'updateDomainRecord'])->name('manage.updateDomainRecord');
-    Route::post('/domains', [DomainsController::class, 'updateDomain'])->name('manage.updateDomain');
-    Route::delete('/domains/{id}', [DomainsController::class, 'removeDomain'])->name('manage.removeDomain');
+	Route::get('/permissions', [ProfileController::class, 'permissions'])->name('manage.permissions');
+	Route::get('/role/{id}', [ProfileController::class, 'roleDelete'])->name('manage.removeRole');
+	Route::get('/roles/all', [ProfileController::class, 'rolesAll'])->name('manage.rolesAll');
+	Route::get('/roles/foradd', [ProfileController::class, 'rolesAllforAddUser'])->name('manage.rolesAdd');
+	Route::get('/roles', [ProfileController::class, 'roles'])->name('manage.roles');
+	Route::post('/roles', [ProfileController::class, 'roleAdd'])->name('manage.addRoles');
+	Route::post('/roles/setRole', [ProfileController::class, 'setRole'])->name('manage.setRole');
 
-	Route::get('/permissions', [RolesController::class, 'permissions'])->name('manage.permissions');
-	Route::get('/role/{id}', [RolesController::class, 'roleDelete'])->name('manage.removeRole');
-	Route::get('/roles/all', [RolesController::class, 'rolesAll'])->name('manage.rolesAll');
-	Route::get('/roles/foradd', [RolesController::class, 'rolesAllforAddUser'])->name('manage.rolesAdd');
-	Route::get('/roles', [RolesController::class, 'roles'])->name('manage.roles');
-	Route::post('/roles', [RolesController::class, 'roleAdd'])->name('manage.addRoles');
-	Route::post('/roles/setRole', [RolesController::class, 'setRole'])->name('manage.setRole');
-	
 	Route::get('/myprofile', [ProfileController::class, 'myprofile'])->name('manage.myprofile');
 	Route::post('/myprofile', [ProfileController::class, 'myprofileSave'])->name('manage.myprofileSave');
 	Route::post('/capture-upload', [ProfileController::class, 'captureUpload'])->name('manage.captureUpload');
-	Route::post('/capture-upload', [ProfileController::class, 'captureUpload'])->name('manage.captureUpload');
-
-	Route::post('/updateSettings', [SettingsController::class, 'updateSettings'])->name('manage.updateSettings');
-
 });
 
-Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
+Route::prefix('stl')->group(function () {
 	Route::post('/upload-stl', [StlController::class, 'uploadStlFile'])->name('stl.upload-stl');
 	Route::get('/stl-items', [StlController::class, 'getStlItems'])->name('stl.stl-items');
 	Route::get('/stl-item', [StlController::class, 'getStlItem'])->name('stl.stl-item');
@@ -86,13 +75,13 @@ Route::group(['prefix' => 'stl', 'middleware' => 'CORS'], function ($router) {
 	Route::post('/generate-car', [StlController::class, 'generateCar']);
 });
 
-Route::group(['prefix' => 'gallery', 'middleware' => 'CORS'], function ($router) {
+Route::prefix('gallery')->group(function () {
 	Route::get('/assets', [GalleryController::class, 'assets'])->name('assets.asset-items');
 	Route::post('/upload-media', [GalleryController::class, 'uploadMedia'])->name('gallery.upload-media');
 	Route::delete('/photos_videos/delete', [GalleryController::class, 'deleteMedia'])->name('gallery.delete-media');
 });
 
-Route::group(['prefix' => 'chat', 'middleware' => ['CORS', 'auth:api']], function ($router) {
+Route::prefix('chat')->group(function () {
 	Route::post('/messages', [ChatController::class, 'message']);
 	Route::get('/messages', [ChatController::class, 'getMessages']);
 	Route::post('/typing', [ChatController::class, 'userTyping']);
@@ -110,12 +99,12 @@ Route::group(['prefix' => 'chat', 'middleware' => ['CORS', 'auth:api']], functio
 	Route::post('/analyze-pdf', [ChatController::class, 'uploadPDF'])->name('pdf.upload');
 });
 
-Route::group(['prefix' => 'netvisor', 'middleware' => 'CORS'], function ($router) {
+Route::prefix('netvisor')->group(function () {
 	Route::get('/invoices', [NetvisorController::class, 'getSalesInvoices']);
 });
 
 // Route for Atlassian sales report
-Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router) {
+Route::prefix('reports')->group(function () {
 	Route::get('/sales-report', [AtlassianSalesController::class, 'getSalesReport']);
 	Route::get('/cumulative-sales', [AtlassianSalesController::class, 'getCumulativeSales']);
 	Route::get('/transactions', [AtlassianSalesController::class, 'getTransactions']);
@@ -129,7 +118,7 @@ Route::group(['prefix' => 'reports', 'middleware' => 'CORS'], function ($router)
 
 });
 
-Route::group(['prefix' => 'timesheet', 'middleware' => 'CORS'], function ($router) {
+Route::prefix('timesheet')->middleware('cors')->group(function () {
 	Route::get('timesheets', 							[TimesheetController::class, 'index']);
 	Route::post('timesheets', 							[TimesheetController::class, 'store']);
 	Route::get('timesheets/{timesheet}/rows',           [TimesheetRowController::class, 'index']);

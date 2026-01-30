@@ -28,31 +28,33 @@ function parse_query_string(query) {
 
 class VerificationComponent extends Component {
         
-		constructor(props) {
-			super(props);
-			this.state = {
-				successMessage: null
-			};
+	constructor(props) {
+		super(props);
+		this.state = {
+			successMessage: null,
+			status: null
 		};
-		
-		async componentDidMount() {
-			var url_string = this.props.location.search.substring(1);
-			var url = parse_query_string(url_string);
-			var token = url.token;
-			console.log(url_string);
-			let result = await Axios.get(API_BASE_URL+'/api/users/checkifemailverified/'+token);
-			const message = result.data.data;
-			this.setState({successMessage: message});
-		};
-		
-		render() {
-	  
-			return (
-			    <div className="successMessage">
-					{this.state.successMessage}
-			    </div>
-			);
-		};
+	}
+	
+	componentDidMount() {
+		var url_string = this.props.location.search.substring(1);
+		var url = parse_query_string(url_string);
+		var status = url.status || 'error';
+		var message = url.message || 'Email verification status unknown.';
+		console.log('Status:', status, 'Message:', message);
+		this.setState({
+			successMessage: message,
+			status: status
+		});
+	}
+	
+	render() {
+		return (
+			<div className={`successMessage ${this.state.status === 'success' || this.state.status === 'already-verified' ? 'success' : 'error'}`}>
+				{this.state.successMessage}
+			</div>
+		);
+	}
 		
 }
 

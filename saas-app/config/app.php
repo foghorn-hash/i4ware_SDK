@@ -175,7 +175,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         //LaravelFFMpeg service provider
-        ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
+        //ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
     ],
 
     /*
@@ -230,7 +230,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        'FFMpegLaravel' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
+        //'FFMpegLaravel' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
     ],
 
 ];

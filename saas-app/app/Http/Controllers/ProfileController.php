@@ -7,6 +7,7 @@ use App\Models\RolePermissions;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Domain;
+use App\Models\InvoicePaymentTerm;
 use App\Models\Permission;
 use App\Models\UserVerify;
 use Auth;
@@ -39,10 +40,6 @@ class ProfileController extends Controller
             $users = User::with('roles')->where('domain', '=', $domain->domain)->get();
         }
 
-        Log::info('Users:', ['users' => $users]);
-
-        // Log the initial value of the 'page' parameter
-        Log::info('Initial Page parameter:', ['page' => $request->input('page')]);
         // Define the number of items to return per page
         $perPage = 10;
         // Get the page number from the request, default to 1 for GET requests
@@ -52,8 +49,6 @@ class ProfileController extends Controller
 
         // Slice the files to get the paginated result
         $userList = $users->slice($offset, $perPage);
-
-        Log::info('User List:', ['userList' => $userList]);
 
         // Process the sliced files and create the response
         $data = [];
@@ -71,8 +66,6 @@ class ProfileController extends Controller
                 'gender' => $user->gender,
             ];
         }
-
-        Log::info('Response List:', ['data' => $data]);
 
         return response()->json($data, 200);
     }
@@ -170,8 +163,6 @@ class ProfileController extends Controller
             $domains = Domain::where('domain', '=', $domain->domain)->get();
         }
     
-        Log::info('Domains:', ['domains' => $domains]);
-    
         $perPage = 10;
 
         $page = $request->input('page', 1);
@@ -179,8 +170,6 @@ class ProfileController extends Controller
         $offset = ($page - 1) * $perPage;
     
         $domainList = $domains->slice($offset, $perPage);
-    
-        Log::info('Domain List:', ['domainList' => $domainList]);
     
         $data = [];
     
@@ -191,7 +180,8 @@ class ProfileController extends Controller
                 'valid_before_at' => $domain->valid_before_at,
                 'type' => $domain->type,
                 'company_name' => $domain->company_name,
-                'vat_id' => $domain->vat_id,
+                "vat_id" => $domain->vat_id,
+                "business_id" => $domain->business_id,
                 'mobile_no' => $domain->mobile_no,
                 'technical_contact_email' => $domain->technical_contact_email,
                 'billing_contact_email' => $domain->billing_contact_email,
@@ -199,8 +189,6 @@ class ProfileController extends Controller
             ];
             
         }
-    
-        Log::info('Response List:', ['data' => $data]);
     
         return response()->json($data, 200);
     }
@@ -244,6 +232,7 @@ class ProfileController extends Controller
                     "country" => $request->country,
                     "zip" => $request->zip,
                     "vat_id" => $request->vat_id,
+                    "business_id" => $request->business_id,
                 ]);
 
         } else {
@@ -262,9 +251,25 @@ class ProfileController extends Controller
                     'valid_before_at' => date('Y-m-d H:i:s', strtotime("+30 day")),
                     "type" => 'trial',
                     "zip" => $request->zip,
-                    "user_id" => $user->id
+                    "user_id" => $user->id,
+                    "vat_id" => $request->vat_id,
+                    "business_id" => $request->business_id,
                 ]);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $domain
+        ], 200);
+    }
+
+    public function domainEdit(Request $request)
+    {
+        $id = $request->id;
+        $user = Auth::user();
+
+        $domain = DB::table('domains')
+            ->where(['id' => $request->id])->first();
 
         return response()->json([
             'success' => true,
@@ -327,14 +332,30 @@ class ProfileController extends Controller
         ], 200);
     }
 
+    public function settings(Request $request)
+    {
+        $user = Auth::user();
+
+        $domain = $user->domain;
+
+        $settings = DB::table('settings')->where('domain', $domain)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $settings
+         ], 200);
+    }
+
     public function updateSettings(Request $request)
     {
         $user = Auth::user();
 
-        $settingFound = DB::table('settings')->where('setting_key', '=', $request->setting_key )->get();
+        $domain = $user->domain;
+
+        $settingFound = DB::table('settings')->where('domain', '=', $domain)->where('setting_key', '=', $request->setting_key )->get();
 
         if (count($settingFound) == 1) {
-            $domain = DB::table('settings')->updateOrInsert(['setting_key' => $request->setting_key], [
+            $domain = DB::table('settings')->where('domain', '=', $domain)->updateOrInsert(['setting_key' => $request->setting_key], [
                 "setting_key" => $request->setting_key,
                 "setting_value" => $request->setting_value,
                 "updated_at" => Carbon::now(),
@@ -344,6 +365,7 @@ class ProfileController extends Controller
             $domain = DB::table('settings')->updateOrInsert(['setting_key' => $request->setting_key], [
                 "setting_key" => $request->setting_key,
                 "setting_value" => $request->setting_value,
+                "domain" => $domain,
                 "created_at" => Carbon::now(),
                 "updated_at" => Carbon::now(),
             ]);
@@ -352,6 +374,60 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'data' => $domain
+        ], 200);
+    }
+
+    public function updateInvoiceStartNumber(Request $request)
+    {
+        $validated = $request->validate([
+            'invoice_start_number' => 'required|integer|min:0'
+        ]);
+
+        $user = auth()->user();
+
+        if (!$user || !$user->domain) {
+            return response()->json([
+                'message' => 'Unauthorized or domain not found.'
+            ], 403);
+        }
+
+        // Päivitä domainin data
+        DB::table('domains')
+            ->where('domain', $user->domain)
+            ->update([
+                'invoice_start_number' => $validated['invoice_start_number'],
+                'updated_at' => now(),
+            ]);
+
+        return response()->json([
+            'message' => 'Invoice start number updated successfully'
+        ], 200);
+    }
+
+    public function getInvoiceStartNumber(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->domain) {
+            return response()->json([
+                'message' => 'Unauthorized or domain not found.'
+            ], 403);
+        }
+
+        // Haetaan domainista laskun aloitusnumero
+        $domain = DB::table('domains')
+            ->select('invoice_start_number')
+            ->where('domain', $user->domain)
+            ->first();
+
+        if (!$domain) {
+            return response()->json([
+                'message' => 'Domain not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'invoice_start_number' => $domain->invoice_start_number
         ], 200);
     }
 
@@ -393,13 +469,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
     
-        if ($user->role == "admin") {
-            $roles = Role::all();
-        } else {
-            $roles = Role::where('domain', '=', $user->domain)->get();
-        }
-    
-        Log::info('Roles:', ['roles' => $roles]);
+        $roles = Role::where('domain', '=', $user->domain)->get();
     
         $perPage = 10;
 
@@ -408,8 +478,6 @@ class ProfileController extends Controller
         $offset = ($page - 1) * $perPage;
     
         $roleList = $roles->slice($offset, $perPage);
-    
-        Log::info('Role List:', ['roleList' => $roleList]);
     
         $data = [];
     
@@ -420,8 +488,6 @@ class ProfileController extends Controller
                 'domain' => $role->domain,
             ];
         }
-    
-        Log::info('Response List:', ['data' => $data]);
     
         return response()->json($data, 200);
     }
@@ -520,7 +586,8 @@ class ProfileController extends Controller
     public function myprofileSave(Request $request){
 
         $auth = Auth::user();
-    
+        $domain = $auth->domain;
+        $id = $auth->id;
         $user = User::where(['id' => $auth->id])->first();
         $gender = User::where(['gender' => $auth->id])->first();
         $profile_picture_is_null = User::where(['profile_picture_path' => $auth->id])->first();
@@ -538,7 +605,7 @@ class ProfileController extends Controller
                 //throw $th;
             }
     
-            $path = $file->storeAs('public/uploads', $filename);
+            $path = $file->storeAs('public/uploads/'. $domain . "/profile_pics/" . $id, $filename);
             // get the dimensions of the original image
             $original_image = storage_path().'/app/'.$path;
             list($width, $height) = getimagesize($original_image);
@@ -597,7 +664,8 @@ class ProfileController extends Controller
     public function captureUpload(Request $request){
 
         $auth = Auth::user();
-    
+        $id = $auth->id;
+        $domain = $auth->domain;
         $user = User::where(['id' => $auth->id])->first();
         $profile_picture_is_null = User::where(['profile_picture_path' => $auth->id])->first();
         $file = $request->file;
@@ -612,8 +680,8 @@ class ProfileController extends Controller
                 //throw $th;
             }
             $imageData = file_get_contents($file);
-            Storage::put('public/uploads/' . $filename, $imageData);
-            $path = 'public/uploads/'.$filename;
+            Storage::put('public/uploads/'. $domain . "/profile_pics/" . $id . "/" . $filename, $imageData);
+            $path = 'public/uploads/'. $domain . "/profile_pics/" . $id . "/".$filename;
             // get the dimensions of the original image
             $original_image = storage_path().'/app/'.$path;
             list($width, $height) = getimagesize($original_image);
@@ -645,5 +713,251 @@ class ProfileController extends Controller
         }
     
         
+    }
+
+    public function uploadTemplate(Request $request)
+    {
+
+        $user = Auth::user();
+        $domain = $user->domain;
+  
+        // Validate file
+        $request->validate([
+            'invoice_template_path' => 'required|file|mimes:xlsx|max:5120', // Max 5MB
+        ]);
+
+        try {
+            $filename = "invoice_template.xlsx";
+            // Store the file in storage/app/invoice_templates
+            $path = $request->file('invoice_template_path')->storeAs("invoice_templates/{$domain}", $filename);
+
+            // Save to settings table
+             DB::table('domains')
+            ->where('domain', $domain)
+            ->update([
+                'invoice_template_path' => $path,
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Template uploaded successfully.',
+                'filename' => $filename,
+                'path' => $path
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function templateExists()
+    {
+        // Hae polku asetuksista
+        $path = DB::table('domains')
+            ->where('domain', auth()->user()->domain) // tai APP_DOMAIN_ADMIN, jos admin
+            ->value('invoice_template_path');
+
+        $exists = $path && Storage::exists($path);
+
+        return response()->json([
+            'exists' => $exists,
+            'path' => $path
+        ]);
+    }
+
+    public function getBankAccounts(Request $request)
+    {
+        $user = Auth::user();
+        $domain = $user->domain;
+
+        if (!$domain) {
+            return response()->json(['message' => 'Domain not found'], 404);
+        }
+
+        $data = DB::table('domains')
+            ->where('domain', $domain)
+            ->select('iban1','bic1','iban2','bic2','iban3','bic3')
+            ->first();
+
+        return response()->json($data, 200);
+    }
+
+    public function updateBankAccounts(Request $request)
+    {
+        $user = Auth::user();
+        $domain = $user->domain;
+
+        if (!$domain) {
+            return response()->json(['message' => 'Domain not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'iban1' => 'nullable|string|max:34',
+            'bic1' => 'nullable|string|max:11',
+            'iban2' => 'nullable|string|max:34',
+            'bic2' => 'nullable|string|max:11',
+            'iban3' => 'nullable|string|max:34',
+            'bic3' => 'nullable|string|max:11',
+        ]);
+
+        DB::table('domains')
+            ->where('domain', $domain)
+            ->update(array_merge($validated, ['updated_at' => now()]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bank accounts updated successfully'
+        ]);
+    }
+
+    public function invoicePaymentTerms(Request $request)
+    {
+        $user = Auth::user();
+        $domain = $user->domain;
+        $locale = strtoupper($request->input('locale', 'EN'));
+
+        $terms = InvoicePaymentTerm::where('domain', $domain)
+            ->whereNull('deleted_at')
+            ->with(['translations' => function($query) use ($locale) {
+                $query->where('locale', $locale);
+            }])
+            ->get();
+
+        // Map each term to include the translated name for the requested locale
+        $termsWithTranslation = $terms->map(function($term) use ($locale) {
+            $translation = $term->translations->first();
+            return [
+                'id' => $term->id,
+                'domain' => $term->domain,
+                'days_to_pay' => $term->days_to_pay,
+                'name' => $translation ? $translation->name : null,
+                'locale' => $locale,
+                'created_at' => $term->created_at,
+                'updated_at' => $term->updated_at,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $termsWithTranslation
+        ]);
+    }
+
+    public function addInvoicePaymentTerms(Request $request)
+    {
+        $user = Auth::user();
+        $domain = $user->domain;
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'days' => 'required|integer|min:0',
+        ]);
+
+        
+        // Create new term
+        $term = InvoicePaymentTerm::create([
+            'domain' => $domain,
+            'days_to_pay' => $validated['days'],
+        ]);
+        
+        // Create translations for all supported locales
+        $term->translations()->createMany([
+            ['locale' => 'EN', 'name' => $validated['name']],
+            ['locale' => 'FI', 'name' => $validated['name']],
+            ['locale' => 'SV', 'name' => $validated['name']],
+        ]);
+        
+        // Load translations for response
+        $term->load('translations');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invoice payment terms updated successfully',
+            'data' => $term
+        ]);
+    }
+
+    public function updateInvoicePaymentTerms(Request $request, $id)
+    {
+        $user = Auth::user();
+        $domain = $user->domain;
+        $locale = strtoupper($request->input('locale', 'EN'));
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'days' => 'required|integer|min:0',
+        ]);
+
+        // Update existing term
+        $term = InvoicePaymentTerm::where('id', $id)
+            ->where('domain', $domain)
+            ->first();
+
+        if (!$term) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment term not found'
+            ], 404);
+        }
+
+        $term->days_to_pay = $validated['days'];
+        $term->save();
+        
+        // Update only the translation for the requested locale
+        $term->translations()->updateOrCreate(
+            ['locale' => $locale],
+            ['name' => $validated['name']]
+        );
+        
+        // Load the specific translation for response
+        $translation = $term->translations()->where('locale', $locale)->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invoice payment terms updated successfully',
+            'data' => [
+                'id' => $term->id,
+                'domain' => $term->domain,
+                'days_to_pay' => $term->days_to_pay,
+                'name' => $translation ? $translation->name : null,
+                'locale' => $locale,
+                'created_at' => $term->created_at,
+                'updated_at' => $term->updated_at,
+            ]
+        ]);
+    }
+
+    public function deleteInvoicePaymentTerms(Request $request)
+    {
+        $user = Auth::user();
+        $domain = $user->domain;
+
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:invoice_payment_terms,id',
+        ]);
+
+        // Delete term
+        $term = InvoicePaymentTerm::where('id', $validated['id'])
+            ->where('domain', $domain)
+            ->first();
+
+        if (!$term) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment term not found'
+            ], 404);
+        }
+
+        $term->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invoice payment term deleted successfully'
+        ]);
     }
 }

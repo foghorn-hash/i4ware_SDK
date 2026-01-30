@@ -95,12 +95,11 @@ function LoginForm(props) {
       password: state.password,
     };
     axios
-      .post(API_BASE_URL + "/api/users/login", payload)
+      .post(API_BASE_URL + "/api/users/login", payload, { withCredentials: true })
       .then(function (response) {
         const json_string = JSON.stringify(response);
         const json_parsed = JSON.parse(json_string);
         if (json_parsed.data.success === true) {
-          console.log(json_parsed.data.success);
           setState(prevState => ({
             ...prevState,
             successMessage: strings.success_in_login,
@@ -140,16 +139,13 @@ function LoginForm(props) {
       });
   };
   const redirectToHome = () => {
-    props.updateTitle("Home");
     props.history.push("/home");
   };
   const redirectToRegister = () => {
     props.history.push("/register");
-    props.updateTitle("Register");
   };
   const redirectToPasswordReset = () => {
     props.history.push("/reset-password");
-    props.updateTitle("Reset a Password");
   };
 
   return (
