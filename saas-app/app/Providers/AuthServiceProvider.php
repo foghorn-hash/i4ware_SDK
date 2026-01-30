@@ -22,16 +22,12 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->registerPolicies();
 
-        //
-		
-		if (! $this->app->routesAreCached()) {
-			Passport::routes();
-			Passport::tokensExpireIn(now()->addDays(1));
-		}
-	
+        // Jos haluat, voit määrittää tokenien ominaisuuksia
+        Passport::tokensExpireIn(now()->addDays(15));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
     }
 }
