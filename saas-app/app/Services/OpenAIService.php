@@ -4,13 +4,11 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
-use OpenAI;
 use Illuminate\Support\Facades\Log;
 use Smalot\PdfParser\Parser;
 
 class OpenAIService
 {
-    protected $client;
     protected $clientGuzzle;
     protected $serverGuzzle;
     protected $apiKey;
@@ -18,7 +16,6 @@ class OpenAIService
 
     public function __construct()
     {
-        $this->client = OpenAI::client(env('OPENAI_API_KEY'));
         $this->apiKey = env('OPENAI_API_KEY');
         $this->maxTokens = (int) env('OPENAI_MAX_TOKENS');
         $this->clientGuzzle = new Client([
