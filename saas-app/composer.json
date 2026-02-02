@@ -14,6 +14,7 @@
         "mpdf/mpdf": "^8.2",
         "phpoffice/phpspreadsheet": "^5.3",
         "picqer/php-barcode-generator": "^2.4",
+        "pusher/pusher-php-server": "^7.2",
         "endroid/qr-code": "^4.8"
     },
     "require-dev": {
