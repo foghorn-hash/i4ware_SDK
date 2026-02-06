@@ -27,8 +27,6 @@ import LOADING from "../../tube-spinner.svg";
 import DefaultMaleImage from "../../male-default-profile-picture.png";
 import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import { render } from "react-dom";
-import { ReactGrid, Column, Row } from "@silevis/reactgrid";
-import "@silevis/reactgrid/styles.css";
 import InfiniteScroll from "react-infinite-scroller";
 import axios from "axios"; // Import Axios
 import Dropdown from "react-bootstrap/Dropdown";
