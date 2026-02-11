@@ -1,0 +1,62 @@
+body {
+  background-color: black;
+  margin: 0;
+}
+
+.app-background {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  bottom: 0;
+  right: 0;
+  border: none;
+  z-index: -1002;
+  background-image: url("./assets/52311-background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.app-logo-header {
+  background-color: transparent;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.app {
+  color: white;
+  overflow-y: auto;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.app-license-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  background-color: #1c1c1c;
+  color: white;
+  font-size: 15px;
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+.license-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 70px;
+  width: 320px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 16px;
+  color: #ddd;
+  z-index: 1001;
+}
+
+.page-card {
+  background: rgba(10, 10, 10, 0.75);
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 24px;
+}
