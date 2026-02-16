@@ -1,6 +1,5 @@
 .DS_Store
 
-<<<<<<< HEAD
 # Documentation (local only - not for GitHub)
 CLAUDE.md
 daily.md
@@ -15,10 +14,3 @@ dailyf.md
 .env.*
 !.env.example
 !.env.sample
-=======
-# Documentation - local only, do not push to GitHub
-*.md
-!README.md
-!CONTRIBUTING.md
-!LICENSE.md
->>>>>>> disable-word-for-code-fixed
