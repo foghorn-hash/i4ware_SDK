@@ -48,7 +48,7 @@ const strings = new LocalizedStrings({
     extrasSuLabel: "Extras Sun",
     extrasEveningLabel: "Extras Evening",
     extrasNightLabel: "Extras Night",
-    extrasPlaceholder: "Enter hours if any", 
+    extrasPlaceholder: "Enter hours if any",
     showExtrasPlaceholder: "Fill in",
 
     //overtime hours
@@ -56,8 +56,8 @@ const strings = new LocalizedStrings({
     overtimeVrk100Label: "Overtime day 100%",
     overtimeVko50Label: "Overtime week 50%",
     overtimeVko100Label: "Overtime week 100%",
-    overtimePlaceholder: "Enter hours if any", 
-    showOvertimePlaceholder: "Fill in",  
+    overtimePlaceholder: "Enter hours if any",
+    showOvertimePlaceholder: "Fill in",
 
     //compensations
     atvLabel: "ATV (holiday hours)",
@@ -102,7 +102,7 @@ const strings = new LocalizedStrings({
     messageTooSmall: "This number is too small",
 
     requiredField: "This field is required",
-    
+
     successSendForm: "Row added successfully",
     errorSendForm: "Failed to add row",
 
@@ -154,7 +154,7 @@ const strings = new LocalizedStrings({
     //normal hours
     normalHoursLabel: "Norm. tunnit",
     normalHoursPlaceholder: "Syötä tehdyt työtunnit",
-    
+
     //extras
     extrasLaLabel: "Lisät la",
     extrasSuLabel: "Lisät su",
@@ -169,7 +169,7 @@ const strings = new LocalizedStrings({
     overtimeVko50Label: "Ylityö vko 50%",
     overtimeVko100Label: "Ylityö vko 100%",
     overtimePlaceholder: "Syötä tunteina, jos on",
-    showOvertimePlaceholder: "Täytä", 
+    showOvertimePlaceholder: "Täytä",
 
     //compensations
     atvLabel: "ATV (arkipyhättunnit)",
@@ -277,7 +277,7 @@ const strings = new LocalizedStrings({
     overtimeVko50Label: "Övertid vecka 50%",
     overtimeVko100Label: "Övertid vecka 100%",
     overtimePlaceholder: "Ange timmar om det finns",
-    showOvertimePlaceholder: "Fylla i",  
+    showOvertimePlaceholder: "Fylla i",
 
     //compensations
     atvLabel: "ATV (helgtimmar)",
@@ -337,18 +337,34 @@ const strings = new LocalizedStrings({
   },
 });
 
+// Resolve the best initial language
+
+function getInitialLanguage() {
+  const saved = localStorage.getItem("appLang");
+  if (saved && strings.getAvailableLanguages().includes(saved)) return saved;
+
+  const fromUrl = new URLSearchParams(window.location.search).get("lang");
+  if (fromUrl && strings.getAvailableLanguages().includes(fromUrl)) return fromUrl;
+
+  return API_DEFAULT_LANGUAGE || "en";
+}
+
+// Set language immediately so strings are correct
+// on the first render
+const initialLanguage = getInitialLanguage();
+strings.setLanguage(initialLanguage);
+
 const LanguageContext = createContext();
 
 const LanguageProvider = ({ children }) => {
-  const defaultLanguage =
-    new URLSearchParams(window.location.search).get("lang") ||
-    API_DEFAULT_LANGUAGE ||
-    "en";
-  const [language, setLanguage] = useState(defaultLanguage);
+  const [language, setLanguageState] = useState(initialLanguage);
 
-  useEffect(() => {
-    strings.setLanguage(language);
-  }, [language]);
+  // Wrap setLanguage so it always keeps strings + localStorage in sync
+  const setLanguage = (lang) => {
+    strings.setLanguage(lang);
+    localStorage.setItem("appLang", lang);
+    setLanguageState(lang);
+  };
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, strings }}>
