@@ -3,7 +3,7 @@ import { NavLink, withRouter } from "react-router-dom";
 import axios from "axios";
 import {
   API_BASE_URL,
-  API_DEFAULT_LANGUAGE,
+  API_DEFAULT_LANGUAGE, // not used
   ACCESS_TOKEN_NAME,
 } from "../../constants/apiConstants";
 import Button from "react-bootstrap/Button";
@@ -29,21 +29,6 @@ function Header(props) {
   const [isMobileView, setIsMobileView] = useState(false);
 
   const { language, setLanguage, strings } = useContext(LanguageContext);
-
-  // const history = useHistory();
-  // const location = useLocation();
-
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get("lang");
-
-  if (localization === null) {
-    setLanguage(API_DEFAULT_LANGUAGE); // Update React state that controls the current language.
-    strings.setLanguage(API_DEFAULT_LANGUAGE); // Translation strings to switch language internally
-  } else {
-    setLanguage(localization);
-    strings.setLanguage(localization);
-  }
 
   const capitalize = (s) => {
     if (typeof s !== "string") return "";
@@ -80,33 +65,9 @@ function Header(props) {
     props.history.push("/login");
   };
 
-  const handleLocalization = () => {
-    const e = document.getElementById("language-selector");
-    const value = e.value;
-    const currentHash = window.location.hash;
-
-    // Check if there's already a language parameter in the URL
-    const hasLangParam = window.location.search.includes("lang=");
-
-    // Build the new URL with the updated language parameter
-    let newUrl;
-    if (hasLangParam) {
-      // Replace the existing language parameter value
-      newUrl = window.location.search.replace(/lang=[^&]*/, "lang=" + value);
-    } else {
-      // Add the new language parameter
-      newUrl =
-        window.location.search +
-        (window.location.search ? "&" : "?") +
-        "lang=" +
-        value;
-    }
-
-    // Combine the new URL with the current hash
-    const finalUrl = newUrl + currentHash;
-
-    // Update the window location
-    window.location.href = finalUrl;
+  const handleLocalization = (e) => {
+    const value = e.target.value;
+    setLanguage(value); // Just update context.
   };
 
   const renderLogout = () => {
@@ -184,7 +145,6 @@ function Header(props) {
         },
         { text: "settings", link: "/settings", permission: "settings.manage" },
       ].map((item, index) => {
-        // console.log(item.text, strings[item.text]);
         return item.permission ? (
           <PermissionGate permission={item.permission} key={index}>
             <Nav.Link as={NavLink} to={item.link} onClick={handleDrawerClose}>
@@ -255,7 +215,7 @@ function Header(props) {
                     alt="menu icon"
                   />
                 </Button>
-                {renderLogout(localization)}
+                {renderLogout()}
               </div>
               <Offcanvas
                 style={{ width: "220px" }}
@@ -376,7 +336,7 @@ function Header(props) {
                   </PermissionGate>
                 )}
               </Nav>
-              {renderLogout(localization)}
+              {renderLogout()}
             </>
           )}
         </Container>

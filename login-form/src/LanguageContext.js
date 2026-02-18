@@ -338,6 +338,7 @@ const strings = new LocalizedStrings({
 });
 
 // Resolve the best initial language
+// Priority: localStorage -> URL ?lang= param -> API_DEFAULT_LANGUAGE -> "en"
 
 function getInitialLanguage() {
   const saved = localStorage.getItem("appLang");
@@ -349,25 +350,31 @@ function getInitialLanguage() {
   return API_DEFAULT_LANGUAGE || "en";
 }
 
-// Set language immediately so strings are correct
-// on the first render
 const initialLanguage = getInitialLanguage();
 strings.setLanguage(initialLanguage);
+
+// Context
 
 const LanguageContext = createContext();
 
 const LanguageProvider = ({ children }) => {
   const [language, setLanguageState] = useState(initialLanguage);
 
-  // Wrap setLanguage so it always keeps strings + localStorage in sync
-  const setLanguage = (lang) => {
+  const setLanguage = React.useCallback((lang) => {
     strings.setLanguage(lang);
     localStorage.setItem("appLang", lang);
     setLanguageState(lang);
-  };
+  }, []);
+
+  strings.setLanguage(language);
+
+  const value = React.useMemo(
+    () => ({ language, setLanguage, strings }),
+    [language, setLanguage]
+  );
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, strings }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );
