@@ -21,14 +21,13 @@ import * as Yup from "yup";
 import TextInput, { PassWordInput } from "./../common/TextInput";
 import Select from "react-select";
 import PermissionGate from "../../contexts/PermissionGate";
-import { FormCheck, Container } from "react-bootstrap";
+import { FormCheck, Container, Pagination } from "react-bootstrap";
 import ChangePassword from "./ChangePassword";
 import LOADING from "../../tube-spinner.svg";
 import DefaultMaleImage from "../../male-default-profile-picture.png";
 import DefaultFemaleImage from "../../female-default-profile-picture.png";
 import { render } from "react-dom";
-import InfiniteScroll from "react-infinite-scroller";
-import axios from "axios"; // Import Axios
+import axios from "axios";
 import Dropdown from "react-bootstrap/Dropdown";
 import LocalizedStrings from "react-localization";
 
@@ -177,6 +176,9 @@ const validationSchema = Yup.object().shape({
     .required(strings.confirmPassword),
 });
 
+// Number of users to display per page
+const USERS_PER_PAGE = 10;
+
 function ManageAdmin() {
   const [users, setUsers] = useState([]);
   const [modalState, setModalState] = useState(false);
@@ -192,7 +194,7 @@ function ManageAdmin() {
   const [selectedRole, setSelectedRole] = useState("");
   const [imageSrc, setImageSrc] = useState(null);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState([]);
@@ -228,39 +230,45 @@ function ManageAdmin() {
     fetchAllRoles();
   }, []);
 
-  const fetchUsers = async () => {
+  // Fetch users whenever the page changes
+  useEffect(() => {
+    fetchUsers(page);
+  }, [page]);
+
+  const fetchUsers = async (pageNumber) => {
     try {
-      setIsLoading(true); // Set isLoading to true when starting the request
+      setIsLoading(true);
       const response = await axios.get(
-        `${API_BASE_URL}/api/manage/users?page=${page}`,
+        `${API_BASE_URL}/api/manage/users?page=${pageNumber}&per_page=${USERS_PER_PAGE}`,
         {
           headers: {
             Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
           },
         }
       );
-      const newUsers = response.data;
-      setUsers((prevUsers) => [...prevUsers, ...newUsers]);
-      // Check if there are more pages to load
-      if (newUsers.length < 10) {
-        setHasMore(false);
+
+      // Support both paginated response shapes:
+      // { data: [...], total: N } or plain array
+      const responseData = response.data;
+      if (Array.isArray(responseData)) {
+        setUsers(responseData);
+        // If the API returns fewer than USERS_PER_PAGE, we're on the last page
+        setTotalPages(
+          responseData.length < USERS_PER_PAGE ? pageNumber : pageNumber + 1
+        );
       } else {
-        // Increment the page number
-        setPage((prevPage) => prevPage + 1);
+        setUsers(responseData.data);
+        setTotalPages(Math.ceil(responseData.total / USERS_PER_PAGE));
       }
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false); // Set isLoading to false when the request is complete
+      setIsLoading(false);
     }
   };
 
-  const loadMore = () => {
-    //console.log("loadMore, page before update: " + page)
-    // Check if there are more items to load and no ongoing request
-    if (hasMore && !isLoading) {
-      fetchUsers();
-    }
+  const refreshUsers = () => {
+    fetchUsers(page);
   };
 
   const changeRole = (values) => {
@@ -269,13 +277,9 @@ function ManageAdmin() {
         ...values,
         userid: changeRoleUserId,
       })
-      .then((res) => {
+      .then(() => {
         setModalStateChangeRole(false);
-        request()
-          .get("/api/manage/users")
-          .then((res) => {
-            setUsers(res.data.data);
-          });
+        refreshUsers();
       });
   };
 
@@ -284,13 +288,9 @@ function ManageAdmin() {
       .post("/api/manage/users/change-status", {
         id: modalStateApproval,
       })
-      .then((res) => {
+      .then(() => {
         setModalStateApproval(null);
-        request()
-          .get("/api/manage/users")
-          .then((res) => {
-            setUsers(res.data.data);
-          });
+        refreshUsers();
       });
   };
 
@@ -299,13 +299,9 @@ function ManageAdmin() {
       .post("/api/manage/users/verify", {
         id: modalStateVerfiy,
       })
-      .then((res) => {
+      .then(() => {
         setModalStateVerify(null);
-        request()
-          .get("/api/manage/users")
-          .then((res) => {
-            setUsers(res.data.data);
-          });
+        refreshUsers();
       });
   };
 
@@ -315,19 +311,60 @@ function ManageAdmin() {
         id: modalStatePassword,
         ...values,
       })
-      .then((res) => {
+      .then(() => {
         setModalStatePassword(null);
-        request()
-          .get("/api/manage/users")
-          .then((res) => {
-            setUsers(res.data.data);
-          });
+        refreshUsers();
       });
   };
 
-  const handleRoleChange = (event) => {
-    setSelectedRole(event.target.value);
-    alert(event.target.value);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
+
+  // Build page items for the Bootstrap Pagination component
+  const renderPaginationItems = () => {
+    const items = [];
+    const delta = 2; // pages to show around the current page
+    const left = Math.max(1, page - delta);
+    const right = Math.min(totalPages, page + delta);
+
+    if (left > 1) {
+      items.push(
+        <Pagination.Item key={1} onClick={() => handlePageChange(1)}>
+          1
+        </Pagination.Item>
+      );
+      if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
+    }
+
+    for (let p = left; p <= right; p++) {
+      items.push(
+        <Pagination.Item
+          key={p}
+          active={p === page}
+          onClick={() => handlePageChange(p)}
+        >
+          {p}
+        </Pagination.Item>
+      );
+    }
+
+    if (right < totalPages) {
+      if (right < totalPages - 1)
+        items.push(<Pagination.Ellipsis key="right-ellipsis" disabled />);
+      items.push(
+        <Pagination.Item
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+        >
+          {totalPages}
+        </Pagination.Item>
+      );
+    }
+
+    return items;
   };
 
   return (
@@ -352,13 +389,9 @@ function ManageAdmin() {
                   .post("/api/manage/users/add-user", {
                     ...values,
                   })
-                  .then((res) => {
+                  .then(() => {
                     setModalState(false);
-                    request()
-                      .get("/api/manage/users")
-                      .then((res) => {
-                        setUsers(res.data.data);
-                      });
+                    refreshUsers();
                   });
               }}
             >
@@ -372,10 +405,7 @@ function ManageAdmin() {
                     />
                   </div>
                   <div className="col-12 mt-2">
-                    <label
-                      htmlFor="validationCustom03"
-                      className={"form-label"}
-                    >
+                    <label htmlFor="validationCustom03" className={"form-label"}>
                       {strings.gender}
                     </label>
                     <br />
@@ -392,10 +422,7 @@ function ManageAdmin() {
                     />
                   </div>
                   <div className="col-12 mt-2">
-                    <label
-                      htmlFor="validationCustom03"
-                      className={"form-label"}
-                    >
+                    <label htmlFor="validationCustom03" className={"form-label"}>
                       {strings.role}
                     </label>
                     <br />
@@ -412,11 +439,8 @@ function ManageAdmin() {
                       })}
                     </Field>
                   </div>
-                  <div className="form-group  mt-2 text-left">
-                    <label
-                      htmlFor="validationCustom03"
-                      className={"form-label"}
-                    >
+                  <div className="form-group mt-2 text-left">
+                    <label htmlFor="validationCustom03" className={"form-label"}>
                       {strings.password}
                     </label>
                     <PassWordInput
@@ -426,11 +450,8 @@ function ManageAdmin() {
                       type="password"
                     />
                   </div>
-                  <div className="form-group  mt-2 text-left">
-                    <label
-                      htmlFor="validationCustom03"
-                      className={"form-label"}
-                    >
+                  <div className="form-group mt-2 text-left">
+                    <label htmlFor="validationCustom03" className={"form-label"}>
                       {strings.confirmPassword}
                     </label>
                     <PassWordInput
@@ -525,6 +546,7 @@ function ManageAdmin() {
           userId={modalStatePassword}
         />
       </ModalPasswordChange>
+
       {
         <PermissionGate permission={"users.addUser"}>
           <div className="button-bar">
@@ -555,17 +577,12 @@ function ManageAdmin() {
         </div>
 
         <div className="table-body">
-          <InfiniteScroll
-            pageStart={1}
-            loadMore={loadMore}
-            hasMore={hasMore}
-            loader={
-              <div className="loading-screen">
-                <img src={LOADING} alt="Loading..." key={0} />
-              </div>
-            }
-          >
-            {users.map((item, index) => {
+          {isLoading ? (
+            <div className="loading-screen">
+              <img src={LOADING} alt="Loading..." />
+            </div>
+          ) : (
+            users.map((item, index) => {
               const profilePicUrl = item.profile_picture_path
                 ? API_BASE_URL +
                   item.profile_picture_path.replaceAll(
@@ -575,9 +592,11 @@ function ManageAdmin() {
                 : null;
               const defaultImg =
                 item.gender === "male" ? DefaultMaleImage : DefaultFemaleImage;
+              // Compute the global row number across pages
+              const rowNumber = (page - 1) * USERS_PER_PAGE + index + 1;
 
               return (
-                <div className="mobile-table-body">
+                <div className="mobile-table-body" key={item.id}>
                   <div className="mobile-table-header">
                     <div className="column">#</div>
                     <div className="column">ID</div>
@@ -591,8 +610,8 @@ function ManageAdmin() {
                     <div className="column">{strings.columnActions}</div>
                   </div>
 
-                  <div key={index + 1} className="table-row">
-                    <div className="column">{index + 1}</div>
+                  <div className="table-row">
+                    <div className="column">{rowNumber}</div>
                     <div className="column">{item.id}</div>
                     <div className="column">
                       <img
@@ -603,8 +622,7 @@ function ManageAdmin() {
                     </div>
                     <div className="column">{item.name}</div>
                     <div className="column">
-                      {item.email_verified_at != null && "true"}{" "}
-                      {item.email_verified_at == null && "false"}
+                      {item.email_verified_at != null ? "true" : "false"}
                     </div>
                     <div className="column">{item.email}</div>
                     <div className="column">
@@ -615,11 +633,8 @@ function ManageAdmin() {
                       <FormCheck
                         type="switch"
                         disabled
-                        checked={item.is_active === 1 ? true : false}
+                        checked={item.is_active === 1}
                         label=""
-                        onClick={() => {
-                          console.log(item.id);
-                        }}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -635,7 +650,6 @@ function ManageAdmin() {
                         <Dropdown.Toggle variant="success" id="dropdown-basic">
                           {strings.actions}
                         </Dropdown.Toggle>
-
                         <Dropdown.Menu
                           className={`mobile-dropdown ${
                             menuOpen[index] ? "visible" : ""
@@ -643,9 +657,7 @@ function ManageAdmin() {
                         >
                           <PermissionGate permission={"users.changePassword"}>
                             <Dropdown.Item
-                              onClick={() => {
-                                setModalStatePassword(item.id);
-                              }}
+                              onClick={() => setModalStatePassword(item.id)}
                             >
                               {strings.changePassword}
                             </Dropdown.Item>
@@ -662,9 +674,7 @@ function ManageAdmin() {
                           </PermissionGate>
                           <PermissionGate permission={"users.statusChange"}>
                             <Dropdown.Item
-                              onClick={() => {
-                                setModalStateApproval(item.id);
-                              }}
+                              onClick={() => setModalStateApproval(item.id)}
                             >
                               {item.is_active === 1
                                 ? strings.deactivateUser
@@ -673,9 +683,7 @@ function ManageAdmin() {
                           </PermissionGate>
                           <PermissionGate permission={"users.verifyUser"}>
                             <Dropdown.Item
-                              onClick={() => {
-                                setModalStateVerify(item.id);
-                              }}
+                              onClick={() => setModalStateVerify(item.id)}
                             >
                               {strings.verifyUser}
                             </Dropdown.Item>
@@ -686,11 +694,38 @@ function ManageAdmin() {
                   </div>
                 </div>
               );
-            })}
-          </InfiniteScroll>
+            })
+          )}
         </div>
+
+        {/* Pagination Controls */}
+        {!isLoading && totalPages > 1 && (
+          <div className="d-flex justify-content-center mt-3">
+            <Pagination>
+              <Pagination.First
+                onClick={() => handlePageChange(1)}
+                disabled={page === 1}
+              />
+              <Pagination.Prev
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              />
+              {renderPaginationItems()}
+              <Pagination.Next
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              />
+              <Pagination.Last
+                onClick={() => handlePageChange(totalPages)}
+                disabled={page === totalPages}
+              />
+            </Pagination>
+          </div>
+        )}
+
         <div className="spacer"></div>
       </div>
+
       <Modal show={modalStateChangeRole}>
         {
           <div className="">
@@ -717,11 +752,14 @@ function ManageAdmin() {
                         {strings.notAssigned}
                       </option>
                       {roles.map((item) => {
-                        return <option value={item.id}>{item.name}</option>;
+                        return (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        );
                       })}
                     </select>
                   </div>
-
                   <div className="spacer"></div>
                   <div>
                     <div className="float-left">
