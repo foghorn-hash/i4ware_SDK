@@ -239,10 +239,7 @@ class OpenAIService
                     ],
                     [
                         'role' => 'user',
-                        'content' => [
-                            ['type' => 'input_text', 'text' => $prompt],
-                            ['type' => 'input_file', 'file_url' => env("APP_NGROK_URL)") . $fileUrl],
-                        ],
+                        'content' => $analysisContent,  
                     ],
                 ],
                 'max_tokens' => $this->maxTokens ?? 1024,
