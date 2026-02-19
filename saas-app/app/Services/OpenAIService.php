@@ -239,7 +239,7 @@ class OpenAIService
                     ],
                     [
                         'role' => 'user',
-                        'content' => $analysisContent,  // ✅ already built above with prompt + PDF text
+                        'content' => $analysisContent,  
                     ],
                 ],
                 'max_tokens' => $this->maxTokens ?? 1024,
