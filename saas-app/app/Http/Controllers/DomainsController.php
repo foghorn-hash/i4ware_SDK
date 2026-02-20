@@ -41,7 +41,7 @@ class DomainsController extends Controller
     
         Log::info('Domains:', ['domains' => $domains]);
     
-        $perPage = 10;
+        $perPage = 50;
 
         $page = $request->input('page', 1);
 

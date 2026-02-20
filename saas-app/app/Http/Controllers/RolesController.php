@@ -74,7 +74,7 @@ class RolesController extends Controller
     
         Log::info('Roles:', ['roles' => $roles]);
     
-        $perPage = 10;
+        $perPage = 50;
 
         $page = $request->input('page', 1);
 
