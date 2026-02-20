@@ -1,57 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import axios from 'axios'; // Import Axios
 import { Modal, Card, Button, Container, Row, Col } from 'react-bootstrap';
 import { ModalWindow3DViewer } from './ModalWindow3DViewer.js'
 import './STLViewerComponent.css';
 import FileUploadForm from '../../components/FileUploadForm/FileUploadForm';
-import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA} from "../../constants/apiConstants";
+import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA } from "../../constants/apiConstants";
 import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from 'react-infinite-scroller';
-import LocalizedStrings from 'react-localization';
 import ModalDelete from './ModalDelete';
+import { useTranslation } from 'react-i18next';
 
-let strings = new LocalizedStrings({
-  en: {
-    viewSTL: "View STL",
-    modelViewerTitle: "3D Model Viewer",
-    close: "Close",
-    loading: "Loading...",
-    delete: "Delete",
-    isLoading: "Loading more items...",
-    generateSpaceship: "Generate Spaceship",
-    generateCyborg: "Generate Cyborg",
-    generating: "Generating...",
-    isGenerating: "Generating 3D Model & Screenshot...",
-    generateCar: "Generate Sports Car",
-  },
-  fi: {
-    viewSTL: "Näytä STL",
-    modelViewerTitle: "3D-mallin katseluohjelma",
-    close: "Sulje",
-    loading: "Ladataan...",
-    delete: "Poista",
-    isLoading: "Ladataan lisää kohteita...",
-    generateSpaceship: "Luo avaruusalus",
-    generateCyborg: "Luo kyborgi",
-    generating: "Luodaan...",
-    isGenerating: "Luodaan 3D-mallia ja kuvakaappausta...",
-    generateCar: "Luo urheiluauto",
-  },
-  sv: {
-    viewSTL: "Visa STL",
-    modelViewerTitle: "3D-modellvisare",
-    close: "Stäng",
-    loading: "Laddar...",
-    delete: "Radera",
-    isLoading: "Laddar fler objekt...",
-    generateSpaceship: "Generera rymdskepp",
-    generateCyborg: "Generera cyborg",
-    generating: "Genererar...",
-    isGenerating: "Genererar 3D-modell och skärmdump...",
-    generateCar: "Generera sportbil",
-  }
-});
 
 function STLViewerComponent() {
 
@@ -60,20 +19,22 @@ function STLViewerComponent() {
   const [stlItems, setStlItems] = useState([]); // State to hold fetched STL files
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  const { t, i18n } = useTranslation();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   //This is fired when the user uploads a new item (.stl file)
   const newItemIsUploaded = async (fileName) => {
@@ -86,22 +47,22 @@ function STLViewerComponent() {
             Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
           },
         });
-       // Check if the response contains an item
-       if (response.data) {
-        const newItem = response.data;
-        
-        // Use the spread operator to add the new item to the stlFiles state
-        setStlItems((prevStlFiles) => [...prevStlFiles, newItem]);
+        // Check if the response contains an item
+        if (response.data) {
+          const newItem = response.data;
+
+          // Use the spread operator to add the new item to the stlFiles state
+          setStlItems((prevStlFiles) => [...prevStlFiles, newItem]);
         }
       }//try
       catch (error) {
         console.error('Error fetching STL files:', error);
-        } 
+      }
       finally {
         setIsLoading(false); // Set isLoading to false when the request is complete
-        }
       }
-    };
+    }
+  };
 
   const fetchStlFiles = async () => {
     //console.log("fetchFiles % page: " + page)
@@ -120,11 +81,11 @@ function STLViewerComponent() {
       // Check if there are more pages to load
       if (newStlFiles.length < 9) {
         setHasMore(false);
-        }
+      }
       else {
         // Increment the page number
         setPage(prevPage => prevPage + 1);
-        }
+      }
 
     } catch (error) {
       console.error('Error fetching STL files:', error);
@@ -138,7 +99,7 @@ function STLViewerComponent() {
     // Check if there are more items to load and no ongoing request
     if (hasMore && !isLoading) {
       fetchStlFiles()
-      }
+    }
   };
 
   const openModal = (modelUrl) => {
@@ -161,34 +122,34 @@ function STLViewerComponent() {
     setShowDeleteModal(false);
   };
 
-const removeItem = async (fileName) => {
-  try {
-    setIsLoading(true);
-    const deleteUrl = `${API_BASE_URL}/api/stl/delete-stl?fileName=${fileName}`;
-    console.log(`Attempting to delete item: ${fileName} at URL: ${deleteUrl}`);
+  const removeItem = async (fileName) => {
+    try {
+      setIsLoading(true);
+      const deleteUrl = `${API_BASE_URL}/api/stl/delete-stl?fileName=${fileName}`;
+      console.log(`Attempting to delete item: ${fileName} at URL: ${deleteUrl}`);
 
-    const response = await axios.delete(deleteUrl, {
-      headers: {
-        Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME), 
-      },
-    });
+      const response = await axios.delete(deleteUrl, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
+        },
+      });
 
-    console.log('Response from delete request:', response);
+      console.log('Response from delete request:', response);
 
-    if (response.status === 200) {
-      setStlItems((prevStlFiles) => prevStlFiles.filter((file) => file.stl_filename !== fileName));
-      console.log(`Item ${fileName} deleted successfully`);
-    } else {
-      console.error('Failed to delete the item. Status:', response.status);
+      if (response.status === 200) {
+        setStlItems((prevStlFiles) => prevStlFiles.filter((file) => file.stl_filename !== fileName));
+        console.log(`Item ${fileName} deleted successfully`);
+      } else {
+        console.error('Failed to delete the item. Status:', response.status);
+      }
+    } catch (error) {
+      console.error('Error deleting STL file:', error);
+    } finally {
+      setIsLoading(false);
+      closeModalDelete();
     }
-  } catch (error) {
-    console.error('Error deleting STL file:', error);
-  } finally {
-    setIsLoading(false);
-    closeModalDelete();
-  }
-};
-  
+  };
+
   stlItems.forEach((file, index) => {
     //console.log(file.stl_filename);
   });
@@ -202,7 +163,7 @@ const removeItem = async (fileName) => {
         {},
         {
           headers: {
-            Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME), 
+            Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
             'Content-Type': 'application/json',
           },
         }
@@ -252,7 +213,7 @@ const removeItem = async (fileName) => {
         {},
         {
           headers: {
-            Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME), 
+            Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
             'Content-Type': 'application/json',
           },
         }
@@ -302,7 +263,7 @@ const removeItem = async (fileName) => {
         {},
         {
           headers: {
-            Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME), 
+            Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
             'Content-Type': 'application/json',
           },
         }
@@ -354,7 +315,7 @@ const removeItem = async (fileName) => {
           disabled={isGenerating}
           style={{ marginLeft: '10px' }}
         >
-          {isGenerating ? strings.generating : strings.generateSpaceship}
+          {isGenerating ? t('generating') : t('generateSpaceship')}
         </Button>
         <Button
           className='STL-generate-button'
@@ -363,7 +324,7 @@ const removeItem = async (fileName) => {
           disabled={isGenerating}
           style={{ marginLeft: '10px' }}
         >
-          {isGenerating ? strings.generating : strings.generateCar}
+          {isGenerating ? t('generating') : t('generateCar')}
         </Button>
         <Button
           className='STL-generate-button'
@@ -372,7 +333,7 @@ const removeItem = async (fileName) => {
           disabled={isGenerating}
           style={{ marginLeft: '10px' }}
         >
-          {isGenerating ? strings.generating : strings.generateCyborg}
+          {isGenerating ? t('generating') : t('generateCyborg')}
         </Button>
         <div className='STLViewerComponent-clear'></div>
       </div>
@@ -381,7 +342,7 @@ const removeItem = async (fileName) => {
           pageStart={1}
           loadMore={loadMore}
           hasMore={hasMore}
-          loader={<div className="loading">{strings.isLoading}</div>}
+          loader={<div className="loading">{t('isLoading')}</div>}
         >
           <Row className='STLViewerComponent-row'>
             {stlItems.map((file, index) => (
@@ -403,8 +364,8 @@ const removeItem = async (fileName) => {
                         display: 'flex',
                         justifyContent: 'space-between',
                       }}>
-                      <Button variant="primary" onClick={() => openModal(file.stl_filename)}>{strings.viewSTL}</Button>
-                      <Button variant="danger" onClick={() => openDeleteModal(file.stl_filename)}>{strings.delete}</Button></div>
+                        <Button variant="primary" onClick={() => openModal(file.stl_filename)}>{t('viewSTL')}</Button>
+                        <Button variant="danger" onClick={() => openDeleteModal(file.stl_filename)}>{t('delete')}</Button></div>
                     </div>
                   </Card.Body>
                 </Card>
@@ -413,33 +374,33 @@ const removeItem = async (fileName) => {
           </Row>
         </InfiniteScroll>
       </Container>
-      {isLoading && <div className="loading-screen"><img src={LOADING} alt={strings.isLoading} /></div>}
+      {isLoading && <div className="loading-screen"><img src={LOADING} alt={t('isLoading')} /></div>}
       <Modal show={showModal}
-      onHide={closeModal} dialogClassName="STLViewerComponent-large-modal">
+        onHide={closeModal} dialogClassName="STLViewerComponent-large-modal">
         <Modal.Header closeButton>
-          <Modal.Title>{strings.modelViewerTitle}</Modal.Title>
+          <Modal.Title>{t('modelViewerTitle')}</Modal.Title>
         </Modal.Header>
         <Modal.Body className='STLViewerComponent-modal-body'>
           {/* Render the viewer within the Modal */}
-          <div className='STlViewerComponent-modal-window'><ModalWindow3DViewer stlFilename={selectedModel}/></div>
+          <div className='STlViewerComponent-modal-window'><ModalWindow3DViewer stlFilename={selectedModel} /></div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={closeModal}>
-            {strings.close}
+            {t('close')}
           </Button>
         </Modal.Footer>
       </Modal>
-      <ModalDelete 
-        show={showDeleteModal} 
-        handleClose={closeModalDelete} 
-        handleDelete={removeItem} 
+      <ModalDelete
+        show={showDeleteModal}
+        handleClose={closeModalDelete}
+        handleDelete={removeItem}
         fileName={fileToDelete} />
-        {isGenerating && (
-          <div className="loading-screen">
-            <img src={LOADING} alt={strings.isLoading} />
-            <p>{strings.isGenerating}</p>
-          </div>
-        )}
+      {isGenerating && (
+        <div className="loading-screen">
+          <img src={LOADING} alt={t('isLoading')} />
+          <p>{t('isGenerating')}</p>
+        </div>
+      )}
     </>
   );
 }

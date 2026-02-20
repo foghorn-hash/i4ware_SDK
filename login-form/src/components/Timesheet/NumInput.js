@@ -1,6 +1,6 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form } from 'react-bootstrap';
-import { LanguageContext } from "../../LanguageContext";
+import { useTranslation } from 'react-i18next';
 
 const Num = ({
   value,
@@ -14,7 +14,7 @@ const Num = ({
   required = false,
   ...rest
 }) => {
-  const { strings } = useContext(LanguageContext);
+  const { t } = useTranslation();
   const [error, setError] = useState('');
   const inputRef = useRef();
 
@@ -22,11 +22,11 @@ const Num = ({
     let val = Number(e.target.value || 0);
 
     if (val > max) {
-      setError(strings.messageTooBig);
+      setError(t('messageTooBig'));
       return;
       
     } else if (val < min) {
-      setError(strings.messageTooSmall);
+      setError(t('messageTooSmall'));
       return;
 
     } else {
@@ -48,15 +48,18 @@ const Num = ({
   // this helps to activate wheel function
   useEffect(() => {
     const input = inputRef.current;
-    input.addEventListener('wheel', handleWheel, { passive: false });
-    return () => {
-      input.removeEventListener('wheel', handleWheel);
-    };
+    if (input) {
+      input.addEventListener('wheel', handleWheel, { passive: false });
+      return () => {
+        input.removeEventListener('wheel', handleWheel);
+      };
+    }
   }, [value, step, min, max]);
 
   return (
     <div>
       <Form.Control
+        ref={inputRef}
         type="number"
         value={value}
         onChange={handleChange}

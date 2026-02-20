@@ -2,37 +2,17 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   API_BASE_URL,
   ACCESS_TOKEN_NAME,
-  API_DEFAULT_LANGUAGE,
 } from "../../constants/apiConstants";
 import Axios from "axios";
 import HighlightedResponse from "./HighlightedResponse";
 import { PlayFill, StopFill, Download } from "react-bootstrap-icons";
 import CustomModal from "./CustomModal"; // Import the custom modal component
-import LocalizedStrings from "react-localization";
 import { Virtuoso } from "react-virtuoso";
 import { Button } from "react-bootstrap";
+import { useTranslation } from "react-i18next";
+
 let currentDate;
 let prevDate;
-
-let strings = new LocalizedStrings({
-  en: {
-    your_browser_not_support_video_tag:
-      "Your browser does not support the video tag.",
-    generateSpeech: "Generate Speech",
-    stopSpeech: "Stop Speech",
-  },
-  fi: {
-    your_browser_not_support_video_tag: "Selaimesi ei tue video tagia.",
-    generateSpeech: "Luo puhe",
-    stopSpeech: "Pysäytä puhe",
-  },
-  sv: {
-    your_browser_not_support_video_tag:
-      "Din webbläsare stöder inte videomarkeringen.",
-    generateSpeech: "Generera tal",
-    stopSpeech: "Stoppa tal",
-  },
-});
 
 const MessageList = ({
   messages,
@@ -56,33 +36,35 @@ const MessageList = ({
   const [modalContent, setModalContent] = useState(<></>); // Initialize to an empty React fragment
   const [isVideo, setIsVideo] = useState(false); // Track if the modal content is a video
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get("lang");
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  const { t, i18n } = useTranslation();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   const processedMessages = Array.isArray(messages)
     ? [...messages].map((msg) => {
-        const profilePicUrl = msg.profile_picture_path
-          ? `${API_BASE_URL}${msg.profile_picture_path.replace(
-              "public/uploads",
-              "/storage/uploads"
-            )}`
-          : null;
-        const defaultImg =
-          msg.gender === "male" ? DefaultMaleImage : DefaultFemaleImage;
+      const profilePicUrl = msg.profile_picture_path
+        ? `${API_BASE_URL}${msg.profile_picture_path.replace(
+          "public/uploads",
+          "/storage/uploads"
+        )}`
+        : null;
+      const defaultImg =
+        msg.gender === "male" ? DefaultMaleImage : DefaultFemaleImage;
 
-        return {
-          ...msg,
-          profilePicUrl,
-          defaultImg,
-        };
-      })
+      return {
+        ...msg,
+        profilePicUrl,
+        defaultImg,
+      };
+    })
     : [];
 
   const handleImageClick = (content, isVideoContent) => {
@@ -139,14 +121,14 @@ const MessageList = ({
                     controls={false}
                   >
                     <source src={imageUrl} type="video/mp4" />
-                    {strings.your_browser_not_support_video_tag}
+                    {t('your_browser_not_support_video_tag')}
                   </video>,
                   true
                 )
               }
             >
               <source src={imageUrl} type="video/mp4" />
-              {strings.your_browser_not_support_video_tag}
+              {t('your_browser_not_support_video_tag')}
             </video>
           </>
         );
@@ -309,8 +291,8 @@ const MessageList = ({
                   {loadingOlder
                     ? "Loading..."
                     : hasMore
-                    ? "Load older messages"
-                    : "No More Messages"}
+                      ? "Load older messages"
+                      : "No More Messages"}
                 </Button>
               </div>
             );

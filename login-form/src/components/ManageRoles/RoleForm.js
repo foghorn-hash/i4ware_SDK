@@ -8,56 +8,29 @@ import * as Yup from "yup";
 import { withRouter } from "react-router-dom";
 import TextInput from "../common/TextInput";
 import LocalizedStrings from "react-localization";
+import { useTranslation } from "react-i18next";
 
-let strings = new LocalizedStrings({
-  en: {
-    addRole: "Add Role",
-    editRole: "Edit Role",
-    roleName: "Role Name",
-    permission: "Permission :",
-    save: "Save",
-    required: "Required",
-    allDomains: "All domains",
-  },
-  fi: {
-    addRole: "Lisää Rooli",
-    editRole: "Muokkaa Roolia",
-    roleName: "Roolin Nimi",
-    permission: "Oikeudet :",
-    save: "Tallenna",
-    required: "Vaadittu",
-    allDomains: "Kaikki domainit",
-  },
-  sv: {
-    addRole: "Lägg till roll",
-    editRole: "Redigera roll",
-    roleName: "Rollnamn",
-    permission: "Behörigheter:",
-    save: "Spara",
-    required: "Obligatoriskt",
-    allDomains: "Alla domäner",
-  },
-});
+
 
 const validateSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
 });
 
 function RoleForm(props) {
+  const { i, i18n } = useTranslation();
   const { authState, authActions } = React.useContext(AuthContext);
   const [permissions, setPermission] = React.useState([]);
   const [editRole, setEditRole] = React.useState(null);
   const [selectPermissions, setSelectPermissions] = React.useState([]);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get("lang");
+  const urlParams = new URLSearchParams(window.location.search);
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   useEffect(() => {
     // fetch permission
@@ -112,7 +85,7 @@ function RoleForm(props) {
 
   return (
     <div style={{ marginTop: "2em" }}>
-      <h3 className="my-2">{editRole ? strings.editRole : strings.addRole}</h3>
+      <h3 className="my-2">{editRole ? this('editRole') : this('addRole')}</h3>
       <div className="my-2">
         <Formik
           initialValues={{
@@ -130,7 +103,7 @@ function RoleForm(props) {
               <div className="col-12">
                 <div className="col-4">
                   <TextInput
-                    label={strings.roleName}
+                    label={this('roleName')}
                     name="name"
                     value={values.name}
                   />
@@ -146,11 +119,11 @@ function RoleForm(props) {
                   width: "100%",
                 }}
               >
-                <h5>{strings.permission}</h5>
+                <h5>{this('permission')}</h5>
                 {permissions.map((permission) => {
                   var domain;
                   if (permission.domain == null) {
-                    domain = strings.allDomains;
+                    domain = this('allDomains');
                   } else {
                     domain = permission.domain;
                   }
@@ -201,7 +174,7 @@ function RoleForm(props) {
                   }}
                   className="btn btn-primary"
                 >
-                  {strings.save}
+                  {this('save')}
                 </button>
                 <button
                   style={{ marginLeft: "100px" }}

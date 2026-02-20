@@ -1,54 +1,37 @@
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import {API_DEFAULT_LANGUAGE} from "../../constants/apiConstants";
-import LocalizedStrings from 'react-localization';
+import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
-let strings = new LocalizedStrings({
-  en: {
-    are_you_sure: "Are you sure?",
-    are_you_sure_text: "Are you sure to delete this item? This action cannot be undone.",
-    yes: "Yes, delete it",
-    no: "No, cancel",
-  },
-  fi: {
-    are_you_sure: "Oletko varma?",
-    are_you_sure_text: "Oletko varma, että haluat poistaa tämän kohteen? Tätä toimintoa ei voi kumota.",
-    yes: "Kyllä, poista se",
-    no: "Ei, peruuta",
-  },
-  sv: {
-    are_you_sure: "Är du säker?",
-    are_you_sure_text: "Är du säker på att du vill radera denna post? Denna åtgärd kan inte ångras.",
-    yes: "Ja, radera den",
-    no: "Nej, avbryt",
-  }
-});
 
 function ModalPhotoVideoDelete({ show, handleClose, handleDelete, fileName }) {
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  const { t, i18n } = useTranslation();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   return (
     <>
       <Modal show={show} onHide={handleClose} animation={false} centered>
         <Modal.Header closeButton>
-          <Modal.Title>{strings.are_you_sure}</Modal.Title>
+          <Modal.Title>{t('are_you_sure')}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>{strings.are_you_sure_text}</Modal.Body>
+        <Modal.Body>{t('are_you_sure_text_modalphoto')}</Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={() => handleDelete(fileName)}>
-            {strings.yes}
+            {t('yes_delete')}
           </Button>
           <Button variant="secondary" onClick={handleClose}>
-            {strings.no}
+            {t('no_delete')}
           </Button>
         </Modal.Footer>
       </Modal>

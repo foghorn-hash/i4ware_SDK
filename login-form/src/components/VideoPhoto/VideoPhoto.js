@@ -19,55 +19,8 @@ import { AuthContext } from "../../contexts/auth.contexts";
 import LOADING from "../../tube-spinner.svg";
 import ImageVideoGallary from "../imageVideoGallary/imageVideoGallary";
 import CaptureVideoPhoto from '../CaptureVideoPhoto/CaptureVideoPhoto';
-// ES6 module syntax
-import LocalizedStrings from 'react-localization';
+import { useTranslation } from "react-i18next";
 
-// import { AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
-// import InfiniteScroll from 'react-infinite-scroller';
-// import Axios from 'axios';
-// import ModalPhotoVideoDelete from "./ModalPhotoVideoDelete";
-
-let strings = new LocalizedStrings({
-    en: {
-        videoPhoto: "Video/Photo",
-        uploadPhoto: "Upload Photo",
-        capturePhoto: "Capture Photo",
-        uploadVideo: "Upload Video",
-        captureVideo: "Capture Video",
-        uploadSuccess: "Upload Successful",
-        imageUploadSuccess: "Image uploaded successfully!",
-        videoUploadSuccess: "Video uploaded successfully!",
-        uploadError: "Upload Error",
-        imageTypeNotSupported: "Image type is not supported. Please upload a JPEG (jpg) or PNG (png) image.",
-        videoSizeTooLarge: "Video size is too large. Please upload a video file less than 100 MB."
-    },
-    fi: {
-        videoPhoto: "Video/Kuva",
-        uploadPhoto: "Lataa kuva",
-        capturePhoto: "Ota kuva",
-        uploadVideo: "Lataa video",
-        captureVideo: "Ota video",
-        uploadSuccess: "Lataus onnistui",
-        imageUploadSuccess: "Kuva ladattu onnistuneesti!",
-        videoUploadSuccess: "Video ladattu onnistuneesti!",
-        uploadError: "Latausvirhe",
-        imageTypeNotSupported: "Kuvatyyppiä ei tueta. Lataa JPEG (jpg) tai PNG (png) kuva.",
-        videoSizeTooLarge: "Videotiedosto on liian suuri. Lataa videotiedosto, joka on alle 100 Mt."
-    },
-    sv: {
-        videoPhoto: "Video/Foto",
-        uploadPhoto: "Ladda upp foto",
-        capturePhoto: "Ta foto",
-        uploadVideo: "Ladda upp video",
-        captureVideo: "Spela in video",
-        uploadSuccess: "Uppladdning lyckades",
-        imageUploadSuccess: "Bild uppladdad framgångsrikt!",
-        videoUploadSuccess: "Video uppladdad framgångsrikt!",
-        uploadError: "Uppladdningsfel",
-        imageTypeNotSupported: "Bildtyp stöds inte. Ladda upp en JPEG (jpg) eller PNG (png) bild.",
-        videoSizeTooLarge: "Videostorleken är för stor. Ladda upp en videofil mindre än 100 MB."
-    }
-});
 
 function VideoPhoto(props) {
     const [page, setPage] = useState(1);
@@ -78,7 +31,7 @@ function VideoPhoto(props) {
     // const [selectedFile, setSelectedFile] = useState(null);
 
     const fileInputRef = useRef(null);
-      const videoFileInputRef = useRef(null); 
+    const videoFileInputRef = useRef(null);
 
     const [showCapturePhoto, setShowCapturePhoto] = useState(false);
 
@@ -96,15 +49,17 @@ function VideoPhoto(props) {
         setShowCaptureVideo(!showCaptureVideo);
     };
 
-    var query = window.location.search.substring(1);
-    var urlParams = new URLSearchParams(query);
-    var localization = urlParams.get('lang');
 
-    if (localization == null) {
-        strings.setLanguage(API_DEFAULT_LANGUAGE);
-    } else {
-        strings.setLanguage(localization);
-    }
+    const { t, i18n } = useTranslation();
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    useEffect(() => {
+        const langFromUrl = urlParams.get("lang");
+        if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+            i18n.changeLanguage(langFromUrl);
+        }
+    }, [i18n, urlParams]);
 
     useEffect(() => {
         loadMore();
@@ -126,7 +81,7 @@ function VideoPhoto(props) {
             window.removeEventListener('scroll', handleScroll);
         };
     }, [assets, isLoading, hasMore, page]);
- 
+
     const loadMore = () => {
         if (isLoading || !hasMore) return;
 
@@ -172,7 +127,7 @@ function VideoPhoto(props) {
             });
     };
 
-  
+
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (!file) {
@@ -182,8 +137,8 @@ function VideoPhoto(props) {
         if (!file.type.includes('image/jpeg') && !file.type.includes('image/png')) {
             console.error("Image type is not supported");
             Swal.fire({
-                title: strings.uploadError,
-                text: strings.imageTypeNotSupported,
+                title: t('uploadError'),
+                text: t('imageTypeNotSupported'),
                 icon: 'error'
             });
             return;
@@ -196,8 +151,8 @@ function VideoPhoto(props) {
 
             // Show success message
             Swal.fire({
-                title: strings.uploadSuccess,
-                text: strings.imageUploadSuccess,
+                title: t('uploadSuccess'),
+                text: t('imageUploadSuccess'),
                 icon: 'success',
                 timer: 3000,
                 showConfirmButton: false
@@ -208,13 +163,13 @@ function VideoPhoto(props) {
         } catch (error) {
             console.error("Error uploading image:", error);
             Swal.fire({
-                title: strings.uploadError,
+                title: t('uploadError'),
                 text: error.response?.data?.message || 'Failed to upload image',
                 icon: 'error'
             });
         }
     };
-    
+
 
     const handleVideoChange = async (event) => {
         const file = event.target.files[0];
@@ -225,8 +180,8 @@ function VideoPhoto(props) {
         if (file.size > 100 * 1024 * 1024) {
             console.error("Video size is too large");
             Swal.fire({
-                title: strings.uploadError,
-                text: strings.videoSizeTooLarge,
+                title: t('uploadError'),
+                text: t('videoSizeTooLarge'),
                 icon: 'error'
             });
             return;
@@ -239,8 +194,8 @@ function VideoPhoto(props) {
 
             // Show success message
             Swal.fire({
-                title: strings.uploadSuccess,
-                text: strings.videoUploadSuccess,
+                title: t('uploadSuccess'),
+                text: t('videoUploadSuccess'),
                 icon: 'success',
                 timer: 3000,
                 showConfirmButton: false
@@ -251,7 +206,7 @@ function VideoPhoto(props) {
         } catch (error) {
             console.error("Error uploading video:", error);
             Swal.fire({
-                title: strings.uploadError,
+                title: t('uploadError'),
                 text: error.response?.data?.message || 'Failed to upload video',
                 icon: 'error'
             });
@@ -317,14 +272,14 @@ function VideoPhoto(props) {
 
     return (
         <div className="VideoPhoto-main">
-            <h3>{strings.videoPhoto}</h3>
+            <h3>{t('videoPhoto')}</h3>
             <div className="VideoPhoto-button-bar">
                 <input
                     type="file"
                     ref={fileInputRef}
                     style={{ display: 'none' }}
                     onChange={handleFileChange}
-                    accept="image/jpeg, image/png" 
+                    accept="image/jpeg, image/png"
                 />
                 <Button
                     className="VideoPhoto-button"
@@ -332,7 +287,7 @@ function VideoPhoto(props) {
                     size="sm"
                     onClick={handleButtonClick}
                 >
-                    {strings.uploadPhoto}
+                    {t('uploadPhoto')}
                 </Button>
                 <Button
                     className="VideoPhoto-button"
@@ -340,9 +295,9 @@ function VideoPhoto(props) {
                     size="sm"
                     onClick={handleCapturePhoto}
                 >
-                    {strings.capturePhoto}
+                    {t('capturePhoto')}
                 </Button>
-                
+
                 <input
                     type="file"
                     ref={videoFileInputRef}
@@ -356,7 +311,7 @@ function VideoPhoto(props) {
                     size="sm"
                     onClick={handleButtonClickvideo}
                 >
-                    {strings.uploadVideo}
+                    {t('uploadVideo')}
                 </Button>
 
 
@@ -366,7 +321,7 @@ function VideoPhoto(props) {
                     size="sm"
                     onClick={handleCaptureVideo}
                 >
-                    {strings.captureVideo}
+                    {t('captureVideo')}
                 </Button>
             </div>
             {/* show Gallary */}

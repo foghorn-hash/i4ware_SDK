@@ -16,37 +16,16 @@ import {
   Brush,
 } from "recharts";
 import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
-// ES6 module syntax
-import LocalizedStrings from 'react-localization';
+import { useTranslation } from "react-i18next";
 
-let strings = new LocalizedStrings({
-  en:{
-    title:"Cumulative Sales Chart",
-    error:"Failed to fetch transactions. Please try again.",
-    loading:"Loading...",
-    name:"Cumulative Vendor Balance",
-  },
-  fi: {
-    title:"Cumulative Sales Chart",
-    error:"Failed to fetch transactions. Please try again.",
-    loading:"Loading...",
-    name:"Cumulative Vendor Balance",
-  },
-  sv: {
-   title: "Cumulative Sales Chart",
-   error:"Failed to fetch transactions. Please try again.",
-   loading:"Loading...",
-   name:"Cumulative Vendor Balance",
- }
- });
 
- const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, t }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="custom-tooltip">
+      <div className="custom-tooltip" style={{ backgroundColor: '#fff', border: '1px solid #ccc', padding: '10px' }}>
         <p>
-          <strong>{strings.title}:</strong> {label}{" "}
-          <strong>{strings.name}:</strong> {Number(payload[0].value).toFixed(2)} €
+          <strong>{t('title')}:</strong> {label} <br />
+          <strong>{t('name')}:</strong> {Number(payload[0].value).toFixed(2)} €
         </p>
       </div>
     );
@@ -59,6 +38,18 @@ const CumulativeChart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
+  const { t, i18n } = useTranslation();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
+
   useEffect(() => {
     fetchCumulativeData();
   }, []);
@@ -66,10 +57,10 @@ const CumulativeChart = () => {
   const fetchCumulativeData = async () => {
     try {
       const response = await axios.get(API_BASE_URL + "/api/reports/cumulative-sales", {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
-          },
-        }); // Update to your API URL
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+        },
+      }); // Update to your API URL
       setChartData(response.data.root);
     } catch (err) {
       setError("Failed to fetch cumulative data. Please try again.");
@@ -104,13 +95,13 @@ const CumulativeChart = () => {
             height={70}
           />
           <YAxis />
-          <Tooltip content={<CustomTooltip />} />
-  
+          <Tooltip content={<CustomTooltip t={t} />} />
+
           {/* Dashed line */}
           <Line
             type="monotone"
             dataKey="cumulativeVendorBalance"
-            name={strings.name}
+            name={t('name')}
             stroke="#8884d8"
             strokeDasharray="5 5"     // dashed pattern
             dot={false}               // optional: remove dots for cleaner lines

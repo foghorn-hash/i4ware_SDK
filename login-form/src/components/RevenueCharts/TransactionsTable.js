@@ -4,29 +4,8 @@ import Table from 'react-bootstrap/Table';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import LOADING from '../../tube-spinner.svg';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
-// ES6 module syntax
-import LocalizedStrings from 'react-localization';
+import { useTranslation } from "react-i18next";
 
-let strings = new LocalizedStrings({
-  en:{
-    title:"Yearly Sales Transactions",
-    error:"Failed to fetch transactions. Please try again.",
-    loading:"Loading...",
-    name:"Vendor Balence",
-  },
-  fi: {
-    title:"Yearly Sales Transactions",
-    error:"Failed to fetch transactions. Please try again.",
-    loading:"Loading...",
-    name:"Vendor Balence",
-  },
-  sv: {
-   title: "Yearly Sales Transactions",
-   error:"Failed to fetch transactions. Please try again.",
-   loading:"Loading...",
-   name:"Vendor Balence",
- }
- });
 
 const TransactionsTable = () => {
   const [transactions, setTransactions] = useState([]);
@@ -34,15 +13,17 @@ const TransactionsTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
 
-  if (localization==null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  const { t, i18n } = useTranslation();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   useEffect(() => {
     fetchTransactions();
@@ -51,10 +32,10 @@ const TransactionsTable = () => {
   const fetchTransactions = async () => {
     try {
       const response = await axios.get(API_BASE_URL + "/api/reports/sales-report", {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
-          },
-        }); // Replace with your Laravel API URL
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+        },
+      }); // Replace with your Laravel API URL
       const data = response.data.root;
 
       // Prepare chart data
@@ -66,18 +47,18 @@ const TransactionsTable = () => {
       setTransactions(data);
       setChartData(formattedChartData);
     } catch (err) {
-      setError(strings.error);
+      setError(t('transactionerror'));
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="loading-screen"><img src={LOADING} alt={strings.loading} /></div>;
+  if (loading) return <div className="loading-screen"><img src={LOADING} alt={t('loading')} /></div>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div>
-      <h2>{strings.title}</h2>
+      <h2>{t('transactiontitle')}</h2>
       {/* Bar Chart */}
       <ResponsiveContainer width="100%" height={400}>
         <BarChart data={chartData}>
@@ -85,7 +66,7 @@ const TransactionsTable = () => {
           <XAxis dataKey="year" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="balanceVendor" fill="#ff0066" name={strings.name} />
+          <Bar dataKey="balanceVendor" fill="#ff0066" name={t('transactionname')} />
         </BarChart>
       </ResponsiveContainer>
     </div>
