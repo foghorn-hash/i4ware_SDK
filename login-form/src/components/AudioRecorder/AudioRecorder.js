@@ -11,34 +11,10 @@ import {
   ACCESS_TOKEN_NAME,
   API_DEFAULT_LANGUAGE,
 } from "../../constants/apiConstants"; // Assuming you have ACCESS_TOKEN_NAME defined
-import LocalizedStrings from "react-localization";
+//import LocalizedStrings from "react-localization";
+import { useTranslation } from 'react-i18next';
 
-let strings = new LocalizedStrings({
-  en: {
-    ask_from_ai: "Ask from AI",
-    waveform: "Waveform",
-    volume: "Volume Level Meter",
-    male: "Male",
-    female: "Female",
-    generate_image: "Generate Image",
-  },
-  fi: {
-    ask_from_ai: "Kysy tekoälyltä",
-    waveform: "Ääniraita",
-    volume: "Äänenvoimakkuusmittari",
-    male: "Mies",
-    female: "Nainen",
-    generate_image: "Luo kuva",
-  },
-  sv: {
-    ask_from_ai: "Fråga en AI",
-    waveform: "ljudspår",
-    volume: "ljudvolym",
-    male: "Man",
-    female: "Kvinna",
-    generate_image: "Generera bild",
-  },
-});
+
 
 const AudioRecorder = ({
   fetchMessages,
@@ -46,6 +22,7 @@ const AudioRecorder = ({
   sendSpeechStatus,
   setIsThinking,
 }) => {
+  const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -63,7 +40,6 @@ const AudioRecorder = ({
 
   const urlParams = new URLSearchParams(window.location.search.substring(1));
   const localization = urlParams.get("lang") || API_DEFAULT_LANGUAGE;
-  strings.setLanguage(localization);
 
   useEffect(() => {
     if (audioBlob && waveformRef.current) {
@@ -309,10 +285,10 @@ const AudioRecorder = ({
     <div>
       <audio className="audio-recorded" ref={audioRef} controls />
       <div className="audio-recorder-clear" />
-      <strong>{strings.waveform}</strong>
+      <strong>{t('waveform')}</strong>
       <div ref={waveformRef} className="audio-waveform" />
       <div className="audio-recorder-clear" />
-      <strong>{strings.volume}</strong>
+      <strong>{t('volume')}</strong>
       <progress ref={meterRef} max="255" value="0" className="audio-meter" />
       <div className="audio-recorder-clear" />
       <button
@@ -326,7 +302,7 @@ const AudioRecorder = ({
         type="radio"
         className="message-ai"
         name="ai-options"
-        label={strings.ask_from_ai}
+        label={t('ask_from_ai')}
         checked={isAiEnabled}
         onChange={handleAiCheckboxChange}
         value="ai"
@@ -335,7 +311,7 @@ const AudioRecorder = ({
         type="radio"
         className="generate-image-ai"
         name="ai-options"
-        label={strings.generate_image}
+        label={t('generate_image')}
         checked={isGenerateEnabled}
         onChange={handleGenerateCheckboxChange}
         value="generate-image"
@@ -347,8 +323,8 @@ const AudioRecorder = ({
         value={gender}
         onChange={(e) => setGender(e.target.value)}
       >
-        <option value="male">{strings.male}</option>
-        <option value="female">{strings.female}</option>
+        <option value="male">{t('male')}</option>
+        <option value="female">{t('female')}</option>
       </select>
     </div>
   );

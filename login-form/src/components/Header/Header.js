@@ -8,42 +8,21 @@ import {
 } from "../../constants/apiConstants";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
-//import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-//import NavDropdown from "react-bootstrap/NavDropdown";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { AuthContext, AUTH_STATE_CHANGED } from "../../contexts/auth.contexts";
 import "./Header.css";
 import PermissionGate from "../../contexts/PermissionGate";
-// ES6 module syntax
-//import LocalizedStrings from "react-localization";
 import icon_menu from "../../icon_menu.png";
-//import { Link, useHistory, useLocation } from "react-router-dom";
-import { LanguageContext } from "../../LanguageContext";
+import { useTranslation } from 'react-i18next';
 
 function Header(props) {
   const { authState, authActions } = useContext(AuthContext);
-  //const [lang, setLang] = useState(API_DEFAULT_LANGUAGE);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
 
-  const { language, setLanguage, strings } = useContext(LanguageContext);
-
-  // const history = useHistory();
-  // const location = useLocation();
-
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get("lang");
-
-  if (localization === null) {
-    setLanguage(API_DEFAULT_LANGUAGE); // Update React state that controls the current language.
-    strings.setLanguage(API_DEFAULT_LANGUAGE); // Translation strings to switch language internally
-  } else {
-    setLanguage(localization);
-    strings.setLanguage(localization);
-  }
+  const { t, i18n } = useTranslation();
 
   const capitalize = (s) => {
     if (typeof s !== "string") return "";
@@ -80,33 +59,9 @@ function Header(props) {
     props.history.push("/login");
   };
 
-  const handleLocalization = () => {
-    const e = document.getElementById("language-selector");
-    const value = e.value;
-    const currentHash = window.location.hash;
-
-    // Check if there's already a language parameter in the URL
-    const hasLangParam = window.location.search.includes("lang=");
-
-    // Build the new URL with the updated language parameter
-    let newUrl;
-    if (hasLangParam) {
-      // Replace the existing language parameter value
-      newUrl = window.location.search.replace(/lang=[^&]*/, "lang=" + value);
-    } else {
-      // Add the new language parameter
-      newUrl =
-        window.location.search +
-        (window.location.search ? "&" : "?") +
-        "lang=" +
-        value;
-    }
-
-    // Combine the new URL with the current hash
-    const finalUrl = newUrl + currentHash;
-
-    // Update the window location
-    window.location.href = finalUrl;
+  const handleLocalization = (e) => {
+    const value = e.target.value;
+    i18n.changeLanguage(value);
   };
 
   const renderLogout = () => {
@@ -123,7 +78,7 @@ function Header(props) {
         <select
           id="language-selector"
           className="language-selector"
-          value={language}
+          value={i18n.language}
           onChange={handleLocalization}
         >
           <option value="fi">Finnish</option>
@@ -133,7 +88,7 @@ function Header(props) {
 
         {authState.isLogged ? (
           <button className="btn btn-danger" onClick={handleLogout}>
-            {strings.logout}
+            {t('logout')}
           </button>
         ) : (
           <button
@@ -142,7 +97,7 @@ function Header(props) {
               props.history.push("/login");
             }}
           >
-            {strings.login}
+            {t('login')}
           </button>
         )}
       </div>
@@ -184,11 +139,10 @@ function Header(props) {
         },
         { text: "settings", link: "/settings", permission: "settings.manage" },
       ].map((item, index) => {
-        // console.log(item.text, strings[item.text]);
         return item.permission ? (
           <PermissionGate permission={item.permission} key={index}>
             <Nav.Link as={NavLink} to={item.link} onClick={handleDrawerClose}>
-              {strings[item.text]}
+              {t(item.text)}
             </Nav.Link>
           </PermissionGate>
         ) : (
@@ -198,7 +152,7 @@ function Header(props) {
             key={index}
             onClick={handleDrawerClose}
           >
-            {strings[item.text]}
+            {t(item.text)}
           </Nav.Link>
         );
       })}
@@ -211,7 +165,7 @@ function Header(props) {
             handleDrawerClose();
           }}
         >
-          {strings.logout}
+          {t('logout')}
         </Nav.Link>
       )}
     </Nav>
@@ -255,7 +209,7 @@ function Header(props) {
                     alt="menu icon"
                   />
                 </Button>
-                {renderLogout(localization)}
+                {renderLogout()}
               </div>
               <Offcanvas
                 style={{ width: "220px" }}
@@ -263,7 +217,7 @@ function Header(props) {
                 onHide={handleDrawerClose}
               >
                 <Offcanvas.Header closeButton>
-                  <Offcanvas.Title>{strings.welcome}</Offcanvas.Title>
+                  <Offcanvas.Title>{t('welcome')}</Offcanvas.Title>
                 </Offcanvas.Header>
                 <Offcanvas.Body>{drawerContent}</Offcanvas.Body>
               </Offcanvas>
@@ -271,9 +225,8 @@ function Header(props) {
           ) : (
             <>
               <Nav
-                className={`me-auto my-2 my-lg-0 menu ${
-                  mobileMenuOpen ? "mobile-menu open" : "menu"
-                }`}
+                className={`me-auto my-2 my-lg-0 menu ${mobileMenuOpen ? "mobile-menu open" : "menu"
+                  }`}
                 style={{ maxHeight: "100px" }}
                 navbarScroll
               >
@@ -283,7 +236,7 @@ function Header(props) {
                     to="/my-profile"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {strings.myProfile}
+                    {t('myProfile')}
                   </NavLink>
                 )}
                 {authState.isLogged && (
@@ -292,7 +245,7 @@ function Header(props) {
                     to="/revenue-report"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {strings.revenueReport}
+                    {t('revenueReport')}
                   </NavLink>
                 )}
                 {authState.isLogged && (
@@ -301,7 +254,7 @@ function Header(props) {
                     to="/stl-viewer"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {strings.stlViewer}
+                    {t('stlViewer')}
                   </NavLink>
                 )}
                 {authState.isLogged && (
@@ -310,7 +263,7 @@ function Header(props) {
                     to="/video-photo"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {strings.videoPhoto}
+                    {t('videoPhoto')}
                   </NavLink>
                 )}
                 {authState.isLogged && (
@@ -319,7 +272,7 @@ function Header(props) {
                     onClick={() => setMobileMenuOpen(false)}
                     to="/pusher-chat"
                   >
-                    {strings.chat}
+                    {t('chat')}
                   </NavLink>
                 )}
                 {authState.isLogged && (
@@ -328,7 +281,7 @@ function Header(props) {
                     onClick={() => setMobileMenuOpen(false)}
                     to="/timesheet"
                   >
-                    {strings.timesheet}
+                    {t('timesheet')}
                   </NavLink>
                 )}
                 {authState.isLogged && (
@@ -338,7 +291,7 @@ function Header(props) {
                       onClick={() => setMobileMenuOpen(false)}
                       to="/manage-users"
                     >
-                      {strings.manageUsers}
+                      {t('manageUsers')}
                     </NavLink>
                   </PermissionGate>
                 )}
@@ -349,7 +302,7 @@ function Header(props) {
                       onClick={() => setMobileMenuOpen(false)}
                       to="/manage-domains"
                     >
-                      {strings.manageDomains}
+                      {t('manageDomains')}
                     </NavLink>
                   </PermissionGate>
                 )}
@@ -360,7 +313,7 @@ function Header(props) {
                       onClick={() => setMobileMenuOpen(false)}
                       to="/manage-roles"
                     >
-                      {strings.manageRoles}
+                      {t('manageRoles')}
                     </NavLink>
                   </PermissionGate>
                 )}
@@ -371,12 +324,12 @@ function Header(props) {
                       onClick={() => setMobileMenuOpen(false)}
                       to="/settings"
                     >
-                      {strings.settings}
+                      {t('settings')}
                     </NavLink>
                   </PermissionGate>
                 )}
               </Nav>
-              {renderLogout(localization)}
+              {renderLogout()}
             </>
           )}
         </Container>

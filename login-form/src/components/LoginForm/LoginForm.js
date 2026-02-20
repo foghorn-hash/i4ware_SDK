@@ -1,82 +1,33 @@
-import React, {useState} from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./LoginForm.css";
-import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA} from "../../constants/apiConstants";
-import {withRouter} from "react-router-dom";
-import {AuthContext} from "./../../contexts/auth.contexts";
-import {useContext} from "react";
-// ES6 module syntax
-import LocalizedStrings from 'react-localization';
-
-let strings = new LocalizedStrings({
- en:{
-   email:"Email address",
-   enteremail:"Enter email",
-   newershare:"We'll never share your email with anyone else.",
-   password:"Password",
-   submit:"Submit",
-   account:"Dont have an account?",
-   register:"Register",
-   forgot:"or forgot a password?",
-   reset:"Reset",
-   error:"Unexpected error!",
-   error_username_or_password:"Username and password is required",
-   error_domain_is_expired:"Username and password do not match or domain subscription is not valid or expired!",
-   success_in_login:"Login successful. Redirecting to home page..",
- },
- fi: {
-   email:"Sähköpostiosoite",
-   enteremail:"Syötä sähköpostiosoite",
-   newershare:"Enme koskaan jaa sähköpostiosoitettasi muille.",
-   password:"Salasana",
-   submit:"Lähetä",
-   account:"Onko sinnula tili?",
-   register:"Rekisteröidy",
-   forgot:"tai unoditko salasanan?",
-   reset:"Palauta",
-   error:"Odottamaton virhe!",
-   error_username_or_password:"Käyttätunnsu tai salasana on pakollinen",
-   error_domain_is_expired:"Käyttätunnus ja salasana eivät täsmää tai domainin tilaus ei ole validi tai on umpeuttunut!",
-   success_in_login:"Kirjatuminen onnistui. Uudelleen ohjataan kotisivulle..",
- },
- sv: {
-  email: "E-postadress",
-  enteremail: "Ange e-postadress",
-  newershare: "Jag delar aldrig din e-postadress med andra.",
-  password: "Lösenord",
-  submit: "Skicka",
-  account: "Har du ett konto?",
-  register: "Registrera dig",
-  forgot: "Eller har du glömt lösenordet?",
-  reset: "Återställ",
-  error: "Oväntat fel!",
-  error_username_or_password: "Användarnamn eller lösenord är obligatoriska",
-  error_domain_is_expired: "Användarnamn eller lösenord matchar inte, eller domänen är ogiltig eller har löpt ut!",
-  success_in_login: "Inloggning lyckades. Omdirigerar till startsidan...",
-}
-});
+import { API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA } from "../../constants/apiConstants";
+import { withRouter } from "react-router-dom";
+import { AuthContext } from "./../../contexts/auth.contexts";
+import { useContext } from "react";
+import { useTranslation } from "react-i18next";
 
 function LoginForm(props) {
+  const { t, i18n } = useTranslation();
   const [state, setState] = useState({
     email: "",
     password: "",
     successMessage: null,
   });
-  const {authActions} = useContext(AuthContext);
+  const { authActions } = useContext(AuthContext);
   const [error, setError] = useState(null);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+  const urlParams = new URLSearchParams(window.location.search);
 
-  if (localization==null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   const handleChange = e => {
-    const {id, value} = e.target;
+    const { id, value } = e.target;
     setState(prevState => ({
       ...prevState,
       [id]: value,
@@ -87,7 +38,7 @@ function LoginForm(props) {
     e.preventDefault();
 
     if (state.email == "" || state.password == "") {
-      return setError(strings.error_username_or_password);
+      return setError(t('error_username_or_password'));
     }
 
     const payload = {
@@ -102,13 +53,13 @@ function LoginForm(props) {
         if (json_parsed.data.success === true) {
           setState(prevState => ({
             ...prevState,
-            successMessage: strings.success_in_login,
+            successMessage: t('success_in_login'),
           }));
 
           authActions.authStateChanged({
             user: {
               ...response.data.data,
-            permissions:response.data.permissions
+              permissions: response.data.permissions
             },
             token: response.data.token,
             isLogged: true,
@@ -119,18 +70,18 @@ function LoginForm(props) {
           localStorage.setItem(ACCESS_TOKEN_NAME, response.data.token);
           localStorage.setItem(ACCESS_USER_DATA, JSON.stringify({
             ...response.data.data,
-            permissions:response.data.permissions
+            permissions: response.data.permissions
           }));
 
           redirectToHome();
           setError(null);
         } else if (json_parsed.data.success === false) {
           console.log(json_parsed.data.success);
-          setError(strings.error);
+          setError(t('error'));
         } else {
           console.log(json_parsed.data.success);
           setError(
-            strings.error_domain_is_expired
+            t('error_domain_is_expired')
           );
         }
       })
@@ -150,12 +101,12 @@ function LoginForm(props) {
 
   return (
     <>
-    <div className="d-flex justify-content-center">
+      <div className="d-flex justify-content-center">
         <div className="card col-12 col-lg-4 login-card mt-2 hv-center">
           {error && (
             <div
               className="alert alert-danger mt-2"
-              style={{display: error ? "block" : "none"}}
+              style={{ display: error ? "block" : "none" }}
               role="alert"
             >
               {error}
@@ -163,27 +114,27 @@ function LoginForm(props) {
           )}
           <form className="Login-form">
             <div className="form-group text-left">
-              <label htmlFor="exampleInputEmail1">{strings.email}</label>
+              <label htmlFor="exampleInputEmail1">{t('email')}</label>
               <input
                 type="email"
                 className="form-control"
                 id="email"
                 aria-describedby="emailHelp"
-                placeholder={strings.enteremail}
+                placeholder={t('enteremail')}
                 value={state.email}
                 onChange={handleChange}
               />
               <small id="emailHelp" className="form-text text-muted">
-              {strings.newershare}
+                {t('newershare')}
               </small>
             </div>
             <div className="form-group text-left">
-              <label htmlFor="exampleInputPassword1">{strings.password}</label>
+              <label htmlFor="exampleInputPassword1">{t('password')}</label>
               <input
                 type="password"
                 className="form-control"
                 id="password"
-                placeholder={strings.password}
+                placeholder={t('password')}
                 value={state.password}
                 onChange={handleChange}
               />
@@ -194,30 +145,30 @@ function LoginForm(props) {
               className="btn btn-primary"
               onClick={handleSubmitClick}
             >
-              {strings.submit}
+              {t('submit')}
             </button>
           </form>
           <div
             className="alert alert-success mt-2"
-            style={{display: state.successMessage ? "block" : "none"}}
+            style={{ display: state.successMessage ? "block" : "none" }}
             role="alert"
           >
             {state.successMessage}
           </div>
           <div className="registerMessage">
-            <span>{strings.account} </span>
+            <span>{t('account')} </span>
             <span className="loginText" onClick={() => redirectToRegister()}>
-            {strings.register}
+              {t('register')}
             </span>
-        <span> {strings.forgot} </span>
+            <span> {t('forgot')} </span>
             <span className="loginText" onClick={() => redirectToPasswordReset()}>
-            {strings.reset}
+              {t('reset')}
             </span>
           </div>
         </div>
         <div className="login-form-spacer"></div>
       </div>
-    <div className="login-form-spacer"></div>
+      <div className="login-form-spacer"></div>
     </>
   );
 }
