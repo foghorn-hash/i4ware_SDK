@@ -140,17 +140,17 @@ function App() {
               <Offcanvas style={{ width: "350px" }} show={show} onHide={handleClose} placement="end">
                 <Offcanvas.Header>
                   <Button variant="close" aria-label="Close" onClick={handleClose}></Button>
-                  <Offcanvas.Title>{t('license')}</Offcanvas.Title>
+                  <Offcanvas.Title>{t('app_license')}</Offcanvas.Title>
                 </Offcanvas.Header>
                 <Offcanvas.Body>
-                  <p>{t('copyright')}</p>
-                  <p>{t('permission')}</p>
-                  <p>{t('conditions')}</p>
-                  <p>{t('warranty')}</p>
+                  <p>{t('app_copyright')}</p>
+                  <p>{t('app_permission')}</p>
+                  <p>{t('app_conditions')}</p>
+                  <p>{t('app_warranty')}</p>
                 </Offcanvas.Body>
               </Offcanvas>
               <Button className="App-license-button" variant="primary" onClick={handleShow}>
-                {t('license')}
+                {t('app_license')}
               </Button>
             </>
           )}
