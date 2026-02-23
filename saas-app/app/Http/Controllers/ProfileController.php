@@ -31,43 +31,56 @@ class ProfileController extends Controller
 
     public function users(Request $request)
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
 
-        if ($user->role == "admin") {
-            $users = User::with('roles')->get();
+        if ($authUser->role == "admin") {
+            $query = User::with('roles');
         } else {
-            $domain = DB::table('users')->select('domain')->where('id', '=', Auth::user()->id)->first();
-            $users = User::with('roles')->where('domain', '=', $domain->domain)->get();
+            $domain = DB::table('users')->select('domain')->where('id', '=', $authUser->id)->first();
+            $query = User::with('roles')->where('domain', '=', $domain->domain);
         }
 
-        // Define the number of items to return per page
-        $perPage = 10;
-        // Get the page number from the request, default to 1 for GET requests
-        $page = $request->input('page', 1);        
-        // Calculate the offset based on the page number and perPage
-        $offset = ($page - 1) * $perPage;
+        // Search filters
+        $searchName  = trim($request->input('name', ''));
+        $searchEmail = trim($request->input('email', ''));
 
-        // Slice the files to get the paginated result
-        $userList = $users->slice($offset, $perPage);
+        if ($searchName !== '') {
+            $query->where('name', 'LIKE', '%' . $searchName . '%');
+        }
 
-        // Process the sliced files and create the response
+        if ($searchEmail !== '') {
+            $query->where('email', 'LIKE', '%' . $searchEmail . '%');
+        }
+
+        // Pagination
+        $perPage = (int) $request->input('per_page', 10);
+        $page    = (int) $request->input('page', 1);
+
+        $total = $query->count();
+        $users = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+
         $data = [];
 
-        foreach ($userList as $user) {
+        foreach ($users as $user) {
             $data[] = [
-                'name' => $user->name,
-                'email' => $user->email,
+                'id'                   => $user->id,
+                'name'                 => $user->name,
+                'email'                => $user->email,
+                'gender'               => $user->gender,
                 'profile_picture_path' => $user->profile_picture_path,
-                'domain' => $user->domain,
-                'email_verified_at' => $user->email_verified_at,
-                'is_active' => $user->is_active,
-                'id' => $user->id,
-                'roles' => $user->roles->name,
-                'gender' => $user->gender,
+                'domain'               => $user->domain,
+                'email_verified_at'    => $user->email_verified_at,
+                'is_active'            => $user->is_active,
+                'roles'                => $user->roles->name ?? null,
             ];
         }
 
-        return response()->json($data, 200);
+        return response()->json([
+            'data'     => $data,
+            'total'    => $total,
+            'page'     => $page,
+            'per_page' => $perPage,
+        ], 200);
     }
 
     function usersChangeStatus(Request $request){
@@ -391,7 +404,6 @@ class ProfileController extends Controller
             ], 403);
         }
 
-        // Päivitä domainin data
         DB::table('domains')
             ->where('domain', $user->domain)
             ->update([
@@ -414,7 +426,6 @@ class ProfileController extends Controller
             ], 403);
         }
 
-        // Haetaan domainista laskun aloitusnumero
         $domain = DB::table('domains')
             ->select('invoice_start_number')
             ->where('domain', $user->domain)
@@ -456,7 +467,6 @@ class ProfileController extends Controller
             }
             $rolesPersmissions = Role::where(['id' => $roleId])->first();
             $allowedPermissions = $rolesPersmissions->permissions;
-            // dd($rolesPersmissions->permissions());
             return response()->json([
                 'success' => true,
                 'data' => $permissions,
@@ -552,7 +562,6 @@ class ProfileController extends Controller
     // delete roles
     public function roleDelete(Request $request)
     {
-        // $roles = Role::remove();
         $roleId = $request->id;
 
         RolePermissions::where(["role_id" => $roleId])->delete();
@@ -575,7 +584,6 @@ class ProfileController extends Controller
             $roleId = $roleId;
         }
         
-        // update user role 
         User::where(['id' => $userid])->update(['role_id' => $roleId]);
 
         return response()->json([
@@ -606,22 +614,17 @@ class ProfileController extends Controller
             }
     
             $path = $file->storeAs('public/uploads/'. $domain . "/profile_pics/" . $id, $filename);
-            // get the dimensions of the original image
             $original_image = storage_path().'/app/'.$path;
             list($width, $height) = getimagesize($original_image);
     
-            // calculate the new dimensions
             $new_width = 400;
             $new_height = 400;
     
-            // create a new image with the new dimensions
             $new_image = imagecreatetruecolor($new_width, $new_height);
     
-            // copy and resize the image data from the original image into the new image
             $sourceImage = imagecreatefromjpeg($original_image);
             imagecopyresampled($new_image, $sourceImage, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
     
-            // output the new image as a JPEG file
             imagejpeg($new_image, storage_path().'/app/'.$path);
             $user->profile_picture_path = $path;
         }
@@ -636,7 +639,6 @@ class ProfileController extends Controller
             } else {
                 $profilepicture = "default-female";
             }
-            //$user->profile_picture_path = null;
         } else {
             $user->profile_picture_path = Storage::url($user->profile_picture_path);
             $profilepicture = "custom";
@@ -682,22 +684,17 @@ class ProfileController extends Controller
             $imageData = file_get_contents($file);
             Storage::put('public/uploads/'. $domain . "/profile_pics/" . $id . "/" . $filename, $imageData);
             $path = 'public/uploads/'. $domain . "/profile_pics/" . $id . "/".$filename;
-            // get the dimensions of the original image
             $original_image = storage_path().'/app/'.$path;
             list($width, $height) = getimagesize($original_image);
     
-            // calculate the new dimensions
             $new_width = 400;
             $new_height = 400;
     
-            // create a new image with the new dimensions
             $new_image = imagecreatetruecolor($new_width, $new_height);
     
-            // copy and resize the image data from the original image into the new image
             $sourceImage = imagecreatefromjpeg($original_image);
             imagecopyresampled($new_image, $sourceImage, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
     
-            // output the new image as a JPEG file
             imagejpeg($new_image, storage_path() .'/app/'.$path);
             $user->profile_picture_path = $path;
             $user->save();
@@ -721,17 +718,14 @@ class ProfileController extends Controller
         $user = Auth::user();
         $domain = $user->domain;
   
-        // Validate file
         $request->validate([
-            'invoice_template_path' => 'required|file|mimes:xlsx|max:5120', // Max 5MB
+            'invoice_template_path' => 'required|file|mimes:xlsx|max:5120',
         ]);
 
         try {
             $filename = "invoice_template.xlsx";
-            // Store the file in storage/app/invoice_templates
             $path = $request->file('invoice_template_path')->storeAs("invoice_templates/{$domain}", $filename);
 
-            // Save to settings table
              DB::table('domains')
             ->where('domain', $domain)
             ->update([
@@ -757,9 +751,8 @@ class ProfileController extends Controller
 
     public function templateExists()
     {
-        // Hae polku asetuksista
         $path = DB::table('domains')
-            ->where('domain', auth()->user()->domain) // tai APP_DOMAIN_ADMIN, jos admin
+            ->where('domain', auth()->user()->domain)
             ->value('invoice_template_path');
 
         $exists = $path && Storage::exists($path);
@@ -828,7 +821,6 @@ class ProfileController extends Controller
             }])
             ->get();
 
-        // Map each term to include the translated name for the requested locale
         $termsWithTranslation = $terms->map(function($term) use ($locale) {
             $translation = $term->translations->first();
             return [
@@ -858,21 +850,17 @@ class ProfileController extends Controller
             'days' => 'required|integer|min:0',
         ]);
 
-        
-        // Create new term
         $term = InvoicePaymentTerm::create([
             'domain' => $domain,
             'days_to_pay' => $validated['days'],
         ]);
         
-        // Create translations for all supported locales
         $term->translations()->createMany([
             ['locale' => 'EN', 'name' => $validated['name']],
             ['locale' => 'FI', 'name' => $validated['name']],
             ['locale' => 'SV', 'name' => $validated['name']],
         ]);
         
-        // Load translations for response
         $term->load('translations');
 
         return response()->json([
@@ -893,7 +881,6 @@ class ProfileController extends Controller
             'days' => 'required|integer|min:0',
         ]);
 
-        // Update existing term
         $term = InvoicePaymentTerm::where('id', $id)
             ->where('domain', $domain)
             ->first();
@@ -908,13 +895,11 @@ class ProfileController extends Controller
         $term->days_to_pay = $validated['days'];
         $term->save();
         
-        // Update only the translation for the requested locale
         $term->translations()->updateOrCreate(
             ['locale' => $locale],
             ['name' => $validated['name']]
         );
         
-        // Load the specific translation for response
         $translation = $term->translations()->where('locale', $locale)->first();
 
         return response()->json([
@@ -941,7 +926,6 @@ class ProfileController extends Controller
             'id' => 'required|integer|exists:invoice_payment_terms,id',
         ]);
 
-        // Delete term
         $term = InvoicePaymentTerm::where('id', $validated['id'])
             ->where('domain', $domain)
             ->first();
