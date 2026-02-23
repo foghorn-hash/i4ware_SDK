@@ -1,25 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useInsertionEffect } from 'react';
-import './imageVideoGallary.css';
-import ModalPhotoVideoDelete from '../VideoPhoto/ModalPhotoVideoDelete';
-import {API_BASE_URL, API_DEFAULT_LANGUAGE, ACCESS_TOKEN_NAME, ACCESS_USER_DATA} from "../../constants/apiConstants";
-import axios from 'axios';
-import { Button } from 'react-bootstrap';
-import LocalizedStrings from 'react-localization';
-
-let strings = new LocalizedStrings({
-  en: {
-    delete: "Delete",
-  },
-  fi: {
-    delete: "Poista",
-  },
-  sv: {
-    delete: "Radera",
-  }
-});
+import React, { useEffect, useState } from "react";
+import "./imageVideoGallary.css";
+import ModalPhotoVideoDelete from "../VideoPhoto/ModalPhotoVideoDelete";
+import {
+  API_BASE_URL,
+  ACCESS_TOKEN_NAME,
+} from "../../constants/apiConstants";
+import axios from "axios";
+import { Button } from "react-bootstrap";
+import { useTranslation } from "react-i18next";
 
 const ImageVideoGallary = ({ data }) => {
+  const { t, i18n } = useTranslation();
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -33,16 +24,12 @@ const ImageVideoGallary = ({ data }) => {
   }, [data]);
 
   useEffect(() => {
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
-
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
-  }, []);
+    const urlParams = new URLSearchParams(window.location.search);
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n]);
 
   const openModal = (item) => {
     setSelectedItem(item);
@@ -79,15 +66,15 @@ const ImageVideoGallary = ({ data }) => {
       setIsLoading(true);
       const deleteUrl = `${API_BASE_URL}/api/gallery/photos_videos/delete?fileName=${fileName}`;
       // console.log(`Attempting to delete item: ${fileName} at URL: ${deleteUrl}`);
-  
+
       const response = await axios.delete(deleteUrl, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME), 
+          Authorization: 'Bearer ' + localStorage.getItem(ACCESS_TOKEN_NAME),
         },
       });
-  
+
       // console.log('Response from delete request:', response);
-  
+
       if (response.status === 200) {
         setItems((prevItems) => prevItems.filter((item) => item.filename !== fileName));
         // console.log(`Item ${fileName} deleted successfully`);
@@ -139,44 +126,44 @@ const ImageVideoGallary = ({ data }) => {
     <div className="image-video-gallary">
       {items.filter(item => item && item.asset_path).map((item) => (
         <div className='image-video-item-container'>
-        <div key={item.id} className="image-video-item" 
-        onClick={() => openModal(item)} >
-        { /\.(mp4|webm|ogg)$/i.test(item.asset_path) ? (
-            <video
-              controls=""
-              onError={handleVideoError}
-            >
-              <source
+          <div key={item.id} className="image-video-item"
+            onClick={() => openModal(item)} >
+            {/\.(mp4|webm|ogg)$/i.test(item.asset_path) ? (
+              <video
+                controls=""
+                onError={handleVideoError}
+              >
+                <source
+                  src={`${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`}
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+            ) : /\.(jpg|jpeg|png|gif)$/i.test(item.asset_path) ? (
+              <img
                 src={`${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`}
-                type="video/mp4"
+                alt={item.filename}
+                onError={(e) => console.error('Image loading error:', e)}
               />
-              Your browser does not support the video tag.
-            </video>
-          ) : /\.(jpg|jpeg|png|gif)$/i.test(item.asset_path) ? (
-            <img
-              src={`${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`}
-              alt={item.filename}
-              onError={(e) => console.error('Image loading error:', e)}
-            />
-          ) : (
-            <div className="unsupported-file">Unsupported file type</div>
-          )}
-        </div> <Button variant="danger" style={{
-          marginBottom: '20px', marginTop: '10px'
-        }}
-        onClick={() => {
-          const fullUrl = `${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`;
-          // console.log(`Preparing to delete item: ${item.filename} with full URL: ${fullUrl}`);
-            openDeleteModal(item.filename)
-        }}>
-          {strings.delete}
+            ) : (
+              <div className="unsupported-file">Unsupported file type</div>
+            )}
+          </div> <Button variant="danger" style={{
+            marginBottom: '20px', marginTop: '10px'
+          }}
+            onClick={() => {
+              const fullUrl = `${process.env.REACT_APP_SERVER_URL}/storage/${item.asset_path}`;
+              // console.log(`Preparing to delete item: ${item.filename} with full URL: ${fullUrl}`);
+              openDeleteModal(item.filename)
+            }}>
+            {t('delete')}
           </Button>
-          </div>
-      ))}  
-      <ModalPhotoVideoDelete 
-        show={showDeleteModal} 
-        handleClose={closeModalDelete} 
-        handleDelete={removeItem} 
+        </div>
+      ))}
+      <ModalPhotoVideoDelete
+        show={showDeleteModal}
+        handleClose={closeModalDelete}
+        handleDelete={removeItem}
         fileName={fileToDelete} />
       {selectedItem && (
         <div className="modal mediapopup">
@@ -187,7 +174,7 @@ const ImageVideoGallary = ({ data }) => {
                   X
                 </button>
               </div>
-              { /\.(mp4|webm|ogg)$/i.test(selectedItem.asset_path) ? (
+              {/\.(mp4|webm|ogg)$/i.test(selectedItem.asset_path) ? (
                 <video
                   controls
                   onError={handleVideoError}

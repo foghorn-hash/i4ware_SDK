@@ -1,21 +1,9 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
 import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import getCroppedImg, { getCroppedImgFile } from "./cropImage";
 import "./ImageCropper.css";
-import LocalizedStrings from 'react-localization';
-
-let strings = new LocalizedStrings({
-  en: {
-    cropImage: "Crop Image"
-  },
-  fi: {
-    cropImage: "Rajaa Kuva"
-  },
-  sv: {
-    cropImage: "Beskär bild"
-  }
-});
+import {useTranslation} from 'react-i18next';
 
 
 function cropImageFunc(base64Image, crop) {
@@ -36,20 +24,20 @@ function cropImageFunc(base64Image, crop) {
 
 
 const ImageCropper = ({ showCropper,setShowCropper, imageSrc, onCropComplete, setCroppedImageFile }) => {
+  const { t, i18n } = useTranslation(); 
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [cropArea, setCropArea] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+  const urlParams = new URLSearchParams(window.location.search);
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   const onCropChange = useCallback((cropTmp) => {
     setCrop(cropTmp);
@@ -94,7 +82,7 @@ const ImageCropper = ({ showCropper,setShowCropper, imageSrc, onCropComplete, se
           )}
           <br />
           {/* <button className="toggleImageButton btn btn-primary" onClick={() => setShowCropper(!showCropper)}>Toggle Cropper</button> */}
-          <button className="cropImageButton btn btn-primary" onClick={cropImage}>{strings.cropImage}</button>
+          <button className="cropImageButton btn btn-primary" onClick={cropImage}>{t('cropImage')}</button>
         </div>)}
         </div>
         {croppedImage && (

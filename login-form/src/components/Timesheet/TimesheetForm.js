@@ -1,21 +1,21 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Form, Row, Col, Button } from "react-bootstrap";
-import { LanguageContext } from "../../LanguageContext";
+import { useTranslation } from 'react-i18next';
 import './Timesheet.css';
 
 const NumberValidator = ({ value, min = 0.1, max = 999.99 }) => {
-    const { strings } = useContext(LanguageContext); 
+    const { t } = useTranslation();
   
     if (value === '' || value === null) return null;
   
     const val = Number(value);
   
     if (val < min) {
-      return <Form.Text className="text-danger">{strings.messageTooSmall}</Form.Text>;
+      return <Form.Text className="text-danger">{t('messageTooSmall')}</Form.Text>;
     }
   
     if (val > max) {
-      return <Form.Text className="text-danger">{strings.messageTooBig}</Form.Text>;
+      return <Form.Text className="text-danger">{t('messageTooBig')}</Form.Text>;
     }
   
     return null;
@@ -33,7 +33,7 @@ export default function Timesheet({
     showOvertime,
     showExtrasMessage,
     showOvertimeMessage,
-    strings,
+    t,
     statusMessage,
     statusType,
     handleMetaChange, 
@@ -46,42 +46,42 @@ export default function Timesheet({
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.timesheetNameLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('timesheetNameLabel')}</Form.Label>
                         <Form.Control 
                             value={meta.nimi || ""} 
                             onChange={e=>setMeta({...meta, nimi:e.target.value})} 
-                            placeholder={strings.timesheetNamePlaceholder}
+                            placeholder={t('timesheetNamePlaceholder')}
                         /> 
                         {submitted && !meta.nimi && (
-                            <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                            <span className="error" style={{color: 'red'}}>{t('requiredField')}</span>
                         )}
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.employeeLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('employeeLabel')}</Form.Label>
                         <Form.Control 
                             value={meta.tyontekija || ""} 
                             onChange={e=>setMeta({...meta, tyontekija:e.target.value})} 
-                            placeholder={strings.employeePlaceholder}
+                            placeholder={t('employeePlaceholder')}
                         />
                         {submitted && !meta.tyontekija && (
-                            <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                            <span className="error" style={{color: 'red'}}>{t('requiredField')}</span>
                         )}
                     </Form.Group>
                 </Col>
 
                 <Col md={6}>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.jobTitleLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('jobTitleLabel')}</Form.Label>
                         <Form.Control 
                             value={meta.ammattinimike || ""} 
                             onChange={e=>setMeta({...meta, ammattinimike:e.target.value})} 
-                            placeholder={strings.jobTitlePlaceholder}
+                            placeholder={t('jobTitlePlaceholder')}
                         />
                         {submitted && !meta.ammattinimike && (
-                            <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                            <span className="error" style={{color: 'red'}}>{t('requiredField')}</span>
                         )}
                     </Form.Group>
                 </Col>
@@ -90,21 +90,21 @@ export default function Timesheet({
 
                 <Col md={6}>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.projectLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('projectLabel')}</Form.Label>
                         <Form.Control 
                             value={meta.project || ""} 
                             onChange={e=>setMeta({...meta, project:e.target.value})} 
-                            placeholder={strings.projectPlaceholder}
+                            placeholder={t('projectPlaceholder')}
                         />
                         {submitted && !meta.project && (
-                            <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                            <span className="error" style={{color: 'red'}}>{t('requiredField')}</span>
                         )}
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.dateLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('dateLabel')}</Form.Label>
                         <Form.Control 
                             type="date" 
                             key={`pvm-${meta.pvm}`}
@@ -112,14 +112,14 @@ export default function Timesheet({
                             onChange={e=>setMeta({...meta, pvm:e.target.value})}
                         />
                         {submitted && !meta.pvm && (
-                            <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                            <span className="error" style={{color: 'red'}}>{t('requiredField')}</span>
                         )}
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.startTimeLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('startTimeLabel')}</Form.Label>
                         <Form.Control 
                             className="flex-grow-1"
                             type="time"
@@ -128,14 +128,14 @@ export default function Timesheet({
                             onChange={e => handleMetaChange("klo_alku", e.target.value)}
                         />
                         {submitted && !meta.klo_alku && (
-                            <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                            <span className="error" style={{color: 'red'}}>{t('requiredField')}</span>
                         )}
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.endTimeLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('endTimeLabel')}</Form.Label>
                         <Form.Control 
                             className="flex-grow-1"
                             type="time" 
@@ -144,25 +144,25 @@ export default function Timesheet({
                             onChange={e => handleMetaChange("klo_loppu", e.target.value)}
                         />
                         {submitted && !meta.klo_loppu && (
-                            <span className="error" style={{color: 'red'}}>{strings.requiredField}</span>
+                            <span className="error" style={{color: 'red'}}>{t('requiredField')}</span>
                         )}
                     </Form.Group>
                 </Col>
 
                 <Col md={6}>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.normalHoursLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('normalHoursLabel')}</Form.Label>
                         <Form.Control 
                             type="number" 
                             step={0.1} 
                             value={meta.norm  || ""} 
                             onChange={e=>setMeta({...meta, norm:e.target.value})} 
-                            placeholder={strings.normalHoursPlaceholder}
+                            placeholder={t('normalHoursPlaceholder')}
                         />
                         {submitted && (meta.norm === '' || Number(meta.norm) <= 0) && (
-                            <span className="error" style={{ color: 'red' }}>{strings.requiredField}</span>
+                            <span className="error" style={{ color: 'red' }}>{t('requiredField')}</span>
                         )}
-                        <NumberValidator value={meta.norm} min={0.1} max={999.99} message="Liian iso luku" />
+                        <NumberValidator value={meta.norm} min={0.1} max={999.99} />
                     </Form.Group>
                 </Col>
 
@@ -170,61 +170,61 @@ export default function Timesheet({
                     <>
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.extrasLaLabel}</Form.Label>
+                                <Form.Label className="small text-muted">{t('extrasLaLabel')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.lisatLa || ""} 
                                     onChange={e=>setMeta({...meta, lisatLa:e.target.value})} 
-                                    placeholder={strings.extrasPlaceholder}
+                                    placeholder={t('extrasPlaceholder')}
                                 />
-                                {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.lisatLa} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showExtrasMessage && <Form.Text className="text-info">{t('showExtrasPlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.lisatLa} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
 
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.extrasSuLabel}</Form.Label>
+                                <Form.Label className="small text-muted">{t('extrasSuLabel')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.lisatSu  || ""} 
                                     onChange={e=>setMeta({...meta, lisatSu:e.target.value})} 
-                                    placeholder={strings.extrasPlaceholder}
+                                    placeholder={t('extrasPlaceholder')}
                                 />
-                                {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.lisatSu} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showExtrasMessage && <Form.Text className="text-info">{t('showExtrasPlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.lisatSu} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
 
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.extrasEveningLabel}</Form.Label>
+                                <Form.Label className="small text-muted">{t('extrasEveningLabel')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.lisatIlta || ""} 
                                     onChange={e=>setMeta({...meta, lisatIlta:e.target.value})} 
-                                    placeholder={strings.extrasPlaceholder}
+                                    placeholder={t('extrasPlaceholder')}
                                 />
-                                {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.lisatIlta} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showExtrasMessage && <Form.Text className="text-info">{t('showExtrasPlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.lisatIlta} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
 
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.extrasNightLabel}</Form.Label>
+                                <Form.Label className="small text-muted">{t('extrasNightLabel')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.lisatYo || ""} 
                                     onChange={e=>setMeta({...meta, lisatYo:e.target.value})} 
-                                    placeholder={strings.extrasPlaceholder}
+                                    placeholder={t('extrasPlaceholder')}
                                 />
-                                {showExtrasMessage && <Form.Text className="text-info">{strings.showExtrasPlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.lisatYo} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showExtrasMessage && <Form.Text className="text-info">{t('showExtrasPlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.lisatYo} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
                     </>
@@ -234,61 +234,61 @@ export default function Timesheet({
                     <>
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.overtimeVrk50Label}</Form.Label>
+                                <Form.Label className="small text-muted">{t('overtimeVrk50Label')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.ylityoVrk50 || ""} 
                                     onChange={e=>setMeta({...meta, ylityoVrk50:e.target.value})} 
-                                    placeholder={strings.overtimePlaceholder}
+                                    placeholder={t('overtimePlaceholder')}
                                 />
-                                {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.ylityoVrk50} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showOvertimeMessage && <Form.Text className="text-info">{t('showOvertimePlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.ylityoVrk50} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
 
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.overtimeVrk100Label}</Form.Label>
+                                <Form.Label className="small text-muted">{t('overtimeVrk100Label')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.ylityoVrk100 || ""} 
                                     onChange={e=>setMeta({...meta, ylityoVrk100:e.target.value})} 
-                                    placeholder={strings.overtimePlaceholder}
+                                    placeholder={t('overtimePlaceholder')}
                                 />
-                                {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.ylityoVrk100} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showOvertimeMessage && <Form.Text className="text-info">{t('showOvertimePlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.ylityoVrk100} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
 
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.overtimeVko50Label}</Form.Label>
+                                <Form.Label className="small text-muted">{t('overtimeVko50Label')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.ylityoVko50 || ""} 
                                     onChange={e=>setMeta({...meta, ylityoVko50:e.target.value})} 
-                                    placeholder={strings.overtimePlaceholder}
+                                    placeholder={t('overtimePlaceholder')}
                                 />
-                                {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.ylityoVko50} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showOvertimeMessage && <Form.Text className="text-info">{t('showOvertimePlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.ylityoVko50} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
 
                         <Col md>
                             <Form.Group>
-                                <Form.Label className="small text-muted">{strings.overtimeVko100Label}</Form.Label>
+                                <Form.Label className="small text-muted">{t('overtimeVko100Label')}</Form.Label>
                                 <Form.Control 
                                     type="number"
                                     step={0.1} 
                                     value={meta.ylityoVko100 || ""} 
                                     onChange={e=>setMeta({...meta, ylityoVko100:e.target.value})} 
-                                    placeholder={strings.overtimePlaceholder}
+                                    placeholder={t('overtimePlaceholder')}
                                 />
-                                {showOvertimeMessage && <Form.Text className="text-info">{strings.showOvertimePlaceholder}</Form.Text>}
-                                <NumberValidator value={meta.ylityoVko100} min={0.1} max={999.99} message="Liian iso luku" />
+                                {showOvertimeMessage && <Form.Text className="text-info">{t('showOvertimePlaceholder')}</Form.Text>}
+                                <NumberValidator value={meta.ylityoVko100} min={0.1} max={999.99} />
                             </Form.Group>
                         </Col>
                     </>
@@ -296,71 +296,71 @@ export default function Timesheet({
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.atvLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('atvLabel')}</Form.Label>
                         <Form.Control 
                             type="number" 
                             step={0.1} 
                             value={meta.atv || ""} 
                             onChange={e=>setMeta({...meta, atv:e.target.value})} 
-                            placeholder={strings.extrasPlaceholder}
+                            placeholder={t('extrasPlaceholder')}
                         />
-                        <NumberValidator value={meta.atv} min={0.1} max={999.99} message="Liian iso luku" />
+                        <NumberValidator value={meta.atv} min={0.1} max={999.99} />
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.travelLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('travelLabel')}</Form.Label>
                         <Form.Control 
                             type="number" 
                             step={0.1} 
                             value={meta.matk || ""} 
                             onChange={e=>setMeta({...meta, matk:e.target.value})} 
-                            placeholder={strings.extrasPlaceholder}
+                            placeholder={t('extrasPlaceholder')}
                         />
-                        <NumberValidator value={meta.matk} min={0.1} max={999.99} message="Liian iso luku" />
+                        <NumberValidator value={meta.matk} min={0.1} max={999.99} />
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.mealLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('mealLabel')}</Form.Label>
                         <Form.Control 
                             type="number"
                             value={meta.ateriakorvaus || ""} 
                             onChange={e=>setMeta({...meta, ateriakorvaus:e.target.value})}
-                            placeholder={strings.mealLabel}
+                            placeholder={t('mealLabel')}
                         />
-                        <NumberValidator value={meta.ateriakorvaus} min={0.1} max={999.99} message="Liian iso luku" />
+                        <NumberValidator value={meta.ateriakorvaus} min={0.1} max={999.99} />
                     </Form.Group>
                 </Col>  
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.kmLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('kmLabel')}</Form.Label>
                         <Form.Control 
                             type="number" 
                             step={0.1} 
                             value={meta.km || ""} 
                             onChange={e=>setMeta({...meta, km:e.target.value})}
-                            placeholder={strings.kmPlaceholder}
+                            placeholder={t('kmPlaceholder')}
                         />
-                        <NumberValidator value={meta.km} min={0.1} max={999.99} message="Liian iso luku" />
+                        <NumberValidator value={meta.km} min={0.1} max={999.99} />
                     </Form.Group>
                 </Col>
 
                 {parseFloat(meta.km) > 0 && (
                     <Col md>
                         <Form.Group>
-                            <Form.Label className="small text-muted">{strings.kmNoteLabel}</Form.Label>
+                            <Form.Label className="small text-muted">{t('kmNoteLabel')}</Form.Label>
                             <Form.Control 
                                 as="textarea" 
                                 value={meta.km_selite || ""} 
                                 onChange={e=>setMeta({...meta, km_selite:e.target.value})} 
-                                placeholder={strings.kmNotePlaceholder}
+                                placeholder={t('kmNotePlaceholder')}
                             />
                             <Form.Text className="text-info">
-                                {strings.kmDescInfo}
+                                {t('kmDescInfo')}
                             </Form.Text>
                         </Form.Group>
                     </Col>
@@ -368,52 +368,52 @@ export default function Timesheet({
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.toolCompLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('toolCompLabel')}</Form.Label>
                         <Form.Control 
                             type="number" 
                             value={meta.tyokalukorvaus || ""} 
                             onChange={e=>setMeta({...meta, tyokalukorvaus:e.target.value})} 
-                            placeholder={strings.toolCompPlaceholder}
+                            placeholder={t('toolCompPlaceholder')}
                         />
-                        <NumberValidator value={meta.tyokalukorvaus} min={0.1} max={999.99} message="Liian iso luku" />
+                        <NumberValidator value={meta.tyokalukorvaus} min={0.1} max={999.99} />
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.dailyAllowance}</Form.Label>
+                        <Form.Label className="small text-muted">{t('dailyAllowance')}</Form.Label>
                         <Form.Select
                             className="form-control"
                             value={meta.paivaraha || 'ei'}
                             onChange={(e) => setMeta({...meta, paivaraha: e.target.value})}
                         >
-                            <option value="ei">{strings.none}</option>
-                            <option value="osa">{strings.partial}</option>
-                            <option value="koko">{strings.full}</option>
+                            <option value="ei">{t('none')}</option>
+                            <option value="osa">{t('partial')}</option>
+                            <option value="koko">{t('full')}</option>
                         </Form.Select>
                     </Form.Group>
                 </Col>
                 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.noteLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('noteLabel')}</Form.Label>
                         <Form.Control 
                             as="textarea" 
                             value={meta.huom || ""} 
                             onChange={e=>setMeta({...meta, huom:e.target.value})} 
-                            placeholder={strings.notePlaceholder}
+                            placeholder={t('notePlaceholder')}
                         />
                     </Form.Group>
                 </Col>
 
                 <Col md>
                     <Form.Group>
-                        <Form.Label className="small text-muted">{strings.memoLabel}</Form.Label>
+                        <Form.Label className="small text-muted">{t('memoLabel')}</Form.Label>
                         <Form.Control 
                             as="textarea" 
                             value={meta.memo || ""} 
                             onChange={e=>setMeta({...meta, memo:e.target.value})} 
-                            placeholder={strings.memoPlaceholder}
+                            placeholder={t('memoPlaceholder')}
                         />
                     </Form.Group>
                 </Col>
@@ -438,13 +438,13 @@ export default function Timesheet({
                     <Button 
                         size="sm" 
                         variant="primary" 
-                        onClick={toggleExtras}>{showExtras? strings.toggleExtrasHide : strings.toggleExtrasShow}
+                        onClick={toggleExtras}>{showExtras ? t('toggleExtrasHide') : t('toggleExtrasShow')}
                     </Button>
 
                     <Button 
                         size="sm" 
                         variant="secondary" 
-                        onClick={toggleOvertime}>{showOvertime? strings.toggleOvertimeHide : strings.toggleOvertimeShow}
+                        onClick={toggleOvertime}>{showOvertime ? t('toggleOvertimeHide') : t('toggleOvertimeShow')}
                     </Button>
                 </Col>
                 
@@ -453,16 +453,16 @@ export default function Timesheet({
                         size="sm" 
                         variant="success" 
                         className="me-2" 
-                        type="submit">{strings.addRowButton}
+                        type="submit">{t('addRowButton')}
                     </Button>
 
                     <Button 
                         size="sm" 
                         variant="outline-danger" 
-                        onClick={clearAll}>{strings.clearAllButton}
+                        onClick={clearAll}>{t('clearAllButton')}
                     </Button>
                 </Col>
             </Row>
         </Form>
-    )
+    );
 };

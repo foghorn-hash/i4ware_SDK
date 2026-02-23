@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./ManageDomain.css";
-import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import { AuthContext } from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import { Button } from "react-bootstrap";
@@ -10,134 +8,42 @@ import Dropdown from "react-bootstrap/Dropdown";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../tube-spinner.svg";
 import InfiniteScroll from "react-infinite-scroller";
-import LocalizedStrings from "react-localization";
+import { useTranslation } from "react-i18next";
 
-let strings = new LocalizedStrings({
-  en: {
-    actions: "Actions",
-    extendTrial30Days: "Extend Trial 30 days",
-    makePaidSubscription: "Make a Paid Subscription",
-    downgradeToTrial: "Downgrade to Trial",
-    extendTrialOneYear: "Extend Trial by One year",
-    terminateDomain: "Terminate domain",
-    domain: "Domain",
-    validBeforeAt: "Valid Before At",
-    type: "Type",
-    company: "Company",
-    vatId: "VAT-ID",
-    phone: "Phone",
-    email: "Email",
-    country: "Country",
-    edit: "Edit",
-    paid: "Paid",
-    trial: "Trial",
-    previous: "Previous",
-    next: "Next",
-  },
-  fi: {
-    actions: "Toiminnot",
-    extendTrial30Days: "Jatka kokeilua 30 päivällä",
-    makePaidSubscription: "Tee tilaus maksulliseksi",
-    downgradeToTrial: "Alenna kokeiluversioksi",
-    extendTrialOneYear: "Jatka kokeilua yhdellä vuodella",
-    terminateDomain: "Mitätöi domain",
-    domain: "Domain",
-    validBeforeAt: "Voimassa Ennen",
-    type: "Tyyppi",
-    company: "Yritys",
-    vatId: "ALV-tunnus",
-    phone: "Puhelin",
-    email: "Sähköposti",
-    country: "Maa",
-    edit: "Muokkaa",
-    paid: "Makssullinen",
-    trial: "Kokeilu",
-    previous: "Edellinen",
-    next: "Seuraava",
-  },
-  sv: {
-    actions: "Åtgärder",
-    extendTrial30Days: "Förläng provperioden med 30 dagar",
-    makePaidSubscription: "Gör prenumeration betald",
-    downgradeToTrial: "Nedgradera till provperiod",
-    extendTrialOneYear: "Förläng provperioden med ett år",
-    terminateDomain: "Avsluta domän",
-    domain: "Domän",
-    validBeforeAt: "Giltig till",
-    type: "Typ",
-    company: "Företag",
-    vatId: "Momsnummer",
-    phone: "Telefon",
-    email: "E-post",
-    country: "Land",
-    edit: "Redigera",
-    paid: "Betald",
-    trial: "Prov",
-    previous: "Föregående",
-    next: "Nästa",
-  },
-});
-
-function Menu({ id, domainActionApi, index }) {
-  const [menuOpen, setMenuOpen] = useState([]);
-
-  const handleToggle = (index) => {
-    setMenuOpen((prevState) => {
-      const newState = [...prevState];
-      newState[index] = !newState[index];
-      return newState;
-    });
-  };
+// Row Action Menu Component
+function Menu({ id, domainActionApi }) {
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Dropdown
       drop="up"
       align={window.innerWidth > 900 ? "end" : "start"}
-      show={menuOpen[index]}
-      onToggle={() => handleToggle(index)}
+      show={isOpen}
+      onToggle={(nextShow) => setIsOpen(nextShow)}
     >
       <Dropdown.Toggle variant="success" id="dropdown-basic">
-        {strings.actions}
+        {t('actions')}
       </Dropdown.Toggle>
 
-      <Dropdown.Menu
-        className={`mobile-dropdown ${menuOpen[index] ? "visible" : ""}`}
-      >
-        <Dropdown.Item
-          onClick={() => {
-            domainActionApi(id, "extend-trial");
-          }}
-        >
-          {strings.extendTrial30Days}{" "}
+      <Dropdown.Menu className={`mobile-dropdown ${isOpen ? "visible" : ""}`}>
+        <Dropdown.Item onClick={() => domainActionApi(id, "extend-trial")}>
+          {t('extendTrial30Days')}
+        </Dropdown.Item>
+        <Dropdown.Item onClick={() => domainActionApi(id, "make-paid")}>
+          {t('makePaidSubscription')}
+        </Dropdown.Item>
+        <Dropdown.Item onClick={() => domainActionApi(id, "down-to-trial")}>
+          {t('downgradeToTrial')}
+        </Dropdown.Item>
+        <Dropdown.Item onClick={() => domainActionApi(id, "extend-one-year")}>
+          {t('extendTrialOneYear')}
         </Dropdown.Item>
         <Dropdown.Item
-          onClick={() => {
-            domainActionApi(id, "make-paid");
-          }}
-        >
-          {strings.makePaidSubscription}
-        </Dropdown.Item>
-        <Dropdown.Item
-          onClick={() => {
-            domainActionApi(id, "down-to-trial");
-          }}
-        >
-          {strings.downgradeToTrial}
-        </Dropdown.Item>
-        <Dropdown.Item
-          onClick={() => {
-            domainActionApi(id, "extend-one-year");
-          }}
-        >
-          {strings.extendTrialOneYear}
-        </Dropdown.Item>
-        <Dropdown.Item
-          onClick={() => {
-            domainActionApi(id, "terminate");
-          }}
+          onClick={() => domainActionApi(id, "terminate")}
           style={{ background: "#ffbfbf" }}
         >
-          {strings.terminateDomain}
+          {t('terminateDomain')}
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
@@ -145,26 +51,20 @@ function Menu({ id, domainActionApi, index }) {
 }
 
 function ManageDomain(props) {
+  const { t, i18n } = useTranslation();
   const [page, setPage] = useState(1);
   const [domains, setDomains] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get("lang");
-
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
-
-  const { authState, authActions } = React.useContext(AuthContext);
-
+  // Sync language from URL
   useEffect(() => {
-    loadMore();
-  }, []);
+    const urlParams = new URLSearchParams(window.location.search);
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n]);
 
   const loadMore = () => {
     if (isLoading || !hasMore) return;
@@ -173,18 +73,27 @@ function ManageDomain(props) {
     request()
       .get(`/api/manage/domains?page=${page}`)
       .then((res) => {
-        const newDomains = res.data;
-        if (newDomains && newDomains.length > 0) {
-          setDomains((prevDomains) => [
-            ...new Set([...prevDomains, ...newDomains]),
-          ]);
-          setPage((prevPage) => prevPage + 1);
-        } else {
-          setHasMore(false);
+        // DEBUG: console.log("Domain API Data:", res.data);
+        
+        if (res && res.data) {
+          // Handle Laravel Pagination: res.data.data OR standard Array: res.data
+          const incomingData = res.data.data ? res.data.data : res.data;
+          
+          if (Array.isArray(incomingData) && incomingData.length > 0) {
+            setDomains((prevDomains) => {
+              const combined = [...prevDomains, ...incomingData];
+              // Filter duplicates by ID
+              return Array.from(new Map(combined.map(item => [item.id, item])).values());
+            });
+            setPage((prevPage) => prevPage + 1);
+          } else {
+            setHasMore(false);
+          }
         }
       })
       .catch((error) => {
         console.error("Error loading more domains:", error);
+        setHasMore(false);
       })
       .finally(() => {
         setIsLoading(false);
@@ -194,16 +103,17 @@ function ManageDomain(props) {
   const domainUpdateApi = (data) => {
     request()
       .post("/api/manage/updateDomainRecord", data)
-      .then((res) => {
-        request()
-          .get("/api/manage/domains")
-          .then((res) => {
-            setDomains(res.data);
-          });
+      .then(() => {
+        // Reset and refetch first page after an update
+        setPage(1);
+        setDomains([]);
+        setHasMore(true);
+        // loadMore will trigger automatically due to InfiniteScroll initialLoad
       });
   };
 
-  if (domains.length === 0 && !isLoading) {
+  // Show spinner only on very first load
+  if (domains.length === 0 && isLoading && page === 1) {
     return (
       <div className="loading-screen">
         <img src={LOADING} alt="Loading..." />
@@ -216,44 +126,45 @@ function ManageDomain(props) {
       <div className="mt-3">
         <div className="table-header-domains">
           <div className="column_domains">#</div>
-          <div className="column_domains">{strings.domain}</div>
-          <div className="column_domains">{strings.validBeforeAt}</div>
-          <div className="column_domains">{strings.type}</div>
-          <div className="column_domains">{strings.company}</div>
-          <div className="column_domains">{strings.vatId}</div>
+          <div className="column_domains">{t('domain')}</div>
+          <div className="column_domains">{t('validBeforeAt')}</div>
+          <div className="column_domains">{t('type')}</div>
+          <div className="column_domains">{t('company')}</div>
+          <div className="column_domains">{t('vatId')}</div>
           <div className="column_domains"></div>
           <div className="column_domains"></div>
         </div>
+
         <div className="table-body-domains">
           <InfiniteScroll
             pageStart={0}
             loadMore={loadMore}
-            hasMore={!isLoading && hasMore}
-            loader={<div className="loader">Loading...</div>}
+            hasMore={hasMore}
+            initialLoad={true}
+            loader={<div className="loader" key={0}>Loading...</div>}
           >
             {domains.map((item, index) => (
-              <div className="mobile-table-body-domains">
+              <div key={item.id || index} className="mobile-table-body-domains">
+                {/* Mobile Header (Hidden on Desktop via CSS) */}
                 <div className="mobile-table-header-domains">
                   <div className="column_domains">#</div>
-                  <div className="column_domains">{strings.domain}</div>
-                  <div className="column_domains">{strings.validBeforeAt}</div>
-                  <div className="column_domains">{strings.type}</div>
-                  <div className="column_domains">{strings.company}</div>
-                  <div className="column_domains">{strings.vatId}</div>
+                  <div className="column_domains">{t('domain')}</div>
+                  <div className="column_domains">{t('validBeforeAt')}</div>
+                  <div className="column_domains">{t('type')}</div>
+                  <div className="column_domains">{t('company')}</div>
+                  <div className="column_domains">{t('vatId')}</div>
                   <div className="column_domains"></div>
                   <div className="column_domains"></div>
                 </div>
-                <div key={item.id || index} className="table-row-domains">
+
+                <div className="table-row-domains">
                   <div className="column_domains">{index + 1}</div>
                   <div className="column_domains">{item.domain}</div>
                   <div className="column_domains">{item.valid_before_at}</div>
                   <div className="column_domains">
-                    {item.type === "paid" && (
-                      <li className="badge bg-success">{strings.paid}</li>
-                    )}
-                    {item.type === "trial" && (
-                      <li className="badge bg-primary">{strings.trial}</li>
-                    )}
+                    <li className={`badge ${item.type === "paid" ? "bg-success" : "bg-primary"}`}>
+                      {item.type === "paid" ? t('paid') : t('trial')}
+                    </li>
                   </div>
                   <div className="column_domains">{item.company_name}</div>
                   <div className="column_domains">{item.vat_id}</div>
@@ -265,14 +176,11 @@ function ManageDomain(props) {
                         onClick={() => {
                           props.history.push({
                             pathname: "/manage-domains/edit",
-                            state: {
-                              item: item,
-                              from: "edit",
-                            },
+                            state: { item, from: "edit" },
                           });
                         }}
                       >
-                        {strings.edit}
+                        {t('edit')}
                       </Button>
                     </PermissionGate>
                   </div>
@@ -280,12 +188,8 @@ function ManageDomain(props) {
                     <PermissionGate permission={"domain.actions"}>
                       <Menu
                         id={item.id}
-                        index={index}
                         domainActionApi={(id, action) => {
-                          domainUpdateApi({
-                            id: id,
-                            action: action,
-                          });
+                          domainUpdateApi({ id, action });
                         }}
                       />
                     </PermissionGate>
@@ -294,6 +198,9 @@ function ManageDomain(props) {
               </div>
             ))}
           </InfiniteScroll>
+          {domains.length === 0 && !isLoading && (
+            <div className="text-center p-5">{t('noDataFound')}</div>
+          )}
           <div className="spacer"></div>
         </div>
       </div>

@@ -1,47 +1,24 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import "./FileUploadForm.css";
 import axios from "axios";
-import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
+import { API_BASE_URL, ACCESS_TOKEN_NAME } from "../../constants/apiConstants";
 import { captureScreenshot } from '../../utils/screenshotCapture';
-import LocalizedStrings from 'react-localization';
+import { useTranslation } from 'react-i18next';
 
-let strings = new LocalizedStrings({
-  en: {
-    uploadStlFile: "Upload STL File",
-    browse: "Browse...",
-    upload: "Upload",
-    chose: "You chose file:",
-    press: "Press Upload to upload it."
-  },
-  fi: {
-    uploadStlFile: "Lataa STL-tiedosto",
-    browse: "Selaa...",
-    upload: "Lataa",
-    chose: "Valitsit tiedoston:",
-    press: "Paina Lataa ladataksesi sen."
-  },
-  sv: {
-    uploadStlFile: "Ladda upp STL-fil",
-    browse: "Bläddra...",
-    upload: "Ladda upp",
-    chose: "Du valde fil:",
-    press: "Tryck på Ladda upp för att ladda upp den."
-  }
-});
 
 const FileUploadForm = ({ newItemIsUploaded }) => {
+  const { t, i18n } = useTranslation();
   const [selectedFile, setSelectedFile] = useState(null);
   const fileRef = useRef(null);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+  const urlParams = new URLSearchParams(window.location.search);
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -88,7 +65,7 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
 
   return (
     <div>
-      <strong className='FileFormUpload-title'>{strings.uploadStlFile}</strong>
+      <strong className='FileFormUpload-title'>{t('uploadStlFile')}</strong>
       <br /><br />
       <div className="file-input-container">
         <input
@@ -97,7 +74,7 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
           className="FileFormUplaod-file-selector"
           onChange={handleFileChange}
           accept=".stl"
-          style={{display: 'none'}}
+          style={{ display: 'none' }}
         />
         <button
           type="button"
@@ -115,14 +92,14 @@ const FileUploadForm = ({ newItemIsUploaded }) => {
           onMouseEnter={(e) => e.target.style.backgroundColor = 'red'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
         >
-          {strings.browse}
+          {t('browse')}
         </button>
       </div>
-      <button className="FileFormUplaod-file-button" onClick={handleFileUpload}>{strings.upload}</button>
+      <button className="FileFormUplaod-file-button" onClick={handleFileUpload}>{t('upload')}</button>
 
       {selectedFile && (
         <div className="file-info">
-          <p>{strings.chose} {selectedFile.name}. {strings.press}</p>
+          <p>{t('chose')} {selectedFile.name}. {t('press')}</p>
         </div>
       )}
     </div>
