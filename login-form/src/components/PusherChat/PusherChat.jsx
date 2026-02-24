@@ -1323,10 +1323,7 @@ const PusherChat = () => {
               {t('upload')}
             </button>
           </form>
-          <div style={{ marginTop: "10px" }}>
-            <progress value={uploadProgress} max="100"></progress>
-            <p>Uploading: {uploadProgress}%</p>
-          </div>
+
         </Modal.Body>
         <Modal.Footer className="message-upload-modal">
           <Button variant="secondary" onClick={handleCaptureVideoCloseModal}>
