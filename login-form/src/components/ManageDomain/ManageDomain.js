@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./ManageDomain.css";
 import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import { AuthContext } from "../../contexts/auth.contexts";
@@ -32,6 +31,10 @@ let strings = new LocalizedStrings({
     trial: "Trial",
     previous: "Previous",
     next: "Next",
+    searchByCompany: "Search by company...",
+    searchByVatId: "Search by VAT-ID...",
+    clearSearch: "Clear",
+    noDomainsFound: "No domains found matching your search.",
   },
   fi: {
     actions: "Toiminnot",
@@ -53,6 +56,10 @@ let strings = new LocalizedStrings({
     trial: "Kokeilu",
     previous: "Edellinen",
     next: "Seuraava",
+    searchByCompany: "Hae yrityksellä...",
+    searchByVatId: "Hae ALV-tunnuksella...",
+    clearSearch: "Tyhjennä",
+    noDomainsFound: "Hakuasi vastaavia domaineja ei löydy.",
   },
   sv: {
     actions: "Åtgärder",
@@ -74,10 +81,15 @@ let strings = new LocalizedStrings({
     trial: "Prov",
     previous: "Föregående",
     next: "Nästa",
+    searchByCompany: "Sök efter företag...",
+    searchByVatId: "Sök efter momsnummer...",
+    clearSearch: "Rensa",
+    noDomainsFound: "Inga domäner hittades som matchar din sökning.",
   },
 });
 
 const DOMAINS_PER_PAGE = 50;
+const SEARCH_DEBOUNCE_MS = 350;
 
 function Menu({ id, domainActionApi, index }) {
   const [menuOpen, setMenuOpen] = useState([]);
@@ -100,10 +112,7 @@ function Menu({ id, domainActionApi, index }) {
       <Dropdown.Toggle variant="success" id="dropdown-basic">
         {strings.actions}
       </Dropdown.Toggle>
-
-      <Dropdown.Menu
-        className={`mobile-dropdown ${menuOpen[index] ? "visible" : ""}`}
-      >
+      <Dropdown.Menu className={`mobile-dropdown ${menuOpen[index] ? "visible" : ""}`}>
         <Dropdown.Item onClick={() => domainActionApi(id, "extend-trial")}>
           {strings.extendTrial30Days}
         </Dropdown.Item>
@@ -128,10 +137,18 @@ function Menu({ id, domainActionApi, index }) {
 }
 
 function ManageDomain(props) {
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [domains, setDomains] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Raw input values — update instantly so inputs feel responsive
+  const [searchCompany, setSearchCompany] = useState("");
+  const [searchVatId, setSearchVatId] = useState("");
+
+  // Debounced values sent to the API
+  const [debouncedCompany, setDebouncedCompany] = useState("");
+  const [debouncedVatId, setDebouncedVatId] = useState("");
 
   var query = window.location.search.substring(1);
   var urlParams = new URLSearchParams(query);
@@ -145,24 +162,59 @@ function ManageDomain(props) {
 
   const { authState, authActions } = React.useContext(AuthContext);
 
-  useEffect(() => {
-    fetchDomains(page);
-  }, [page]);
+  const totalPages = Math.max(1, Math.ceil(total / DOMAINS_PER_PAGE));
+  const hasActiveSearch = debouncedCompany !== "" || debouncedVatId !== "";
 
-  const fetchDomains = (pageNumber) => {
+  // Debounce company
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedCompany(searchCompany.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [searchCompany]);
+
+  // Debounce VAT-ID
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedVatId(searchVatId.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [searchVatId]);
+
+  // Reset to page 1 when search terms change (skip first render)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setPage(1);
+  }, [debouncedCompany, debouncedVatId]);
+
+  // Fetch whenever page or debounced search terms change
+  useEffect(() => {
+    fetchDomains(page, debouncedCompany, debouncedVatId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debouncedCompany, debouncedVatId]);
+
+  const fetchDomains = (pageNumber, company, vatId) => {
     setIsLoading(true);
+
+    const params = new URLSearchParams({ page: pageNumber, per_page: DOMAINS_PER_PAGE });
+    if (company) params.append("company_name", company);
+    if (vatId)   params.append("vat_id", vatId);
+
     request()
-      .get(`/api/manage/domains?page=${pageNumber}&per_page=${DOMAINS_PER_PAGE}`)
+      .get(`/api/manage/domains?${params.toString()}`)
       .then((res) => {
         const responseData = res.data;
         if (Array.isArray(responseData)) {
+          // Old plain-array response (fallback)
           setDomains(responseData);
-          setTotalPages(
-            responseData.length < DOMAINS_PER_PAGE ? pageNumber : pageNumber + 1
+          setTotal(
+            responseData.length < DOMAINS_PER_PAGE
+              ? (pageNumber - 1) * DOMAINS_PER_PAGE + responseData.length
+              : pageNumber * DOMAINS_PER_PAGE + 1
           );
         } else {
-          setDomains(responseData.data);
-          setTotalPages(Math.ceil(responseData.total / DOMAINS_PER_PAGE));
+          setDomains(responseData.data ?? []);
+          setTotal(responseData.total ?? 0);
         }
       })
       .catch((error) => {
@@ -173,47 +225,34 @@ function ManageDomain(props) {
       });
   };
 
-  const refreshDomains = () => {
-    fetchDomains(page);
-  };
+  const refreshDomains = () => fetchDomains(page, debouncedCompany, debouncedVatId);
 
   const domainUpdateApi = (data) => {
     request()
       .post("/api/manage/updateDomainRecord", data)
-      .then(() => {
-        refreshDomains();
-      });
+      .then(() => refreshDomains());
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage);
-    }
+    if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
   };
 
   const renderPaginationItems = () => {
     const items = [];
     const delta = 2;
-    const left = Math.max(1, page - delta);
+    const left  = Math.max(1, page - delta);
     const right = Math.min(totalPages, page + delta);
 
     if (left > 1) {
       items.push(
-        <Pagination.Item key={1} onClick={() => handlePageChange(1)}>
-          1
-        </Pagination.Item>
+        <Pagination.Item key={1} onClick={() => handlePageChange(1)}>1</Pagination.Item>
       );
-      if (left > 2)
-        items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
+      if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
     }
 
     for (let p = left; p <= right; p++) {
       items.push(
-        <Pagination.Item
-          key={p}
-          active={p === page}
-          onClick={() => handlePageChange(p)}
-        >
+        <Pagination.Item key={p} active={p === page} onClick={() => handlePageChange(p)}>
           {p}
         </Pagination.Item>
       );
@@ -223,10 +262,7 @@ function ManageDomain(props) {
       if (right < totalPages - 1)
         items.push(<Pagination.Ellipsis key="right-ellipsis" disabled />);
       items.push(
-        <Pagination.Item
-          key={totalPages}
-          onClick={() => handlePageChange(totalPages)}
-        >
+        <Pagination.Item key={totalPages} onClick={() => handlePageChange(totalPages)}>
           {totalPages}
         </Pagination.Item>
       );
@@ -245,7 +281,38 @@ function ManageDomain(props) {
 
   return (
     <>
-      <div className="mt-3">
+      {/* ── Search bar ───────────────────────────────────────────── */}
+      <div className="d-flex align-items-center gap-2 mt-3 mb-2 flex-wrap">
+        <input
+          type="text"
+          className="form-control"
+          style={{ maxWidth: "240px" }}
+          placeholder={strings.searchByCompany}
+          value={searchCompany}
+          onChange={(e) => setSearchCompany(e.target.value)}
+          aria-label="Search by company"
+        />
+        <input
+          type="text"
+          className="form-control"
+          style={{ maxWidth: "200px" }}
+          placeholder={strings.searchByVatId}
+          value={searchVatId}
+          onChange={(e) => setSearchVatId(e.target.value)}
+          aria-label="Search by VAT-ID"
+        />
+        {hasActiveSearch && (
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => { setSearchCompany(""); setSearchVatId(""); }}
+          >
+            {strings.clearSearch}
+          </Button>
+        )}
+      </div>
+
+      <div className="mt-2">
         <div className="table-header-domains">
           <div className="column_domains">#</div>
           <div className="column_domains">{strings.domain}</div>
@@ -261,6 +328,10 @@ function ManageDomain(props) {
           {isLoading ? (
             <div className="loading-screen">
               <img src={LOADING} alt="Loading..." />
+            </div>
+          ) : domains.length === 0 ? (
+            <div className="text-center py-4 text-muted">
+              {strings.noDomainsFound}
             </div>
           ) : (
             domains.map((item, index) => {
@@ -328,23 +399,11 @@ function ManageDomain(props) {
         {!isLoading && totalPages > 1 && (
           <div className="d-flex justify-content-center mt-3">
             <Pagination>
-              <Pagination.First
-                onClick={() => handlePageChange(1)}
-                disabled={page === 1}
-              />
-              <Pagination.Prev
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-              />
+              <Pagination.First onClick={() => handlePageChange(1)}          disabled={page === 1} />
+              <Pagination.Prev  onClick={() => handlePageChange(page - 1)}   disabled={page === 1} />
               {renderPaginationItems()}
-              <Pagination.Next
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-              />
-              <Pagination.Last
-                onClick={() => handlePageChange(totalPages)}
-                disabled={page === totalPages}
-              />
+              <Pagination.Next  onClick={() => handlePageChange(page + 1)}   disabled={page === totalPages} />
+              <Pagination.Last  onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
             </Pagination>
           </div>
         )}

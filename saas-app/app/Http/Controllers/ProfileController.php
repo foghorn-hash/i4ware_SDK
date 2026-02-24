@@ -168,42 +168,57 @@ class ProfileController extends Controller
     public function domains(Request $request)
     {
         $user = Auth::user();
-    
+
         if ($user->role == "admin") {
-            $domains = Domain::all();
+            $query = Domain::query();
         } else {
-            $domain = DB::table('users')->select('domain')->where('id', '=', Auth::user()->id)->first();
-            $domains = Domain::where('domain', '=', $domain->domain)->get();
+            $domain = DB::table('users')->select('domain')->where('id', '=', $user->id)->first();
+            $query = Domain::where('domain', '=', $domain->domain);
         }
-    
-        $perPage = 10;
 
-        $page = $request->input('page', 1);
+        // Search filters
+        $searchCompany = trim($request->input('company_name', ''));
+        $searchVatId   = trim($request->input('vat_id', ''));
 
-        $offset = ($page - 1) * $perPage;
-    
-        $domainList = $domains->slice($offset, $perPage);
-    
+        if ($searchCompany !== '') {
+            $query->where('company_name', 'LIKE', '%' . $searchCompany . '%');
+        }
+
+        if ($searchVatId !== '') {
+            $query->where('vat_id', 'LIKE', '%' . $searchVatId . '%');
+        }
+
+        // Pagination
+        $perPage = (int) $request->input('per_page', 50);
+        $page    = (int) $request->input('page', 1);
+
+        $total   = $query->count();
+        $domains = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+
         $data = [];
-    
-        foreach ($domainList as $domain) {
+
+        foreach ($domains as $domain) {
             $data[] = [
-                'id' => $domain->id,
-                'domain' => $domain->domain,
-                'valid_before_at' => $domain->valid_before_at,
-                'type' => $domain->type,
-                'company_name' => $domain->company_name,
-                "vat_id" => $domain->vat_id,
-                "business_id" => $domain->business_id,
-                'mobile_no' => $domain->mobile_no,
+                'id'                      => $domain->id,
+                'domain'                  => $domain->domain,
+                'valid_before_at'         => $domain->valid_before_at,
+                'type'                    => $domain->type,
+                'company_name'            => $domain->company_name,
+                'vat_id'                  => $domain->vat_id,
+                'business_id'             => $domain->business_id,
+                'mobile_no'               => $domain->mobile_no,
                 'technical_contact_email' => $domain->technical_contact_email,
-                'billing_contact_email' => $domain->billing_contact_email,
-                'country' => $domain->country
+                'billing_contact_email'   => $domain->billing_contact_email,
+                'country'                 => $domain->country,
             ];
-            
         }
-    
-        return response()->json($data, 200);
+
+        return response()->json([
+            'data'     => $data,
+            'total'    => $total,
+            'page'     => $page,
+            'per_page' => $perPage,
+        ], 200);
     }
     
     public function updateDomain(Request $request)
