@@ -177,7 +177,7 @@ const validationSchema = Yup.object().shape({
     .required(strings.confirmPassword),
 });
 
-const USERS_PER_PAGE = 10;
+const USERS_PER_PAGE = 50;
 const SEARCH_DEBOUNCE_MS = 350;
 
 function ManageAdmin() {
@@ -210,13 +210,13 @@ function ManageAdmin() {
   const totalPages = Math.max(1, Math.ceil(total / USERS_PER_PAGE));
   const hasActiveSearch = debouncedName !== "" || debouncedEmail !== "";
 
-  // ── Debounce name ─────────────────────────────────────────────
+  //  Debounce name 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedName(searchName.trim()), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [searchName]);
 
-  // ── Debounce email ────────────────────────────────────────────
+  //  Debounce email 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedEmail(searchEmail.trim()), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(t);
@@ -244,7 +244,7 @@ function ManageAdmin() {
       setIsLoading(true);
 
       const params = new URLSearchParams({ page: pageNumber, per_page: USERS_PER_PAGE });
-      if (name)  params.append("name", name);
+      if (name) params.append("name", name);
       if (email) params.append("email", email);
 
       const response = await axios.get(
@@ -305,7 +305,7 @@ function ManageAdmin() {
     fetchAllRoles();
   }, []);
 
-  // ── Mutation handlers ─────────────────────────────────────────
+  //  Mutation handlers 
   const changeRole = (values) => {
     request()
       .post("/api/manage/roles/setRole", { ...values, userid: changeRoleUserId })
@@ -330,7 +330,7 @@ function ManageAdmin() {
       .then(() => { setModalStatePassword(null); refreshUsers(); });
   };
 
-  // ── Pagination ────────────────────────────────────────────────
+  //  Pagination 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
   };
@@ -338,7 +338,7 @@ function ManageAdmin() {
   const renderPaginationItems = () => {
     const items = [];
     const delta = 2;
-    const left  = Math.max(1, page - delta);
+    const left = Math.max(1, page - delta);
     const right = Math.min(totalPages, page + delta);
 
     if (left > 1) {
@@ -371,7 +371,7 @@ function ManageAdmin() {
 
   return (
     <>
-      {/* ── Modals ──────────────────────────────────────────────── */}
+      { }
       <Modal show={modalState}>
         <div>
           <h1>{strings.addUser}</h1>
@@ -471,7 +471,7 @@ function ManageAdmin() {
         />
       </ModalPasswordChange>
 
-      {/* ── Add user button ──────────────────────────────────────── */}
+      { }
       <PermissionGate permission={"users.addUser"}>
         <div className="button-bar">
           <Button
@@ -485,7 +485,7 @@ function ManageAdmin() {
         </div>
       </PermissionGate>
 
-      {/* ── Search bar ───────────────────────────────────────────── */}
+      {/* Search bar */}
       <div className="d-flex align-items-center gap-2 mt-3 mb-2 flex-wrap">
         <input
           type="text"
@@ -540,7 +540,7 @@ function ManageAdmin() {
                 ? API_BASE_URL + item.profile_picture_path.replaceAll("public/uploads", "/storage/uploads")
                 : null;
               const defaultImg = item.gender === "male" ? DefaultMaleImage : DefaultFemaleImage;
-              const rowNumber  = (page - 1) * USERS_PER_PAGE + index + 1;
+              const rowNumber = (page - 1) * USERS_PER_PAGE + index + 1;
 
               return (
                 <div className="mobile-table-body" key={item.id}>
@@ -620,11 +620,11 @@ function ManageAdmin() {
         {!isLoading && totalPages > 1 && (
           <div className="d-flex justify-content-center mt-3">
             <Pagination>
-              <Pagination.First onClick={() => handlePageChange(1)}        disabled={page === 1} />
-              <Pagination.Prev  onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
+              <Pagination.First onClick={() => handlePageChange(1)} disabled={page === 1} />
+              <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
               {renderPaginationItems()}
-              <Pagination.Next  onClick={() => handlePageChange(page + 1)} disabled={page === totalPages} />
-              <Pagination.Last  onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
+              <Pagination.Next onClick={() => handlePageChange(page + 1)} disabled={page === totalPages} />
+              <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
             </Pagination>
           </div>
         )}
@@ -632,7 +632,7 @@ function ManageAdmin() {
         <div className="spacer"></div>
       </div>
 
-      {/* ── Change Role Modal ────────────────────────────────────── */}
+      { }
       <Modal show={modalStateChangeRole}>
         <div>
           <h1>{strings.changeRole}</h1>

@@ -44,7 +44,7 @@ class UsersController extends Controller
         }
 
         // ── Search filters (only applied when non-empty) ──────────
-        $searchName  = trim($request->input('name', ''));
+        $searchName = trim($request->input('name', ''));
         $searchEmail = trim($request->input('email', ''));
 
         if ($searchName !== '') {
@@ -57,7 +57,7 @@ class UsersController extends Controller
 
         // ── Pagination ────────────────────────────────────────────
         $perPage = (int) $request->input('per_page', 10);
-        $page    = (int) $request->input('page', 1);
+        $page = (int) $request->input('page', 1);
 
         $total = $query->count();
         $users = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
@@ -67,22 +67,22 @@ class UsersController extends Controller
 
         foreach ($users as $user) {
             $data[] = [
-                'id'                   => $user->id,
-                'name'                 => $user->name,
-                'email'                => $user->email,
-                'gender'               => $user->gender,
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'gender' => $user->gender,
                 'profile_picture_path' => $user->profile_picture_path,
-                'domain'               => $user->domain,
-                'email_verified_at'    => $user->email_verified_at,
-                'is_active'            => $user->is_active,
-                'roles'                => $user->roles->name ?? null,
+                'domain' => $user->domain,
+                'email_verified_at' => $user->email_verified_at,
+                'is_active' => $user->is_active,
+                'roles' => $user->roles->name ?? null,
             ];
         }
 
         return response()->json([
-            'data'     => $data,
-            'total'    => $total,
-            'page'     => $page,
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
             'per_page' => $perPage,
         ], 200);
     }
@@ -107,7 +107,7 @@ class UsersController extends Controller
         $user->save();
 
         UserVerify::where('user_id', $id)->update([
-            'verified'   => 1,
+            'verified' => 1,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
@@ -116,7 +116,7 @@ class UsersController extends Controller
 
     function usersChangePassword(Request $request)
     {
-        $id       = $request->id;
+        $id = $request->id;
         $password = $request->password;
 
         $user = User::where('id', $id)->first();
@@ -131,33 +131,35 @@ class UsersController extends Controller
         $authUser = Auth::user();
 
         $validator = Validator::make($request->all(), [
-            'email'    => 'required|string|unique:users|email',
-            'name'     => 'required|string',
-            'role'     => 'required|string',
+            'email' => 'required|string|unique:users|email',
+            'name' => 'required|string',
+            'role' => 'required|string',
             'password' => 'required|min:8',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'data'    => $validator->errors(),
+                'data' => $validator->errors(),
             ], 200);
         }
 
         $role = ($request->role === 'NULL') ? null : $request->role;
 
-        DB::table('users')->insert([[
-            'name'              => $request->name,
-            'gender'            => $request->gender,
-            'email'             => $request->email,
-            'email_verified_at' => date('Y-m-d H:i:s'),
-            'password'          => Hash::make($request->password),
-            'created_at'        => date('Y-m-d H:i:s'),
-            'updated_at'        => date('Y-m-d H:i:s'),
-            'domain'            => $authUser->domain,
-            'role'              => 'user',
-            'role_id'           => $role,
-        ]]);
+        DB::table('users')->insert([
+            [
+                'name' => $request->name,
+                'gender' => $request->gender,
+                'email' => $request->email,
+                'email_verified_at' => date('Y-m-d H:i:s'),
+                'password' => Hash::make($request->password),
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+                'domain' => $authUser->domain,
+                'role' => 'user',
+                'role_id' => $role,
+            ]
+        ]);
 
         return response()->json(['success' => true, 'data' => []], 200);
     }

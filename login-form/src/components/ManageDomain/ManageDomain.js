@@ -18,6 +18,7 @@ let strings = new LocalizedStrings({
     downgradeToTrial: "Downgrade to Trial",
     extendTrialOneYear: "Extend Trial by One year",
     terminateDomain: "Terminate domain",
+    upgradeToAdmin: "Upgrade to Admin",
     domain: "Domain",
     validBeforeAt: "Valid Before At",
     type: "Type",
@@ -29,6 +30,8 @@ let strings = new LocalizedStrings({
     edit: "Edit",
     paid: "Paid",
     trial: "Trial",
+    adminDomain: "Admin",
+    never: "Never",
     previous: "Previous",
     next: "Next",
     searchByCompany: "Search by company...",
@@ -43,6 +46,7 @@ let strings = new LocalizedStrings({
     downgradeToTrial: "Alenna kokeiluversioksi",
     extendTrialOneYear: "Jatka kokeilua yhdellä vuodella",
     terminateDomain: "Mitätöi domain",
+    upgradeToAdmin: "Päivitä adminiksi",
     domain: "Domain",
     validBeforeAt: "Voimassa Ennen",
     type: "Tyyppi",
@@ -52,8 +56,10 @@ let strings = new LocalizedStrings({
     email: "Sähköposti",
     country: "Maa",
     edit: "Muokkaa",
-    paid: "Makssullinen",
+    paid: "Maksullinen",
     trial: "Kokeilu",
+    adminDomain: "Admin",
+    never: "Ei koskaan",
     previous: "Edellinen",
     next: "Seuraava",
     searchByCompany: "Hae yrityksellä...",
@@ -68,6 +74,7 @@ let strings = new LocalizedStrings({
     downgradeToTrial: "Nedgradera till provperiod",
     extendTrialOneYear: "Förläng provperioden med ett år",
     terminateDomain: "Avsluta domän",
+    upgradeToAdmin: "Uppgradera till admin",
     domain: "Domän",
     validBeforeAt: "Giltig till",
     type: "Typ",
@@ -79,6 +86,8 @@ let strings = new LocalizedStrings({
     edit: "Redigera",
     paid: "Betald",
     trial: "Prov",
+    adminDomain: "Admin",
+    never: "Aldrig",
     previous: "Föregående",
     next: "Nästa",
     searchByCompany: "Sök efter företag...",
@@ -125,6 +134,9 @@ function Menu({ id, domainActionApi, index }) {
         <Dropdown.Item onClick={() => domainActionApi(id, "extend-one-year")}>
           {strings.extendTrialOneYear}
         </Dropdown.Item>
+        <Dropdown.Item onClick={() => domainActionApi(id, "make-admin-domain")}>
+          {strings.upgradeToAdmin}
+        </Dropdown.Item>
         <Dropdown.Item
           onClick={() => domainActionApi(id, "terminate")}
           style={{ background: "#ffbfbf" }}
@@ -142,11 +154,9 @@ function ManageDomain(props) {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Raw input values — update instantly so inputs feel responsive
   const [searchCompany, setSearchCompany] = useState("");
   const [searchVatId, setSearchVatId] = useState("");
 
-  // Debounced values sent to the API
   const [debouncedCompany, setDebouncedCompany] = useState("");
   const [debouncedVatId, setDebouncedVatId] = useState("");
 
@@ -165,19 +175,16 @@ function ManageDomain(props) {
   const totalPages = Math.max(1, Math.ceil(total / DOMAINS_PER_PAGE));
   const hasActiveSearch = debouncedCompany !== "" || debouncedVatId !== "";
 
-  // Debounce company
   useEffect(() => {
     const t = setTimeout(() => setDebouncedCompany(searchCompany.trim()), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [searchCompany]);
 
-  // Debounce VAT-ID
   useEffect(() => {
     const t = setTimeout(() => setDebouncedVatId(searchVatId.trim()), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [searchVatId]);
 
-  // Reset to page 1 when search terms change (skip first render)
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
@@ -187,7 +194,6 @@ function ManageDomain(props) {
     setPage(1);
   }, [debouncedCompany, debouncedVatId]);
 
-  // Fetch whenever page or debounced search terms change
   useEffect(() => {
     fetchDomains(page, debouncedCompany, debouncedVatId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -198,14 +204,13 @@ function ManageDomain(props) {
 
     const params = new URLSearchParams({ page: pageNumber, per_page: DOMAINS_PER_PAGE });
     if (company) params.append("company_name", company);
-    if (vatId)   params.append("vat_id", vatId);
+    if (vatId) params.append("vat_id", vatId);
 
     request()
       .get(`/api/manage/domains?${params.toString()}`)
       .then((res) => {
         const responseData = res.data;
         if (Array.isArray(responseData)) {
-          // Old plain-array response (fallback)
           setDomains(responseData);
           setTotal(
             responseData.length < DOMAINS_PER_PAGE
@@ -240,7 +245,7 @@ function ManageDomain(props) {
   const renderPaginationItems = () => {
     const items = [];
     const delta = 2;
-    const left  = Math.max(1, page - delta);
+    const left = Math.max(1, page - delta);
     const right = Math.min(totalPages, page + delta);
 
     if (left > 1) {
@@ -249,7 +254,6 @@ function ManageDomain(props) {
       );
       if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
     }
-
     for (let p = left; p <= right; p++) {
       items.push(
         <Pagination.Item key={p} active={p === page} onClick={() => handlePageChange(p)}>
@@ -257,7 +261,6 @@ function ManageDomain(props) {
         </Pagination.Item>
       );
     }
-
     if (right < totalPages) {
       if (right < totalPages - 1)
         items.push(<Pagination.Ellipsis key="right-ellipsis" disabled />);
@@ -267,7 +270,6 @@ function ManageDomain(props) {
         </Pagination.Item>
       );
     }
-
     return items;
   };
 
@@ -336,6 +338,7 @@ function ManageDomain(props) {
           ) : (
             domains.map((item, index) => {
               const rowNumber = (page - 1) * DOMAINS_PER_PAGE + index + 1;
+              const isAdminDomain = item.type === "admin_domain";
               return (
                 <div className="mobile-table-body-domains" key={item.id || index}>
                   <div className="mobile-table-header-domains">
@@ -351,13 +354,19 @@ function ManageDomain(props) {
                   <div className="table-row-domains">
                     <div className="column_domains">{rowNumber}</div>
                     <div className="column_domains">{item.domain}</div>
-                    <div className="column_domains">{item.valid_before_at}</div>
+                    <div className="column_domains">
+                      {/* Admin domains never expire — show "Never" */}
+                      {isAdminDomain ? strings.never : item.valid_before_at}
+                    </div>
                     <div className="column_domains">
                       {item.type === "paid" && (
-                        <li className="badge bg-success">{strings.paid}</li>
+                        <span className="badge bg-success">{strings.paid}</span>
                       )}
                       {item.type === "trial" && (
-                        <li className="badge bg-primary">{strings.trial}</li>
+                        <span className="badge bg-primary">{strings.trial}</span>
+                      )}
+                      {isAdminDomain && (
+                        <span className="badge bg-dark">{strings.adminDomain}</span>
                       )}
                     </div>
                     <div className="column_domains">{item.company_name}</div>
@@ -399,11 +408,11 @@ function ManageDomain(props) {
         {!isLoading && totalPages > 1 && (
           <div className="d-flex justify-content-center mt-3">
             <Pagination>
-              <Pagination.First onClick={() => handlePageChange(1)}          disabled={page === 1} />
-              <Pagination.Prev  onClick={() => handlePageChange(page - 1)}   disabled={page === 1} />
+              <Pagination.First onClick={() => handlePageChange(1)} disabled={page === 1} />
+              <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
               {renderPaginationItems()}
-              <Pagination.Next  onClick={() => handlePageChange(page + 1)}   disabled={page === totalPages} />
-              <Pagination.Last  onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
+              <Pagination.Next onClick={() => handlePageChange(page + 1)} disabled={page === totalPages} />
+              <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
             </Pagination>
           </div>
         )}

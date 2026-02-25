@@ -34,10 +34,10 @@ class RolesController extends Controller
         $user = Auth::user();
         $roleId = $request->roleId;
         if (is_null($roleId)) {
-            
-            if ($user->role_id == 1) { 
+
+            if ($user->role_id == 1) {
                 $permissions = Permission::select("*")->get();
-            } else { 
+            } else {
                 $permissions = Permission::select("*")->where('domain', '=', null)->get();
             }
 
@@ -46,9 +46,9 @@ class RolesController extends Controller
                 'data' => $permissions
             ], 200);
         } else {
-            if ($user->role_id == 1) { 
+            if ($user->role_id == 1) {
                 $permissions = Permission::select("*")->get();
-            } else { 
+            } else {
                 $permissions = Permission::select("*")->where('domain', '=', null)->get();
             }
             $rolesPersmissions = Role::where(['id' => $roleId])->first();
@@ -65,27 +65,27 @@ class RolesController extends Controller
     public function roles(Request $request)
     {
         $user = Auth::user();
-    
+
         if ($user->role == "admin") {
             $roles = Role::all();
         } else {
             $roles = Role::where('domain', '=', $user->domain)->get();
         }
-    
+
         Log::info('Roles:', ['roles' => $roles]);
-    
+
         $perPage = 50;
 
         $page = $request->input('page', 1);
 
         $offset = ($page - 1) * $perPage;
-    
+
         $roleList = $roles->slice($offset, $perPage);
-    
+
         Log::info('Role List:', ['roleList' => $roleList]);
-    
+
         $data = [];
-    
+
         foreach ($roleList as $role) {
             $data[] = [
                 'id' => $role->id,
@@ -93,18 +93,18 @@ class RolesController extends Controller
                 'domain' => $role->domain,
             ];
         }
-    
+
         Log::info('Response List:', ['data' => $data]);
-    
+
         return response()->json($data, 200);
     }
-    
+
     public function rolesAll()
     {
         $user = Auth::user();
-        
+
         $roles = Role::where('domain', '=', $user->domain)->get();
-        
+
         return response()->json($roles, 200);
     }
 
@@ -113,14 +113,14 @@ class RolesController extends Controller
     {
         $domain = Auth::user()->domain;
 
-        if(isset($request->id)) {
+        if (isset($request->id)) {
             $roles = Role::updateOrInsert([
                 'id' => $request->id,
-            ],[
+            ], [
                 "name" => $request->name,
                 "isActive" => true,
                 "domain" => $domain,
-            ]);    
+            ]);
         } else {
             $roles = Role::create([
                 "name" => $request->name,
@@ -131,7 +131,7 @@ class RolesController extends Controller
 
         $permissions = $request->permissions;
 
-        if(isset($request->id)){
+        if (isset($request->id)) {
             $roleId = $request->id;
         } else {
             $roleId = $roles->id;
@@ -139,7 +139,7 @@ class RolesController extends Controller
         RolePermissions::where(["role_id" => $roleId])->delete();
 
         for ($i = 0; $i < count($permissions); $i++) {
-            
+
             RolePermissions::updateOrInsert([
                 "role_id" => $roleId,
                 "permission_id" => $permissions[$i],
@@ -155,7 +155,7 @@ class RolesController extends Controller
             'data' => $roles
         ], 200);
     }
-    
+
     // delete roles
     public function roleDelete(Request $request)
     {
@@ -176,12 +176,12 @@ class RolesController extends Controller
         $roleId = $request->roleId;
         $userid = $request->userid;
 
-        if ($roleId=="NULL") {
+        if ($roleId == "NULL") {
             $roleId = NULL;
         } else {
             $roleId = $roleId;
         }
-        
+
         // update user role 
         User::where(['id' => $userid])->update(['role_id' => $roleId]);
 
@@ -190,53 +190,54 @@ class RolesController extends Controller
         ], 200);
     }
 
-    public function myprofileSave(Request $request){
+    public function myprofileSave(Request $request)
+    {
 
         $auth = Auth::user();
-    
+
         $user = User::where(['id' => $auth->id])->first();
         $gender = User::where(['gender' => $auth->id])->first();
         $profile_picture_is_null = User::where(['profile_picture_path' => $auth->id])->first();
         $file = $request->file('file');
-    
-        if($file){
-    
+
+        if ($file) {
+
             $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-    
+
             try {
-                if($user->profile_picture_path){
+                if ($user->profile_picture_path) {
                     Storage::delete($user->profile_picture_path);
                 }
             } catch (\Throwable $th) {
                 //throw $th;
             }
-    
+
             $path = $file->storeAs('public/uploads', $filename);
             // get the dimensions of the original image
-            $original_image = storage_path().'/app/'.$path;
+            $original_image = storage_path() . '/app/' . $path;
             list($width, $height) = getimagesize($original_image);
-    
+
             // calculate the new dimensions
             $new_width = 400;
             $new_height = 400;
-    
+
             // create a new image with the new dimensions
             $new_image = imagecreatetruecolor($new_width, $new_height);
-    
+
             // copy and resize the image data from the original image into the new image
             $sourceImage = imagecreatefromjpeg($original_image);
             imagecopyresampled($new_image, $sourceImage, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-    
+
             // output the new image as a JPEG file
-            imagejpeg($new_image, storage_path().'/app/'.$path);
+            imagejpeg($new_image, storage_path() . '/app/' . $path);
             $user->profile_picture_path = $path;
         }
         $user->name = $request->input('fullname');
         $user->gender = $request->get('gender');
-    
+
         $user->save();
-    
-        if ($profile_picture_is_null==null && !str_starts_with($user->profile_picture_path, 'public')) {
+
+        if ($profile_picture_is_null == null && !str_starts_with($user->profile_picture_path, 'public')) {
             if ($request->get('gender') == "male") {
                 $profilepicture = "default-male";
             } else {
@@ -247,12 +248,12 @@ class RolesController extends Controller
             $user->profile_picture_path = Storage::url($user->profile_picture_path);
             $profilepicture = "custom";
         }
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Your profile details have been saved successfully.',
             'profilepicture' => $profilepicture,
-            'user'=> $user
+            'user' => $user
         ], 200);
     }
 
@@ -262,23 +263,24 @@ class RolesController extends Controller
         $user = User::where(['id' => $auth->id])->first();
         $domain = $user['domain'];
 
-        $roles = Role::select('name','id')->where('domain', '=' , $domain)->get();
+        $roles = Role::select('name', 'id')->where('domain', '=', $domain)->get();
 
         return response()->json($roles, 200);
     }
 
-    public function captureUpload(Request $request){
+    public function captureUpload(Request $request)
+    {
 
         $auth = Auth::user();
-    
+
         $user = User::where(['id' => $auth->id])->first();
         $profile_picture_is_null = User::where(['profile_picture_path' => $auth->id])->first();
         $file = $request->file;
-    
-        if($file){
-            $filename = uniqid() . '.jpg';    
+
+        if ($file) {
+            $filename = uniqid() . '.jpg';
             try {
-                if($user->profile_picture_path){
+                if ($user->profile_picture_path) {
                     Storage::delete($user->profile_picture_path);
                 }
             } catch (\Throwable $th) {
@@ -286,24 +288,24 @@ class RolesController extends Controller
             }
             $imageData = file_get_contents($file);
             Storage::put('public/uploads/' . $filename, $imageData);
-            $path = 'public/uploads/'.$filename;
+            $path = 'public/uploads/' . $filename;
             // get the dimensions of the original image
-            $original_image = storage_path().'/app/'.$path;
+            $original_image = storage_path() . '/app/' . $path;
             list($width, $height) = getimagesize($original_image);
-    
+
             // calculate the new dimensions
             $new_width = 400;
             $new_height = 400;
-    
+
             // create a new image with the new dimensions
             $new_image = imagecreatetruecolor($new_width, $new_height);
-    
+
             // copy and resize the image data from the original image into the new image
             $sourceImage = imagecreatefromjpeg($original_image);
             imagecopyresampled($new_image, $sourceImage, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-    
+
             // output the new image as a JPEG file
-            imagejpeg($new_image, storage_path() .'/app/'.$path);
+            imagejpeg($new_image, storage_path() . '/app/' . $path);
             $user->profile_picture_path = $path;
             $user->save();
             return response()->json([
@@ -316,7 +318,7 @@ class RolesController extends Controller
                 'message' => 'Your profile web-cam photo is not saved successfully.',
             ], 200);
         }
-    
-        
+
+
     }
 }
