@@ -24,6 +24,7 @@ const resources = {
             revenueReport: "Revenues",
             timesheet: "Timesheet",
             unauthorized: "You're unauthorized!",
+            clearSearch: "Clear search",
 
             /*Timesheet's translations*/
             timesheetNameLabel: "Timesheet name",
@@ -191,6 +192,9 @@ const resources = {
             passwordsMustMatch: "Passwords must match",
             confirmPasswordRequired: "Confirm password is required",
             notAssigned: "not assigned",
+            searchByName: "Search by name...",
+            searchByEmail: "Search by email...",
+            noUsersFound: "No users found",
 
             //Manage domain
             actions: "Actions",
@@ -198,6 +202,7 @@ const resources = {
             makePaidSubscription: "Make a Paid Subscription",
             downgradeToTrial: "Downgrade to Trial",
             extendTrialOneYear: "Extend Trial by One year",
+            upgradeToAdmin: "Upgrade to Admin Domain",
             terminateDomain: "Terminate domain",
             domain: "Domain",
             validBeforeAt: "Valid Before At",
@@ -210,8 +215,12 @@ const resources = {
             edit: "Edit",
             paid: "Paid",
             trial: "Trial",
+            admin: "Admin",
             previous: "Previous",
             next: "Next",
+            searchByCompany: "Search by company...",
+            searchByVatId: "Search by VAT ID...",
+            noDomainsFound: "No domains found",
 
             //CHange password
 
@@ -257,6 +266,7 @@ const resources = {
             save: "Save",
             required: "Required",
             allDomains: "All domains",
+            noRolesFound: "No roles found",
 
             //my profile
             myDetails: "My Details",
@@ -541,6 +551,7 @@ const resources = {
             revenueReport: "Liikevaihdot",
             timesheet: "Tuntikortti",
             unauthorized: "Olet luvaton käyttäjä!",
+            clearSearch: "Tyhjennä haku",
 
             /*Timesheet's translations - finnish*/
             timesheetNameLabel: "Tuntikortin nimi",
@@ -709,6 +720,9 @@ const resources = {
             passwordsMustMatch: "Salasanojen on täsmättävä",
             confirmPasswordRequired: "Vahvista salasana vaaditaan",
             notAssigned: "ei määritetty",
+            searchByName: "Hae nimellä...",
+            searchByEmail: "Hae sähköpostilla...",
+            noUsersFound: "Käyttäjiä ei löytynyt",
 
             //Manage domain
             actions: "Toiminnot",
@@ -716,6 +730,7 @@ const resources = {
             makePaidSubscription: "Tee tilaus maksulliseksi",
             downgradeToTrial: "Alenna kokeiluversioksi",
             extendTrialOneYear: "Jatka kokeilua yhdellä vuodella",
+            upgradeToAdmin: "Päivitä admin domainiksi",
             terminateDomain: "Mitätöi domain",
             domain: "Domain",
             validBeforeAt: "Voimassa Ennen",
@@ -728,8 +743,12 @@ const resources = {
             edit: "Muokkaa",
             paid: "Makssullinen",
             trial: "Kokeilu",
+            admin: "Admin",
             previous: "Edellinen",
             next: "Seuraava",
+            searchByCompany: "Hae yrityksellä...",
+            searchByVatId: "Hae ALV-tunnuksella...",
+            noDomainsFound: "Domaineja ei löytynyt",
 
             //Change password
             passwordChange: "Salasanan Vaihto",
@@ -774,6 +793,7 @@ const resources = {
             save: "Tallenna",
             required: "Vaadittu",
             allDomains: "Kaikki domainit",
+            noRolesFound: "Roolia ei löytynyt",
 
             //my profile
             myDetails: "Omat tiedot",
@@ -1051,6 +1071,7 @@ const resources = {
             revenueReport: "Intäkter",
             timesheet: "Tidrapport",
             unauthorized: "Du är obehörig!",
+            clearSearch: "Rensa sökning",
 
             /*Timesheet's translations - swedish*/
             timesheetNameLabel: "Tidkortets namn",
@@ -1215,6 +1236,9 @@ const resources = {
             passwordsMustMatch: "Lösenorden måste matcha",
             confirmPasswordRequired: "Bekräfta lösenord är obligatoriskt",
             notAssigned: "ej tilldelad",
+            searchByName: "Sök efter namn...",
+            searchByEmail: "Sök efter e-post...",
+            noUsersFound: "Inga användare hittades",
 
             //Manage Domain
             actions: "Åtgärder",
@@ -1222,6 +1246,7 @@ const resources = {
             makePaidSubscription: "Gör prenumeration betald",
             downgradeToTrial: "Nedgradera till provperiod",
             extendTrialOneYear: "Förläng provperioden med ett år",
+            upgradeToAdmin: "Uppgradera till admin-domän",
             terminateDomain: "Avsluta domän",
             domain: "Domän",
             validBeforeAt: "Giltig till",
@@ -1234,8 +1259,12 @@ const resources = {
             edit: "Redigera",
             paid: "Betald",
             trial: "Prov",
+            admin: "Admin",
             previous: "Föregående",
             next: "Nästa",
+            searchByCompany: "Sök efter företag...",
+            searchByVatId: "Sök efter momsnummer...",
+            noDomainsFound: "Inga domäner hittades",
 
             //Change password
             passwordChange: "Byt lösenord",
@@ -1279,6 +1308,7 @@ const resources = {
             save: "Spara",
             required: "Obligatoriskt",
             allDomains: "Alla domäner",
+            noRolesFound: "Inga roller hittades",
 
             //my profile
             myDetails: "Mina uppgifter",

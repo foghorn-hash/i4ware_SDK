@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./ManageRoles.css";
 import { withRouter } from 'react-router-dom';
 import { Button, Pagination } from 'react-bootstrap';
@@ -12,41 +12,47 @@ const ROLES_PER_PAGE = 50;
 function ManageRoles(props) {
   const { t, i18n } = useTranslation();
   const { authState, authActions } = React.useContext(AuthContext);
+
   const [roles, setRoles] = useState([]);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  const urlParams = new URLSearchParams(window.location.search);
+  const totalPages = Math.max(1, Math.ceil(total / ROLES_PER_PAGE));
 
+  // Sync language from URL
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
     const langFromUrl = urlParams.get("lang");
     if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
       i18n.changeLanguage(langFromUrl);
     }
-  }, [i18n, urlParams]);
+  }, [i18n]);
 
   useEffect(() => {
     fetchRoles(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const fetchRoles = (pageNumber) => {
     setIsLoading(true);
     request()
       .get(`/api/manage/roles?page=${pageNumber}&per_page=${ROLES_PER_PAGE}`)
-      .then(res => {
+      .then((res) => {
         const responseData = res.data;
         if (Array.isArray(responseData)) {
           setRoles(responseData);
-          setTotalPages(
-            responseData.length < ROLES_PER_PAGE ? pageNumber : pageNumber + 1
+          setTotal(
+            responseData.length < ROLES_PER_PAGE
+              ? (pageNumber - 1) * ROLES_PER_PAGE + responseData.length
+              : pageNumber * ROLES_PER_PAGE + 1
           );
         } else {
-          setRoles(responseData.data);
-          setTotalPages(Math.ceil(responseData.total / ROLES_PER_PAGE));
+          setRoles(responseData.data ?? []);
+          setTotal(responseData.total ?? 0);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error loading roles:", error);
       })
       .finally(() => {
@@ -54,18 +60,16 @@ function ManageRoles(props) {
       });
   };
 
-  const removeItem = item => {
+  const refreshRoles = () => fetchRoles(page);
+
+  const removeItem = (role) => {
     request()
-      .get("/api/manage/role/" + item.id)
-      .then(res => {
-        setRoles(res.data);
-      })
-  }
+      .get("/api/manage/role/" + role.id)
+      .then(() => refreshRoles());
+  };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage);
-    }
+    if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
   };
 
   const renderPaginationItems = () => {
@@ -78,8 +82,7 @@ function ManageRoles(props) {
       items.push(
         <Pagination.Item key={1} onClick={() => handlePageChange(1)}>1</Pagination.Item>
       );
-      if (left > 2)
-        items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
+      if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
     }
 
     for (let p = left; p <= right; p++) {
@@ -104,77 +107,36 @@ function ManageRoles(props) {
   };
 
   if (isLoading && roles.length === 0) {
-    return <div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>;
+    return (
+      <div className="loading-screen">
+        <img src={LOADING} alt="Loading..." />
+      </div>
+    );
   }
 
   return (
     <>
       <div className="my-5">
         <Button onClick={() => props.history.push("/manage-roles/add")}>
-          {t('add')}
+          {t("add")}
         </Button>
       </div>
+
       <div className="mt-3">
         <div className="table-header-roles">
           <div className="column-actions-roles">#</div>
-          <div className="column-actions-roles">{t('name')}</div>
-          <div className="column-actions-roles">{t('domain')}</div>
+          <div className="column-actions-roles">{t("name")}</div>
+          <div className="column-actions-roles">{t("domain")}</div>
           <div className="column-actions-roles"></div>
         </div>
-        <div className='table-body-roles'>
-          <InfiniteScroll
-            pageStart={0}
-            loadMore={loadMore}
-            hasMore={hasMore}
-            loader={<div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
-          >
-            {roles.map((role, index) => (
-              <div className="mobile-table-body-roles">
-                <div className="mobile-table-header-roles">
-                  <div className="column-actions-roles">#</div>
-                  <div className="column-actions-roles">{t('name')}</div>
-                  <div className='column-actions-roles'>{t('domain')}</div>
-                  <div className="column-actions-roles"></div>
-                </div>
-                <div key={role.id} className="table-row-roles">
-                  <div className="column-actions-roles">{index + 1}</div>
-                  <div className="column-actions-roles">{role.name}</div>
-                  <div className='column-actions-roles'>{role.domain}</div>
-                  <div className="column-actions-roles">
-                    <Button
-                      className="btn-info"
-                      size="sm"
-                      onClick={() => {
-                        props.history.push({
-                          pathname: "/manage-roles/edit",
-                          state: {
-                            item: role,
-                            from: "edit",
-                          },
-                        });
-                      }}>
-                      {t('edit')}
-                    </Button>
-                    <Button
-                      className="mx-2 btn-danger"
-                      size="sm"
-                      onClick={() => {
-                        removeItem(role);
-                      }}>
-                      {t('remove')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </InfiniteScroll>
-          <div className="spacer"></div>
-        </div>
+
         <div className="table-body-roles">
           {isLoading ? (
             <div className="loading-screen">
               <img src={LOADING} alt="Loading..." />
             </div>
+          ) : roles.length === 0 ? (
+            <div className="text-center py-4 text-muted">{t("noRolesFound")}</div>
           ) : (
             roles.map((role, index) => {
               const rowNumber = (page - 1) * ROLES_PER_PAGE + index + 1;
@@ -182,8 +144,8 @@ function ManageRoles(props) {
                 <div className="mobile-table-body-roles" key={role.id}>
                   <div className="mobile-table-header-roles">
                     <div className="column-actions-roles">#</div>
-                    <div className="column-actions-roles">{strings.name}</div>
-                    <div className="column-actions-roles">{strings.domain}</div>
+                    <div className="column-actions-roles">{t("name")}</div>
+                    <div className="column-actions-roles">{t("domain")}</div>
                     <div className="column-actions-roles"></div>
                   </div>
                   <div className="table-row-roles">
@@ -201,14 +163,14 @@ function ManageRoles(props) {
                           });
                         }}
                       >
-                        {strings.edit}
+                        {t("edit")}
                       </Button>
                       <Button
                         className="mx-2 btn-danger"
                         size="sm"
                         onClick={() => removeItem(role)}
                       >
-                        {strings.remove}
+                        {t("remove")}
                       </Button>
                     </div>
                   </div>
