@@ -8,33 +8,9 @@ import {
 import request from "../../utils/Request";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../tube-spinner.svg";
-import LocalizedStrings from "react-localization";
 import VerifyNetvisorButton from "./VerifyNetvisorButton";
+import { useTranslation } from "react-i18next";
 
-let strings = new LocalizedStrings({
-  en: {
-    showCaptcha: "Show Captcha in Register Form",
-    disableRegistration:
-      "Disable registration from other domains than domain owner",
-    settingUpdated: "Setting Updated successfully",
-    disableLicenseDetails: "Disable Lisense Details",
-    enableNetvisor: "Enable Netvisor",
-  },
-  fi: {
-    showCaptcha: "Näytä Captcha rekisteröintilomakkeessa",
-    disableRegistration: "Estä rekisteröinti muilta kuin domainin omistajilta",
-    settingUpdated: "Asetukset päivitetty",
-    disableLicenseDetails: "Deaktivoi lisenssitiedot",
-    enableNetvisor: "Aktivoi Netvisor",
-  },
-  sv: {
-    showCaptcha: "Visa Captcha i registreringsformuläret",
-    disableRegistration: "Blockera registrering för andra än domänägare",
-    settingUpdated: "Inställningar uppdaterade",
-    disableLicenseDetails: "Avaktivera licensinformation",
-    enableNetvisor: "Aktivera Netvisor",
-  },
-});
 
 const getDefaultSettings = () => {
   return {
@@ -49,15 +25,17 @@ function Settings() {
   const [message, setMessage] = useState(null);
   const [setting, setSetting] = useState(getDefaultSettings);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get("lang");
 
-  if (localization == null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  const { t, i18n } = useTranslation();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   useEffect(() => {
     request()
@@ -83,7 +61,7 @@ function Settings() {
     request()
       .post("/api/manage/updateSettings", data)
       .then((res) => {
-        setMessage(strings.settingUpdated);
+        setMessage(t('settingUpdated'));
 
         setTimeout(() => {
           setMessage(null);
@@ -125,7 +103,7 @@ function Settings() {
                 checked={setting.show_captcha}
               />
               <label className="form-check-label" htmlFor="defaultCheck1">
-                {strings.showCaptcha}
+                {t('showCaptcha')}
               </label>
               <br />
               <input
@@ -147,7 +125,7 @@ function Settings() {
                 checked={setting.disable_registeration_from_others}
               />
               <label className="form-check-label" htmlFor="defaultCheck2">
-                {strings.disableRegistration}
+                {t('disableRegistration')}
               </label>
               <br />
               <input
@@ -169,7 +147,7 @@ function Settings() {
                 checked={setting.disable_license_details}
               />
               <label className="form-check-label" htmlFor="defaultCheck3">
-                {strings.disableLicenseDetails}
+                {t('disableLicenseDetails')}
               </label>
               <br />
               <input
@@ -191,7 +169,7 @@ function Settings() {
                 checked={setting.enable_netvisor}
               />
               <label className="form-check-label" htmlFor="defaultCheck4">
-                {strings.enableNetvisor}
+                {t('enableNetvisor')}
               </label>
             </div>
             <br />

@@ -5,63 +5,26 @@ import { Button, Pagination } from 'react-bootstrap';
 import request from '../../utils/Request';
 import { AuthContext } from '../../contexts/auth.contexts';
 import LOADING from '../../tube-spinner.svg';
-import LocalizedStrings from 'react-localization';
-import { API_DEFAULT_LANGUAGE } from '../../constants/apiConstants';
-
-let strings = new LocalizedStrings({
-  en: {
-    add: "Add",
-    numberSign: "#",
-    name: "Name",
-    noData: "No data",
-    edit: "Edit",
-    remove: "Remove",
-    previous: "Previous",
-    next: "Next",
-    domain: "Domain"
-  },
-  fi: {
-    add: "Lisää",
-    numberSign: "#",
-    name: "Nimi",
-    noData: "Ei tietoja",
-    edit: "Muokkaa",
-    remove: "Poista",
-    previous: "Edellinen",
-    next: "Seuraava",
-    domain: "Domaini"
-  },
-  sv: {
-    add: "Lägg till",
-    numberSign: "#",
-    name: "Namn",
-    noData: "Inga data",
-    edit: "Redigera",
-    remove: "Ta bort",
-    previous: "Föregående",
-    next: "Nästa",
-    domain: "Domän"
-  }
-});
+import { useTranslation } from 'react-i18next';
 
 const ROLES_PER_PAGE = 50;
 
 function ManageRoles(props) {
+  const { t, i18n } = useTranslation();
   const { authState, authActions } = React.useContext(AuthContext);
   const [roles, setRoles] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  var query = window.location.search.substring(1);
-  var urlParams = new URLSearchParams(query);
-  var localization = urlParams.get('lang');
+  const urlParams = new URLSearchParams(window.location.search);
 
-  if (localization === null) {
-    strings.setLanguage(API_DEFAULT_LANGUAGE);
-  } else {
-    strings.setLanguage(localization);
-  }
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n, urlParams]);
 
   useEffect(() => {
     fetchRoles(page);
@@ -91,17 +54,13 @@ function ManageRoles(props) {
       });
   };
 
-  const refreshRoles = () => {
-    fetchRoles(page);
-  };
-
-  const removeItem = (item) => {
+  const removeItem = item => {
     request()
       .get("/api/manage/role/" + item.id)
-      .then(() => {
-        refreshRoles();
-      });
-  };
+      .then(res => {
+        setRoles(res.data);
+      })
+  }
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -152,15 +111,64 @@ function ManageRoles(props) {
     <>
       <div className="my-5">
         <Button onClick={() => props.history.push("/manage-roles/add")}>
-          {strings.add}
+          {t('add')}
         </Button>
       </div>
       <div className="mt-3">
         <div className="table-header-roles">
           <div className="column-actions-roles">#</div>
-          <div className="column-actions-roles">{strings.name}</div>
-          <div className="column-actions-roles">{strings.domain}</div>
+          <div className="column-actions-roles">{t('name')}</div>
+          <div className="column-actions-roles">{t('domain')}</div>
           <div className="column-actions-roles"></div>
+        </div>
+        <div className='table-body-roles'>
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            loader={<div className="loading-screen"><img src={LOADING} alt="Loading..." /></div>}
+          >
+            {roles.map((role, index) => (
+              <div className="mobile-table-body-roles">
+                <div className="mobile-table-header-roles">
+                  <div className="column-actions-roles">#</div>
+                  <div className="column-actions-roles">{t('name')}</div>
+                  <div className='column-actions-roles'>{t('domain')}</div>
+                  <div className="column-actions-roles"></div>
+                </div>
+                <div key={role.id} className="table-row-roles">
+                  <div className="column-actions-roles">{index + 1}</div>
+                  <div className="column-actions-roles">{role.name}</div>
+                  <div className='column-actions-roles'>{role.domain}</div>
+                  <div className="column-actions-roles">
+                    <Button
+                      className="btn-info"
+                      size="sm"
+                      onClick={() => {
+                        props.history.push({
+                          pathname: "/manage-roles/edit",
+                          state: {
+                            item: role,
+                            from: "edit",
+                          },
+                        });
+                      }}>
+                      {t('edit')}
+                    </Button>
+                    <Button
+                      className="mx-2 btn-danger"
+                      size="sm"
+                      onClick={() => {
+                        removeItem(role);
+                      }}>
+                      {t('remove')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </InfiniteScroll>
+          <div className="spacer"></div>
         </div>
         <div className="table-body-roles">
           {isLoading ? (

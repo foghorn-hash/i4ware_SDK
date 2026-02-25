@@ -12,29 +12,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { API_BASE_URL, ACCESS_TOKEN_NAME, API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
-// ES6 module syntax
-import LocalizedStrings from 'react-localization';
+import { useTranslation } from "react-i18next";
 
-let strings = new LocalizedStrings({
-  en:{
-    title:"Transactions with Bar Chart",
-    error:"Failed to fetch transactions. Please try again.",
-    loading:"Loading...",
-    name:"Vendor Amount",
-  },
-  fi: {
-    title:"Transactions with Bar Chart",
-    error:"Failed to fetch transactions. Please try again.",
-    loading:"Loading...",
-    name:"Vendor Amount",
-  },
-  sv: {
-   title: "Transactions with Bar Chart",
-   error:"Failed to fetch transactions. Please try again.",
-   loading:"Loading...",
-   name:"Vendor Amount",
- }
- });
 
 const TransactionsTableAll = () => {
   const [transactions, setTransactions] = useState([]);
@@ -44,15 +23,17 @@ const TransactionsTableAll = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  var query = window.location.search.substring(1);
-    var urlParams = new URLSearchParams(query);
-    var localization = urlParams.get('lang');
-  
-    if (localization==null) {
-      strings.setLanguage(API_DEFAULT_LANGUAGE);
-    } else {
-      strings.setLanguage(localization);
+
+  const { t, i18n } = useTranslation();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
     }
+  }, [i18n, urlParams]);
 
   useEffect(() => {
     fetchMergedTransactions();
@@ -62,10 +43,10 @@ const TransactionsTableAll = () => {
     try {
       const response = await axios.get(
         API_BASE_URL + "/api/reports/merged-sales", {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
-          },
-        }
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN_NAME),
+        },
+      }
       ); // Replace with your Laravel API URL
       const data = response.data.root;
 
@@ -79,18 +60,18 @@ const TransactionsTableAll = () => {
       setTransactionsMerged(data);
       setChartDataMerged(formattedChartData);
     } catch (err) {
-      setError(strings.error);
+      setError(t('transactiontableerror'));
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="loading-screen"><img src={LOADING} alt={strings.loading} /></div>;
+  if (loading) return <div className="loading-screen"><img src={LOADING} alt={t('loading')} /></div>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div>
-      <h2>{strings.title}</h2>
+      <h2>{t('transactiontabletitle')}</h2>
 
       {/* Bar Chart */}
       <ResponsiveContainer width="100%" height={400}>
@@ -99,7 +80,7 @@ const TransactionsTableAll = () => {
           <XAxis dataKey="saleDate" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="vendorAmount" fill="#007bff" name={strings.name} />
+          <Bar dataKey="vendorAmount" fill="#007bff" name={t('transactiontablename')} />
         </BarChart>
       </ResponsiveContainer>
     </div>

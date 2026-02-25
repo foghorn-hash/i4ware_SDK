@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ManageDomain.css";
-import { API_DEFAULT_LANGUAGE } from "../../constants/apiConstants";
 import { AuthContext } from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
 import { Button, Pagination } from "react-bootstrap";
@@ -8,6 +7,7 @@ import { withRouter } from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import PermissionGate from "../../contexts/PermissionGate";
 import LOADING from "../../tube-spinner.svg";
+import InfiniteScroll from "react-infinite-scroller";
 import LocalizedStrings from "react-localization";
 
 let strings = new LocalizedStrings({
@@ -18,7 +18,6 @@ let strings = new LocalizedStrings({
     downgradeToTrial: "Downgrade to Trial",
     extendTrialOneYear: "Extend Trial by One year",
     terminateDomain: "Terminate domain",
-    upgradeToAdmin: "Upgrade to Admin",
     domain: "Domain",
     validBeforeAt: "Valid Before At",
     type: "Type",
@@ -30,14 +29,8 @@ let strings = new LocalizedStrings({
     edit: "Edit",
     paid: "Paid",
     trial: "Trial",
-    adminDomain: "Admin",
-    never: "Never",
     previous: "Previous",
     next: "Next",
-    searchByCompany: "Search by company...",
-    searchByVatId: "Search by VAT-ID...",
-    clearSearch: "Clear",
-    noDomainsFound: "No domains found matching your search.",
   },
   fi: {
     actions: "Toiminnot",
@@ -46,7 +39,6 @@ let strings = new LocalizedStrings({
     downgradeToTrial: "Alenna kokeiluversioksi",
     extendTrialOneYear: "Jatka kokeilua yhdellä vuodella",
     terminateDomain: "Mitätöi domain",
-    upgradeToAdmin: "Päivitä adminiksi",
     domain: "Domain",
     validBeforeAt: "Voimassa Ennen",
     type: "Tyyppi",
@@ -56,16 +48,10 @@ let strings = new LocalizedStrings({
     email: "Sähköposti",
     country: "Maa",
     edit: "Muokkaa",
-    paid: "Maksullinen",
+    paid: "Makssullinen",
     trial: "Kokeilu",
-    adminDomain: "Admin",
-    never: "Ei koskaan",
     previous: "Edellinen",
     next: "Seuraava",
-    searchByCompany: "Hae yrityksellä...",
-    searchByVatId: "Hae ALV-tunnuksella...",
-    clearSearch: "Tyhjennä",
-    noDomainsFound: "Hakuasi vastaavia domaineja ei löydy.",
   },
   sv: {
     actions: "Åtgärder",
@@ -74,7 +60,6 @@ let strings = new LocalizedStrings({
     downgradeToTrial: "Nedgradera till provperiod",
     extendTrialOneYear: "Förläng provperioden med ett år",
     terminateDomain: "Avsluta domän",
-    upgradeToAdmin: "Uppgradera till admin",
     domain: "Domän",
     validBeforeAt: "Giltig till",
     type: "Typ",
@@ -86,19 +71,10 @@ let strings = new LocalizedStrings({
     edit: "Redigera",
     paid: "Betald",
     trial: "Prov",
-    adminDomain: "Admin",
-    never: "Aldrig",
     previous: "Föregående",
     next: "Nästa",
-    searchByCompany: "Sök efter företag...",
-    searchByVatId: "Sök efter momsnummer...",
-    clearSearch: "Rensa",
-    noDomainsFound: "Inga domäner hittades som matchar din sökning.",
   },
 });
-
-const DOMAINS_PER_PAGE = 50;
-const SEARCH_DEBOUNCE_MS = 350;
 
 function Menu({ id, domainActionApi, index }) {
   const [menuOpen, setMenuOpen] = useState([]);
@@ -115,23 +91,42 @@ function Menu({ id, domainActionApi, index }) {
     <Dropdown
       drop="up"
       align={window.innerWidth > 900 ? "end" : "start"}
-      show={menuOpen[index]}
-      onToggle={() => handleToggle(index)}
+      show={isOpen}
+      onToggle={(nextShow) => setIsOpen(nextShow)}
     >
       <Dropdown.Toggle variant="success" id="dropdown-basic">
-        {strings.actions}
+        {t('actions')}
       </Dropdown.Toggle>
-      <Dropdown.Menu className={`mobile-dropdown ${menuOpen[index] ? "visible" : ""}`}>
-        <Dropdown.Item onClick={() => domainActionApi(id, "extend-trial")}>
-          {strings.extendTrial30Days}
+
+      <Dropdown.Menu
+        className={`mobile-dropdown ${menuOpen[index] ? "visible" : ""}`}
+      >
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "extend-trial");
+          }}
+        >
+          {strings.extendTrial30Days}{" "}
         </Dropdown.Item>
-        <Dropdown.Item onClick={() => domainActionApi(id, "make-paid")}>
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "make-paid");
+          }}
+        >
           {strings.makePaidSubscription}
         </Dropdown.Item>
-        <Dropdown.Item onClick={() => domainActionApi(id, "down-to-trial")}>
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "down-to-trial");
+          }}
+        >
           {strings.downgradeToTrial}
         </Dropdown.Item>
-        <Dropdown.Item onClick={() => domainActionApi(id, "extend-one-year")}>
+        <Dropdown.Item
+          onClick={() => {
+            domainActionApi(id, "extend-one-year");
+          }}
+        >
           {strings.extendTrialOneYear}
         </Dropdown.Item>
         <Dropdown.Item onClick={() => domainActionApi(id, "make-admin-domain")}>
@@ -141,7 +136,7 @@ function Menu({ id, domainActionApi, index }) {
           onClick={() => domainActionApi(id, "terminate")}
           style={{ background: "#ffbfbf" }}
         >
-          {strings.terminateDomain}
+          {t('terminateDomain')}
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
@@ -149,6 +144,7 @@ function Menu({ id, domainActionApi, index }) {
 }
 
 function ManageDomain(props) {
+  const { t, i18n } = useTranslation();
   const [domains, setDomains] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -164,7 +160,7 @@ function ManageDomain(props) {
   var urlParams = new URLSearchParams(query);
   var localization = urlParams.get("lang");
 
-  if (localization === null) {
+  if (localization == null) {
     strings.setLanguage(API_DEFAULT_LANGUAGE);
   } else {
     strings.setLanguage(localization);
@@ -172,21 +168,17 @@ function ManageDomain(props) {
 
   const { authState, authActions } = React.useContext(AuthContext);
 
-  const totalPages = Math.max(1, Math.ceil(total / DOMAINS_PER_PAGE));
-  const hasActiveSearch = debouncedCompany !== "" || debouncedVatId !== "";
-
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedCompany(searchCompany.trim()), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [searchCompany]);
+    const urlParams = new URLSearchParams(window.location.search);
+    const langFromUrl = urlParams.get("lang");
+    if (langFromUrl && ["en", "fi", "sv"].includes(langFromUrl)) {
+      i18n.changeLanguage(langFromUrl);
+    }
+  }, [i18n]);
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedVatId(searchVatId.trim()), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [searchVatId]);
+  const loadMore = () => {
+    if (isLoading || !hasMore) return;
 
-  const isFirstRender = useRef(true);
-  useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
@@ -209,21 +201,18 @@ function ManageDomain(props) {
     request()
       .get(`/api/manage/domains?${params.toString()}`)
       .then((res) => {
-        const responseData = res.data;
-        if (Array.isArray(responseData)) {
-          setDomains(responseData);
-          setTotal(
-            responseData.length < DOMAINS_PER_PAGE
-              ? (pageNumber - 1) * DOMAINS_PER_PAGE + responseData.length
-              : pageNumber * DOMAINS_PER_PAGE + 1
-          );
+        const newDomains = res.data;
+        if (newDomains && newDomains.length > 0) {
+          setDomains((prevDomains) => [
+            ...new Set([...prevDomains, ...newDomains]),
+          ]);
+          setPage((prevPage) => prevPage + 1);
         } else {
-          setDomains(responseData.data ?? []);
-          setTotal(responseData.total ?? 0);
+          setHasMore(false);
         }
       })
       .catch((error) => {
-        console.error("Error loading domains:", error);
+        console.error("Error loading more domains:", error);
       })
       .finally(() => {
         setIsLoading(false);
@@ -235,45 +224,16 @@ function ManageDomain(props) {
   const domainUpdateApi = (data) => {
     request()
       .post("/api/manage/updateDomainRecord", data)
-      .then(() => refreshDomains());
+      .then((res) => {
+        request()
+          .get("/api/manage/domains")
+          .then((res) => {
+            setDomains(res.data);
+          });
+      });
   };
 
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
-  };
-
-  const renderPaginationItems = () => {
-    const items = [];
-    const delta = 2;
-    const left = Math.max(1, page - delta);
-    const right = Math.min(totalPages, page + delta);
-
-    if (left > 1) {
-      items.push(
-        <Pagination.Item key={1} onClick={() => handlePageChange(1)}>1</Pagination.Item>
-      );
-      if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
-    }
-    for (let p = left; p <= right; p++) {
-      items.push(
-        <Pagination.Item key={p} active={p === page} onClick={() => handlePageChange(p)}>
-          {p}
-        </Pagination.Item>
-      );
-    }
-    if (right < totalPages) {
-      if (right < totalPages - 1)
-        items.push(<Pagination.Ellipsis key="right-ellipsis" disabled />);
-      items.push(
-        <Pagination.Item key={totalPages} onClick={() => handlePageChange(totalPages)}>
-          {totalPages}
-        </Pagination.Item>
-      );
-    }
-    return items;
-  };
-
-  if (isLoading && domains.length === 0) {
+  if (domains.length === 0 && !isLoading) {
     return (
       <div className="loading-screen">
         <img src={LOADING} alt="Loading..." />
@@ -317,92 +277,86 @@ function ManageDomain(props) {
       <div className="mt-2">
         <div className="table-header-domains">
           <div className="column_domains">#</div>
-          <div className="column_domains">{strings.domain}</div>
-          <div className="column_domains">{strings.validBeforeAt}</div>
-          <div className="column_domains">{strings.type}</div>
-          <div className="column_domains">{strings.company}</div>
-          <div className="column_domains">{strings.vatId}</div>
+          <div className="column_domains">{t('domain')}</div>
+          <div className="column_domains">{t('validBeforeAt')}</div>
+          <div className="column_domains">{t('type')}</div>
+          <div className="column_domains">{t('company')}</div>
+          <div className="column_domains">{t('vatId')}</div>
           <div className="column_domains"></div>
           <div className="column_domains"></div>
         </div>
 
         <div className="table-body-domains">
-          {isLoading ? (
-            <div className="loading-screen">
-              <img src={LOADING} alt="Loading..." />
-            </div>
-          ) : domains.length === 0 ? (
-            <div className="text-center py-4 text-muted">
-              {strings.noDomainsFound}
-            </div>
-          ) : (
-            domains.map((item, index) => {
-              const rowNumber = (page - 1) * DOMAINS_PER_PAGE + index + 1;
-              const isAdminDomain = item.type === "admin_domain";
-              return (
-                <div className="mobile-table-body-domains" key={item.id || index}>
-                  <div className="mobile-table-header-domains">
-                    <div className="column_domains">#</div>
-                    <div className="column_domains">{strings.domain}</div>
-                    <div className="column_domains">{strings.validBeforeAt}</div>
-                    <div className="column_domains">{strings.type}</div>
-                    <div className="column_domains">{strings.company}</div>
-                    <div className="column_domains">{strings.vatId}</div>
-                    <div className="column_domains"></div>
-                    <div className="column_domains"></div>
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={loadMore}
+            hasMore={!isLoading && hasMore}
+            loader={<div className="loader">Loading...</div>}
+          >
+            {domains.map((item, index) => (
+              <div className="mobile-table-body-domains">
+                <div className="mobile-table-header-domains">
+                  <div className="column_domains">#</div>
+                  <div className="column_domains">{strings.domain}</div>
+                  <div className="column_domains">{strings.validBeforeAt}</div>
+                  <div className="column_domains">{strings.type}</div>
+                  <div className="column_domains">{strings.company}</div>
+                  <div className="column_domains">{strings.vatId}</div>
+                  <div className="column_domains"></div>
+                  <div className="column_domains"></div>
+                </div>
+                <div key={item.id || index} className="table-row-domains">
+                  <div className="column_domains">{index + 1}</div>
+                  <div className="column_domains">{item.domain}</div>
+                  <div className="column_domains">{item.valid_before_at}</div>
+                  <div className="column_domains">
+                    {item.type === "paid" && (
+                      <li className="badge bg-success">{strings.paid}</li>
+                    )}
+                    {item.type === "trial" && (
+                      <li className="badge bg-primary">{strings.trial}</li>
+                    )}
                   </div>
-                  <div className="table-row-domains">
-                    <div className="column_domains">{rowNumber}</div>
-                    <div className="column_domains">{item.domain}</div>
-                    <div className="column_domains">
-                      {/* Admin domains never expire — show "Never" */}
-                      {isAdminDomain ? strings.never : item.valid_before_at}
-                    </div>
-                    <div className="column_domains">
-                      {item.type === "paid" && (
-                        <span className="badge bg-success">{strings.paid}</span>
-                      )}
-                      {item.type === "trial" && (
-                        <span className="badge bg-primary">{strings.trial}</span>
-                      )}
-                      {isAdminDomain && (
-                        <span className="badge bg-dark">{strings.adminDomain}</span>
-                      )}
-                    </div>
-                    <div className="column_domains">{item.company_name}</div>
-                    <div className="column_domains">{item.vat_id}</div>
-                    <div className="column_domains">
-                      <PermissionGate permission={"domain.edit"}>
-                        <Button
-                          className="btn-info"
-                          size="sm"
-                          onClick={() => {
-                            props.history.push({
-                              pathname: "/manage-domains/edit",
-                              state: { item: item, from: "edit" },
-                            });
-                          }}
-                        >
-                          {strings.edit}
-                        </Button>
-                      </PermissionGate>
-                    </div>
-                    <div className="column_domains">
-                      <PermissionGate permission={"domain.actions"}>
-                        <Menu
-                          id={item.id}
-                          index={index}
-                          domainActionApi={(id, action) =>
-                            domainUpdateApi({ id, action })
-                          }
-                        />
-                      </PermissionGate>
-                    </div>
+                  <div className="column_domains">{item.company_name}</div>
+                  <div className="column_domains">{item.vat_id}</div>
+                  <div className="column_domains">
+                    <PermissionGate permission={"domain.edit"}>
+                      <Button
+                        className="btn-info"
+                        size="sm"
+                        onClick={() => {
+                          props.history.push({
+                            pathname: "/manage-domains/edit",
+                            state: {
+                              item: item,
+                              from: "edit",
+                            },
+                          });
+                        }}
+                      >
+                        {strings.edit}
+                      </Button>
+                    </PermissionGate>
+                  </div>
+                  <div className="column_domains">
+                    <PermissionGate permission={"domain.actions"}>
+                      <Menu
+                        id={item.id}
+                        index={index}
+                        domainActionApi={(id, action) => {
+                          domainUpdateApi({
+                            id: id,
+                            action: action,
+                          });
+                        }}
+                      />
+                    </PermissionGate>
                   </div>
                 </div>
-              );
-            })
-          )}
+              </div>
+            ))}
+          </InfiniteScroll>
+          <div className="spacer"></div>
         </div>
 
         {!isLoading && totalPages > 1 && (
