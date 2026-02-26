@@ -741,7 +741,7 @@ const resources = {
             email: "Sähköposti",
             country: "Maa",
             edit: "Muokkaa",
-            paid: "Makssullinen",
+            paid: "Maksullinen",
             trial: "Kokeilu",
             admin: "Admin",
             previous: "Edellinen",

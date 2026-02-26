@@ -142,11 +142,13 @@ function ManageDomain(props) {
   const refreshDomains = () => fetchDomains(page, debouncedCompany, debouncedVatId);
 
   const domainUpdateApi = (data) => {
-    request()
-      .post("/api/manage/updateDomainRecord", data)
-      .then(() => refreshDomains());
-  };
-
+  request()
+    .post("/api/manage/updateDomainRecord", data)
+    .then(() => refreshDomains())
+    .catch((error) => {
+      console.error("Error updating domain:", error);
+    });
+};
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
   };
@@ -265,7 +267,7 @@ function ManageDomain(props) {
                       {item.type === "trial" && (
                         <li className="badge bg-primary">{t("trial")}</li>
                       )}
-                      {item.type === "admin" && (
+                      {item.type === "admin_domain" && (
                         <li className="badge bg-info">{t("admin")}</li>
                       )}
                     </div>
