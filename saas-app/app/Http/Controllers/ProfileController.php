@@ -24,54 +24,67 @@ class ProfileController extends Controller
 
     public function __construct()
     {
-        //$this->apiToken = uniqid(base64_encode(Str::random(40)));
         $this->middleware('auth:api');
         $this->user = new User;
     }
 
     public function users(Request $request)
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
 
-        if ($user->role == "admin") {
-            $users = User::with('roles')->get();
+        if ($authUser->role == "admin") {
+            $query = User::with('roles');
         } else {
-            $domain = DB::table('users')->select('domain')->where('id', '=', Auth::user()->id)->first();
-            $users = User::with('roles')->where('domain', '=', $domain->domain)->get();
+            $domain = DB::table('users')->select('domain')->where('id', '=', $authUser->id)->first();
+            $query = User::with('roles')->where('domain', '=', $domain->domain);
         }
 
-        // Define the number of items to return per page
-        $perPage = 10;
-        // Get the page number from the request, default to 1 for GET requests
-        $page = $request->input('page', 1);        
-        // Calculate the offset based on the page number and perPage
-        $offset = ($page - 1) * $perPage;
+        // Search filters
+        $searchName = trim($request->input('name', ''));
+        $searchEmail = trim($request->input('email', ''));
 
-        // Slice the files to get the paginated result
-        $userList = $users->slice($offset, $perPage);
+        if ($searchName !== '') {
+            $query->where('name', 'LIKE', '%' . $searchName . '%');
+        }
 
-        // Process the sliced files and create the response
+        if ($searchEmail !== '') {
+            $query->where('email', 'LIKE', '%' . $searchEmail . '%');
+        }
+
+        // Pagination
+        $perPage = (int) $request->input('per_page', 50);
+        $page = (int) $request->input('page', 1);
+
+        $total = $query->count();
+        $users = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+
         $data = [];
 
-        foreach ($userList as $user) {
+        foreach ($users as $user) {
             $data[] = [
+                'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'gender' => $user->gender,
                 'profile_picture_path' => $user->profile_picture_path,
                 'domain' => $user->domain,
                 'email_verified_at' => $user->email_verified_at,
                 'is_active' => $user->is_active,
-                'id' => $user->id,
-                'roles' => $user->roles->name,
-                'gender' => $user->gender,
+                'roles' => $user->roles->name ?? null,
             ];
         }
 
-        return response()->json($data, 200);
+        return response()->json([
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+        ], 200);
     }
 
-    function usersChangeStatus(Request $request){
-        
+    function usersChangeStatus(Request $request)
+    {
+
         $id = $request->id;
 
         $user = User::where('id', $id)->first();
@@ -84,8 +97,9 @@ class ProfileController extends Controller
         ], 200);
     }
 
-    function usersVerify(Request $request){
-        
+    function usersVerify(Request $request)
+    {
+
         $id = $request->id;
 
         $user = User::where('id', $id)->first();
@@ -103,11 +117,11 @@ class ProfileController extends Controller
         ], 200);
     }
 
-    function usersChangePassword(Request $request){
-        
+    function usersChangePassword(Request $request)
+    {
+
         $id = $request->id;
         $password = $request->password;
-
 
         $user = User::where('id', $id)->first();
 
@@ -119,8 +133,9 @@ class ProfileController extends Controller
         ], 200);
     }
 
-    function usersAdd(Request $request){
-        
+    function usersAdd(Request $request)
+    {
+
         $user = Auth::user();
 
         $validator = Validator::make($request->all(), [
@@ -131,68 +146,85 @@ class ProfileController extends Controller
         ]);
 
         if ($validator->fails()) {
-			$error = $validator->errors();
-			return response()->json([
-				'success' => false,
-				'data' => $error
-			], 200);
-		}
-        if ($request->role=="NULL") {
+            $error = $validator->errors();
+            return response()->json([
+                'success' => false,
+                'data' => $error
+            ], 200);
+        }
+
+        if ($request->role == "NULL") {
             $role = NULL;
         } else {
             $role = $request->role;
         }
+
         DB::table('users')->insert([
             ['name' => $request->name, 'gender' => $request->gender, 'email' => $request->email, 'email_verified_at' => date('Y-m-d H:i:s'), 'password' => Hash::make($request->password), 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'), 'domain' => $user->domain, 'role' => 'user', 'role_id' => $role]
         ]);
+
         return response()->json([
             'success' => true,
             'data' => []
         ], 200);
-        
-    }  
+    }
 
     public function domains(Request $request)
     {
         $user = Auth::user();
-    
+
         if ($user->role == "admin") {
-            $domains = Domain::all();
+            $query = Domain::query();
         } else {
-            $domain = DB::table('users')->select('domain')->where('id', '=', Auth::user()->id)->first();
-            $domains = Domain::where('domain', '=', $domain->domain)->get();
+            $domain = DB::table('users')->select('domain')->where('id', '=', $user->id)->first();
+            $query = Domain::where('domain', '=', $domain->domain);
         }
-    
-        $perPage = 10;
 
-        $page = $request->input('page', 1);
+        // Search filters
+        $searchCompany = trim($request->input('company_name', ''));
+        $searchVatId = trim($request->input('vat_id', ''));
 
-        $offset = ($page - 1) * $perPage;
-    
-        $domainList = $domains->slice($offset, $perPage);
-    
+        if ($searchCompany !== '') {
+            $query->where('company_name', 'LIKE', '%' . $searchCompany . '%');
+        }
+
+        if ($searchVatId !== '') {
+            $query->where('vat_id', 'LIKE', '%' . $searchVatId . '%');
+        }
+
+        // Pagination
+        $perPage = (int) $request->input('per_page', 50);
+        $page = (int) $request->input('page', 1);
+
+        $total = $query->count();
+        $domains = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+
         $data = [];
-    
-        foreach ($domainList as $domain) {
+
+        foreach ($domains as $domain) {
             $data[] = [
                 'id' => $domain->id,
                 'domain' => $domain->domain,
                 'valid_before_at' => $domain->valid_before_at,
                 'type' => $domain->type,
                 'company_name' => $domain->company_name,
-                "vat_id" => $domain->vat_id,
-                "business_id" => $domain->business_id,
+                'vat_id' => $domain->vat_id,
+                'business_id' => $domain->business_id,
                 'mobile_no' => $domain->mobile_no,
                 'technical_contact_email' => $domain->technical_contact_email,
                 'billing_contact_email' => $domain->billing_contact_email,
-                'country' => $domain->country
+                'country' => $domain->country,
             ];
-            
         }
-    
-        return response()->json($data, 200);
+
+        return response()->json([
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+        ], 200);
     }
-    
+
     public function updateDomain(Request $request)
     {
         $user = Auth::user();
@@ -219,7 +251,7 @@ class ProfileController extends Controller
 
         if ($request->id) {
             // update
-            $domain = DB::table('domains')
+            DB::table('domains')
                 ->where('id', $request->id)
                 ->update([
                     "technical_contact_email" => $request->technical_contact_email,
@@ -234,10 +266,9 @@ class ProfileController extends Controller
                     "vat_id" => $request->vat_id,
                     "business_id" => $request->business_id,
                 ]);
-
         } else {
             // insert
-            $domain = DB::table('domains')
+            DB::table('domains')
                 ->insert([
                     "domain" => $request->domain,
                     "technical_contact_email" => $request->technical_contact_email,
@@ -259,15 +290,12 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $domain
+            'data' => []
         ], 200);
     }
 
     public function domainEdit(Request $request)
     {
-        $id = $request->id;
-        $user = Auth::user();
-
         $domain = DB::table('domains')
             ->where(['id' => $request->id])->first();
 
@@ -279,11 +307,7 @@ class ProfileController extends Controller
 
     public function removeDomain(Request $request)
     {
-        $id = $request->id;
-        $user = Auth::user();
-
-        $domain = DB::table('domains')
-            ->where(['id' => $request->id])->delete();
+        DB::table('domains')->where(['id' => $request->id])->delete();
 
         return response()->json([
             'success' => true,
@@ -296,9 +320,7 @@ class ProfileController extends Controller
         $id = $request->id;
         $action = $request->action;
 
-        $user = Auth::user();
-
-        $domain = Domain::where(['id' => $request->id])->first();
+        $domain = Domain::where(['id' => $id])->first();
 
         switch ($action) {
             case 'extend-trial':
@@ -306,29 +328,40 @@ class ProfileController extends Controller
                 $validate->addDays(30);
                 $domain->valid_before_at = $validate;
                 break;
+
             case 'make-paid':
                 $domain->type = 'paid';
                 break;
+
             case 'down-to-trial':
                 $domain->type = 'trial';
                 break;
+
             case 'extend-one-year':
                 $validate = Carbon::parse($domain->valid_before_at);
                 $validate->addYear(1);
                 $domain->valid_before_at = $validate;
                 break;
+
             case 'terminate':
                 $domain->valid_before_at = Carbon::now()->subDays(1);
                 break;
+
+            case 'make-admin-domain':
+                // Admin domains never expire and are flagged with their own type
+                $domain->type = 'admin_domain';
+                $domain->valid_before_at = null;
+                break;
+
             default:
-                # code...
                 break;
         }
+
         $domain->save();
 
         return response()->json([
             'success' => true,
-            'data' => $domain
+            'data' => $domain,
         ], 200);
     }
 
@@ -343,7 +376,7 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'data' => $settings
-         ], 200);
+        ], 200);
     }
 
     public function updateSettings(Request $request)
@@ -352,17 +385,16 @@ class ProfileController extends Controller
 
         $domain = $user->domain;
 
-        $settingFound = DB::table('settings')->where('domain', '=', $domain)->where('setting_key', '=', $request->setting_key )->get();
+        $settingFound = DB::table('settings')->where('domain', '=', $domain)->where('setting_key', '=', $request->setting_key)->get();
 
         if (count($settingFound) == 1) {
-            $domain = DB::table('settings')->where('domain', '=', $domain)->updateOrInsert(['setting_key' => $request->setting_key], [
+            DB::table('settings')->where('domain', '=', $domain)->updateOrInsert(['setting_key' => $request->setting_key], [
                 "setting_key" => $request->setting_key,
                 "setting_value" => $request->setting_value,
                 "updated_at" => Carbon::now(),
             ]);
-
         } else {
-            $domain = DB::table('settings')->updateOrInsert(['setting_key' => $request->setting_key], [
+            DB::table('settings')->updateOrInsert(['setting_key' => $request->setting_key], [
                 "setting_key" => $request->setting_key,
                 "setting_value" => $request->setting_value,
                 "domain" => $domain,
@@ -373,7 +405,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $domain
+            'data' => []
         ], 200);
     }
 
@@ -391,7 +423,6 @@ class ProfileController extends Controller
             ], 403);
         }
 
-        // Päivitä domainin data
         DB::table('domains')
             ->where('domain', $user->domain)
             ->update([
@@ -414,7 +445,6 @@ class ProfileController extends Controller
             ], 403);
         }
 
-        // Haetaan domainista laskun aloitusnumero
         $domain = DB::table('domains')
             ->select('invoice_start_number')
             ->where('domain', $user->domain)
@@ -431,16 +461,15 @@ class ProfileController extends Controller
         ], 200);
     }
 
-    // get all permissions
     public function permissions(Request $request)
     {
         $user = Auth::user();
         $roleId = $request->roleId;
+
         if (is_null($roleId)) {
-            
-            if ($user->role_id == 1) { 
+            if ($user->role_id == 1) {
                 $permissions = Permission::select("*")->get();
-            } else { 
+            } else {
                 $permissions = Permission::select("*")->where('domain', '=', null)->get();
             }
 
@@ -449,14 +478,15 @@ class ProfileController extends Controller
                 'data' => $permissions
             ], 200);
         } else {
-            if ($user->role_id == 1) { 
+            if ($user->role_id == 1) {
                 $permissions = Permission::select("*")->get();
-            } else { 
+            } else {
                 $permissions = Permission::select("*")->where('domain', '=', null)->get();
             }
-            $rolesPersmissions = Role::where(['id' => $roleId])->first();
-            $allowedPermissions = $rolesPersmissions->permissions;
-            // dd($rolesPersmissions->permissions());
+
+            $rolesPermissions = Role::where(['id' => $roleId])->first();
+            $allowedPermissions = $rolesPermissions->permissions;
+
             return response()->json([
                 'success' => true,
                 'data' => $permissions,
@@ -468,19 +498,17 @@ class ProfileController extends Controller
     public function roles(Request $request)
     {
         $user = Auth::user();
-    
+
         $roles = Role::where('domain', '=', $user->domain)->get();
-    
-        $perPage = 10;
 
+        $perPage = 50;
         $page = $request->input('page', 1);
-
         $offset = ($page - 1) * $perPage;
-    
+
         $roleList = $roles->slice($offset, $perPage);
-    
+
         $data = [];
-    
+
         foreach ($roleList as $role) {
             $data[] = [
                 'id' => $role->id,
@@ -488,32 +516,31 @@ class ProfileController extends Controller
                 'domain' => $role->domain,
             ];
         }
-    
+
         return response()->json($data, 200);
     }
-    
+
     public function rolesAll()
     {
         $user = Auth::user();
-        
         $roles = Role::where('domain', '=', $user->domain)->get();
-        
+
         return response()->json($roles, 200);
     }
 
-    // add roles
     public function roleAdd(Request $request)
     {
         $domain = Auth::user()->domain;
 
-        if(isset($request->id)) {
-            $roles = Role::updateOrInsert([
-                'id' => $request->id,
-            ],[
-                "name" => $request->name,
-                "isActive" => true,
-                "domain" => $domain,
-            ]);    
+        if (isset($request->id)) {
+            $roles = Role::updateOrInsert(
+                ['id' => $request->id],
+                [
+                    "name" => $request->name,
+                    "isActive" => true,
+                    "domain" => $domain,
+                ]
+            );
         } else {
             $roles = Role::create([
                 "name" => $request->name,
@@ -523,41 +550,32 @@ class ProfileController extends Controller
         }
 
         $permissions = $request->permissions;
+        $roleId = isset($request->id) ? $request->id : $roles->id;
 
-        if(isset($request->id)){
-            $roleId = $request->id;
-        } else {
-            $roleId = $roles->id;
-        }
         RolePermissions::where(["role_id" => $roleId])->delete();
 
         for ($i = 0; $i < count($permissions); $i++) {
-            
-            RolePermissions::updateOrInsert([
-                "role_id" => $roleId,
-                "permission_id" => $permissions[$i],
-            ], [
-                "role_id" => $roleId,
-                "permission_id" => $permissions[$i],
-            ]);
+            RolePermissions::updateOrInsert(
+                ["role_id" => $roleId, "permission_id" => $permissions[$i]],
+                ["role_id" => $roleId, "permission_id" => $permissions[$i]]
+            );
         }
-
 
         return response()->json([
             'success' => true,
             'data' => $roles
         ], 200);
     }
-    
-    // delete roles
+
     public function roleDelete(Request $request)
     {
-        // $roles = Role::remove();
         $roleId = $request->id;
 
         RolePermissions::where(["role_id" => $roleId])->delete();
         Role::where(["id" => $roleId])->delete();
+
         $roles = Role::paginate(10);
+
         return response()->json([
             'success' => $roleId,
             'data' => $roles
@@ -569,13 +587,10 @@ class ProfileController extends Controller
         $roleId = $request->roleId;
         $userid = $request->userid;
 
-        if ($roleId=="NULL") {
+        if ($roleId == "NULL") {
             $roleId = NULL;
-        } else {
-            $roleId = $roleId;
         }
-        
-        // update user role 
+
         User::where(['id' => $userid])->update(['role_id' => $roleId]);
 
         return response()->json([
@@ -583,70 +598,57 @@ class ProfileController extends Controller
         ], 200);
     }
 
-    public function myprofileSave(Request $request){
-
+    public function myprofileSave(Request $request)
+    {
         $auth = Auth::user();
         $domain = $auth->domain;
         $id = $auth->id;
         $user = User::where(['id' => $auth->id])->first();
-        $gender = User::where(['gender' => $auth->id])->first();
         $profile_picture_is_null = User::where(['profile_picture_path' => $auth->id])->first();
         $file = $request->file('file');
-    
-        if($file){
-    
+
+        if ($file) {
             $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-    
+
             try {
-                if($user->profile_picture_path){
+                if ($user->profile_picture_path) {
                     Storage::delete($user->profile_picture_path);
                 }
             } catch (\Throwable $th) {
-                //throw $th;
+                //
             }
-    
-            $path = $file->storeAs('public/uploads/'. $domain . "/profile_pics/" . $id, $filename);
-            // get the dimensions of the original image
-            $original_image = storage_path().'/app/'.$path;
+
+            $path = $file->storeAs('public/uploads/' . $domain . "/profile_pics/" . $id, $filename);
+            $original_image = storage_path() . '/app/' . $path;
             list($width, $height) = getimagesize($original_image);
-    
-            // calculate the new dimensions
+
             $new_width = 400;
             $new_height = 400;
-    
-            // create a new image with the new dimensions
             $new_image = imagecreatetruecolor($new_width, $new_height);
-    
-            // copy and resize the image data from the original image into the new image
+
             $sourceImage = imagecreatefromjpeg($original_image);
             imagecopyresampled($new_image, $sourceImage, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-    
-            // output the new image as a JPEG file
-            imagejpeg($new_image, storage_path().'/app/'.$path);
+            imagejpeg($new_image, storage_path() . '/app/' . $path);
+
             $user->profile_picture_path = $path;
         }
+
         $user->name = $request->input('fullname');
         $user->gender = $request->get('gender');
-    
         $user->save();
-    
-        if ($profile_picture_is_null==null && !str_starts_with($user->profile_picture_path, 'public')) {
-            if ($request->get('gender') == "male") {
-                $profilepicture = "default-male";
-            } else {
-                $profilepicture = "default-female";
-            }
-            //$user->profile_picture_path = null;
+
+        if ($profile_picture_is_null == null && !str_starts_with($user->profile_picture_path, 'public')) {
+            $profilepicture = $request->get('gender') == "male" ? "default-male" : "default-female";
         } else {
             $user->profile_picture_path = Storage::url($user->profile_picture_path);
             $profilepicture = "custom";
         }
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Your profile details have been saved successfully.',
             'profilepicture' => $profilepicture,
-            'user'=> $user
+            'user' => $user
         ], 200);
     }
 
@@ -656,88 +658,79 @@ class ProfileController extends Controller
         $user = User::where(['id' => $auth->id])->first();
         $domain = $user['domain'];
 
-        $roles = Role::select('name','id')->where('domain', '=' , $domain)->get();
+        $roles = Role::select('name', 'id')->where('domain', '=', $domain)->get();
 
         return response()->json($roles, 200);
     }
 
-    public function captureUpload(Request $request){
-
+    public function captureUpload(Request $request)
+    {
         $auth = Auth::user();
         $id = $auth->id;
         $domain = $auth->domain;
         $user = User::where(['id' => $auth->id])->first();
         $profile_picture_is_null = User::where(['profile_picture_path' => $auth->id])->first();
         $file = $request->file;
-    
-        if($file){
-            $filename = uniqid() . '.jpg';    
+
+        if ($file) {
+            $filename = uniqid() . '.jpg';
+
             try {
-                if($user->profile_picture_path){
+                if ($user->profile_picture_path) {
                     Storage::delete($user->profile_picture_path);
                 }
             } catch (\Throwable $th) {
-                //throw $th;
+                //
             }
+
             $imageData = file_get_contents($file);
-            Storage::put('public/uploads/'. $domain . "/profile_pics/" . $id . "/" . $filename, $imageData);
-            $path = 'public/uploads/'. $domain . "/profile_pics/" . $id . "/".$filename;
-            // get the dimensions of the original image
-            $original_image = storage_path().'/app/'.$path;
+            Storage::put('public/uploads/' . $domain . "/profile_pics/" . $id . "/" . $filename, $imageData);
+            $path = 'public/uploads/' . $domain . "/profile_pics/" . $id . "/" . $filename;
+            $original_image = storage_path() . '/app/' . $path;
             list($width, $height) = getimagesize($original_image);
-    
-            // calculate the new dimensions
+
             $new_width = 400;
             $new_height = 400;
-    
-            // create a new image with the new dimensions
             $new_image = imagecreatetruecolor($new_width, $new_height);
-    
-            // copy and resize the image data from the original image into the new image
+
             $sourceImage = imagecreatefromjpeg($original_image);
             imagecopyresampled($new_image, $sourceImage, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-    
-            // output the new image as a JPEG file
-            imagejpeg($new_image, storage_path() .'/app/'.$path);
+            imagejpeg($new_image, storage_path() . '/app/' . $path);
+
             $user->profile_picture_path = $path;
             $user->save();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Your profile web-cam photo have been saved successfully.',
             ], 200);
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your profile web-cam photo is not saved successfully.',
-            ], 200);
         }
-    
-        
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Your profile web-cam photo is not saved successfully.',
+        ], 200);
     }
 
     public function uploadTemplate(Request $request)
     {
-
         $user = Auth::user();
         $domain = $user->domain;
-  
-        // Validate file
+
         $request->validate([
-            'invoice_template_path' => 'required|file|mimes:xlsx|max:5120', // Max 5MB
+            'invoice_template_path' => 'required|file|mimes:xlsx|max:5120',
         ]);
 
         try {
             $filename = "invoice_template.xlsx";
-            // Store the file in storage/app/invoice_templates
             $path = $request->file('invoice_template_path')->storeAs("invoice_templates/{$domain}", $filename);
 
-            // Save to settings table
-             DB::table('domains')
-            ->where('domain', $domain)
-            ->update([
-                'invoice_template_path' => $path,
-                'updated_at' => now()
-            ]);
+            DB::table('domains')
+                ->where('domain', $domain)
+                ->update([
+                    'invoice_template_path' => $path,
+                    'updated_at' => now()
+                ]);
 
             return response()->json([
                 'success' => true,
@@ -745,7 +738,6 @@ class ProfileController extends Controller
                 'filename' => $filename,
                 'path' => $path
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -757,9 +749,8 @@ class ProfileController extends Controller
 
     public function templateExists()
     {
-        // Hae polku asetuksista
         $path = DB::table('domains')
-            ->where('domain', auth()->user()->domain) // tai APP_DOMAIN_ADMIN, jos admin
+            ->where('domain', auth()->user()->domain)
             ->value('invoice_template_path');
 
         $exists = $path && Storage::exists($path);
@@ -781,7 +772,7 @@ class ProfileController extends Controller
 
         $data = DB::table('domains')
             ->where('domain', $domain)
-            ->select('iban1','bic1','iban2','bic2','iban3','bic3')
+            ->select('iban1', 'bic1', 'iban2', 'bic2', 'iban3', 'bic3')
             ->first();
 
         return response()->json($data, 200);
@@ -823,13 +814,14 @@ class ProfileController extends Controller
 
         $terms = InvoicePaymentTerm::where('domain', $domain)
             ->whereNull('deleted_at')
-            ->with(['translations' => function($query) use ($locale) {
-                $query->where('locale', $locale);
-            }])
+            ->with([
+                'translations' => function ($query) use ($locale) {
+                    $query->where('locale', $locale);
+                }
+            ])
             ->get();
 
-        // Map each term to include the translated name for the requested locale
-        $termsWithTranslation = $terms->map(function($term) use ($locale) {
+        $termsWithTranslation = $terms->map(function ($term) use ($locale) {
             $translation = $term->translations->first();
             return [
                 'id' => $term->id,
@@ -858,21 +850,17 @@ class ProfileController extends Controller
             'days' => 'required|integer|min:0',
         ]);
 
-        
-        // Create new term
         $term = InvoicePaymentTerm::create([
             'domain' => $domain,
             'days_to_pay' => $validated['days'],
         ]);
-        
-        // Create translations for all supported locales
+
         $term->translations()->createMany([
             ['locale' => 'EN', 'name' => $validated['name']],
             ['locale' => 'FI', 'name' => $validated['name']],
             ['locale' => 'SV', 'name' => $validated['name']],
         ]);
-        
-        // Load translations for response
+
         $term->load('translations');
 
         return response()->json([
@@ -893,7 +881,6 @@ class ProfileController extends Controller
             'days' => 'required|integer|min:0',
         ]);
 
-        // Update existing term
         $term = InvoicePaymentTerm::where('id', $id)
             ->where('domain', $domain)
             ->first();
@@ -907,14 +894,12 @@ class ProfileController extends Controller
 
         $term->days_to_pay = $validated['days'];
         $term->save();
-        
-        // Update only the translation for the requested locale
+
         $term->translations()->updateOrCreate(
             ['locale' => $locale],
             ['name' => $validated['name']]
         );
-        
-        // Load the specific translation for response
+
         $translation = $term->translations()->where('locale', $locale)->first();
 
         return response()->json([
@@ -941,7 +926,6 @@ class ProfileController extends Controller
             'id' => 'required|integer|exists:invoice_payment_terms,id',
         ]);
 
-        // Delete term
         $term = InvoicePaymentTerm::where('id', $validated['id'])
             ->where('domain', $domain)
             ->first();

@@ -26,31 +26,31 @@ class DomainsController extends Controller
         //$this->apiToken = uniqid(base64_encode(Str::random(40)));
         $this->middleware('auth:api');
         $this->user = new User;
-    } 
+    }
 
     public function domains(Request $request)
     {
         $user = Auth::user();
-    
+
         if ($user->role == "admin") {
             $domains = Domain::all();
         } else {
             $domain = DB::table('users')->select('domain')->where('id', '=', Auth::user()->id)->first();
             $domains = Domain::where('domain', '=', $domain->domain)->get();
         }
-    
+
         Log::info('Domains:', ['domains' => $domains]);
-    
-        $perPage = 10;
+
+        $perPage = 50;
 
         $page = $request->input('page', 1);
 
         $offset = ($page - 1) * $perPage;
-    
+
         $domainList = $domains->slice($offset, $perPage);
-    
+
         $data = [];
-    
+
         foreach ($domainList as $domain) {
             $data[] = [
                 'id' => $domain->id,
@@ -64,12 +64,12 @@ class DomainsController extends Controller
                 'billing_contact_email' => $domain->billing_contact_email,
                 'country' => $domain->country
             ];
-            
+
         }
-    
+
         return response()->json($data, 200);
     }
-    
+
     public function updateDomain(Request $request)
     {
         $user = Auth::user();
