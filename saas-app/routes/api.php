@@ -118,7 +118,7 @@ Route::prefix('reports')->group(function () {
 
 });
 
-Route::prefix('timesheet')->middleware('cors')->group(function () {
+Route::prefix('timesheet')->group(function () {
 	Route::get('timesheets', 							[TimesheetController::class, 'index']);
 	Route::post('timesheets', 							[TimesheetController::class, 'store']);
 	Route::get('timesheets/{timesheet}/rows',           [TimesheetRowController::class, 'index']);

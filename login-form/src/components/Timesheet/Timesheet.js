@@ -12,12 +12,13 @@ import SummaryPanel from "./Summary";
 import { useTimesheet } from './hooks/useTimesheet';
 import { useAutosaveMeta, useAutosaveRows } from './hooks/useAutosave';
 import { useRowActions } from "./hooks/useRowActions";
+import TimesheetRowsTable from "./TimesheetRowsTable";
 
 export default function Timesheet() {
 
   const { t } = useTranslation();
   const { authToken } = useAuthToken();
-  
+
   const {
     timesheet,
     timesheetId,
@@ -25,10 +26,10 @@ export default function Timesheet() {
     setRows,
     meta,
     setMeta,
-    createTimesheet 
+    createTimesheet
   } = useTimesheet(authToken);
 
-  const { 
+  const {
     unwrap,
     submitted,
     handleSubmit,
@@ -42,39 +43,58 @@ export default function Timesheet() {
     statusMessage,
     statusType,
     handleMetaChange
-  } 
-  = useRowActions( 
-    timesheetId, 
-    timesheet,
-    rows, 
-    setRows, 
-    meta, 
-    setMeta, 
-    t,
-    createTimesheet 
-  );
-  
+  }
+    = useRowActions(
+      timesheetId,
+      timesheet,
+      rows,
+      setRows,
+      meta,
+      setMeta,
+      t,
+      createTimesheet
+    );
+
   useEffect(() => {
-    if (!timesheetId) {
-      return;
+    if (timesheetId) {
+      fetchRows(1);
     }
-  
-    (async () => {
-      try {
-        const res = await api.get(`/api/timesheet/timesheets/${timesheetId}/rows`);
-        const rawRows = Array.isArray(unwrap(res)) ? unwrap(res) : [];
-        setRows(rawRows.map(fromApiRow));
-      } catch (e) {
-        console.error("Failed to fetch rows", e);
-      }
-    })();
   }, [timesheetId]);
+
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0
+  });
+
+  const fetchRows = async (page = 1) => {
+    if (!timesheetId) return;
+
+    try {
+      const res = await api.get(
+        `/api/timesheets/${timesheetId}/rows?page=${page}&per_page=10`
+      );
+
+      const response = unwrap(res);
+
+      setRows(response.data.map(fromApiRow));
+
+      setPagination({
+        currentPage: response.current_page,
+        lastPage: response.last_page,
+        total: response.total,
+      });
+
+    } catch (e) {
+      console.error("Failed to fetch rows", e);
+    }
+  };
 
   const totals = useMemo(() => calculateTotals(rows), [rows]);
 
   return (
     <Container fluid className="tcontainer py-4 bg-dark min-vh-100">
-      <Container style={{maxWidth: 1600}}>
+      <Container style={{ maxWidth: 1600 }}>
         <Card className="shadow-sm mb-3">
           <Card.Body>
             <TimesheetForm
@@ -92,7 +112,16 @@ export default function Timesheet() {
               t={t}
               statusMessage={statusMessage}
               statusType={statusType}
-              handleMetaChange={handleMetaChange} 
+              handleMetaChange={handleMetaChange}
+            />
+          </Card.Body>
+        </Card>
+        <Card className="shadow-sm mb-3">
+          <Card.Body>
+            <TimesheetRowsTable
+              rows={rows}
+              pagination={pagination}
+              fetchRows={fetchRows}
             />
           </Card.Body>
         </Card>
