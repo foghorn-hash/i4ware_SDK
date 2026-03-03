@@ -29,6 +29,8 @@ const resources = {
             /*Timesheet's translations*/
             timesheetNameLabel: "Timesheet name",
             timesheetNamePlaceholder: "Enter timesheet name",
+            page: "Page",
+            of: "of",
 
             //emplyee
             employeeLabel: "Employee",
@@ -556,6 +558,9 @@ const resources = {
             /*Timesheet's translations - finnish*/
             timesheetNameLabel: "Tuntikortin nimi",
             timesheetNamePlaceholder: "Syötä tuntikortin nimi",
+            page: "Sivu",
+            of: "/",
+
 
             //emplyee
             employeeLabel: "Työntekijä",
@@ -1076,6 +1081,8 @@ const resources = {
             /*Timesheet's translations - swedish*/
             timesheetNameLabel: "Tidkortets namn",
             timesheetNamePlaceholder: "Ange tidkortets namn",
+            page: "Sida",
+            of: "av",
 
             //employee
             employeeLabel: "Anställd",

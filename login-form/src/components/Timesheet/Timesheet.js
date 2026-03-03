@@ -72,10 +72,10 @@ export default function Timesheet() {
 
     try {
       const res = await api.get(
-        `/api/timesheets/${timesheetId}/rows?page=${page}&per_page=10`
+        `/api/timesheet/timesheets/${timesheetId}/rows?page=${page}&per_page=10`
       );
 
-      const response = unwrap(res);
+      const response = res.data;
 
       setRows(response.data.map(fromApiRow));
 
