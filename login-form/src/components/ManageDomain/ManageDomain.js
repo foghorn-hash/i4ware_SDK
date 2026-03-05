@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./ManageDomain.css";
 import { AuthContext } from "../../contexts/auth.contexts";
 import request from "../../utils/Request";
-import { Button, Pagination } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import PermissionGate from "../../contexts/PermissionGate";
@@ -142,43 +142,15 @@ function ManageDomain(props) {
   const refreshDomains = () => fetchDomains(page, debouncedCompany, debouncedVatId);
 
   const domainUpdateApi = (data) => {
-  request()
-    .post("/api/manage/updateDomainRecord", data)
-    .then(() => refreshDomains())
-    .catch((error) => {
-      console.error("Error updating domain:", error);
-    });
-};
+    request()
+      .post("/api/manage/updateDomainRecord", data)
+      .then(() => refreshDomains())
+      .catch((error) => {
+        console.error("Error updating domain:", error);
+      });
+  };
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
-  };
-
-  const renderPaginationItems = () => {
-    const items = [];
-    const delta = 2;
-    const left = Math.max(1, page - delta);
-    const right = Math.min(totalPages, page + delta);
-
-    if (left > 1) {
-      items.push(<Pagination.Item key={1} onClick={() => handlePageChange(1)}>1</Pagination.Item>);
-      if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
-    }
-    for (let p = left; p <= right; p++) {
-      items.push(
-        <Pagination.Item key={p} active={p === page} onClick={() => handlePageChange(p)}>
-          {p}
-        </Pagination.Item>
-      );
-    }
-    if (right < totalPages) {
-      if (right < totalPages - 1) items.push(<Pagination.Ellipsis key="right-ellipsis" disabled />);
-      items.push(
-        <Pagination.Item key={totalPages} onClick={() => handlePageChange(totalPages)}>
-          {totalPages}
-        </Pagination.Item>
-      );
-    }
-    return items;
   };
 
   if (isLoading && domains.length === 0) {
@@ -306,14 +278,24 @@ function ManageDomain(props) {
         </div>
 
         {!isLoading && totalPages > 1 && (
-          <div className="d-flex justify-content-center mt-3">
-            <Pagination>
-              <Pagination.First onClick={() => handlePageChange(1)} disabled={page === 1} />
-              <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
-              {renderPaginationItems()}
-              <Pagination.Next onClick={() => handlePageChange(page + 1)} disabled={page === totalPages} />
-              <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
-            </Pagination>
+          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              {t("previous")}
+            </Button>
+            <span>{t("page")} {page} / {totalPages}</span>
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              {t("next")}
+            </Button>
           </div>
         )}
 

@@ -16,7 +16,7 @@ import { Formik, Field, Form } from "formik";
 import * as Yup from "yup";
 import TextInput, { PassWordInput } from "./../common/TextInput";
 import PermissionGate from "../../contexts/PermissionGate";
-import { FormCheck, Pagination } from "react-bootstrap";
+import { FormCheck } from "react-bootstrap";
 import ChangePassword from "./ChangePassword";
 import LOADING from "../../tube-spinner.svg";
 import DefaultMaleImage from "../../male-default-profile-picture.png";
@@ -195,33 +195,7 @@ function ManageAdmin() {
     if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
   };
 
-  const renderPaginationItems = () => {
-    const items = [];
-    const delta = 2;
-    const left = Math.max(1, page - delta);
-    const right = Math.min(totalPages, page + delta);
 
-    if (left > 1) {
-      items.push(<Pagination.Item key={1} onClick={() => handlePageChange(1)}>1</Pagination.Item>);
-      if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
-    }
-    for (let p = left; p <= right; p++) {
-      items.push(
-        <Pagination.Item key={p} active={p === page} onClick={() => handlePageChange(p)}>
-          {p}
-        </Pagination.Item>
-      );
-    }
-    if (right < totalPages) {
-      if (right < totalPages - 1) items.push(<Pagination.Ellipsis key="right-ellipsis" disabled />);
-      items.push(
-        <Pagination.Item key={totalPages} onClick={() => handlePageChange(totalPages)}>
-          {totalPages}
-        </Pagination.Item>
-      );
-    }
-    return items;
-  };
 
   return (
     <>
@@ -493,14 +467,24 @@ function ManageAdmin() {
         </div>
 
         {!isLoading && totalPages > 1 && (
-          <div className="d-flex justify-content-center mt-3">
-            <Pagination>
-              <Pagination.First onClick={() => handlePageChange(1)} disabled={page === 1} />
-              <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
-              {renderPaginationItems()}
-              <Pagination.Next onClick={() => handlePageChange(page + 1)} disabled={page === totalPages} />
-              <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
-            </Pagination>
+          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              {t("previous")}
+            </Button>
+            <span>{t("page")} {page} / {totalPages}</span>
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              {t("next")}
+            </Button>
           </div>
         )}
 
