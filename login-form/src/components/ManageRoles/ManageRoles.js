@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./ManageRoles.css";
 import { withRouter } from 'react-router-dom';
-import { Button, Pagination } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import request from '../../utils/Request';
 import { AuthContext } from '../../contexts/auth.contexts';
 import LOADING from '../../tube-spinner.svg';
@@ -70,40 +70,6 @@ function ManageRoles(props) {
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
-  };
-
-  const renderPaginationItems = () => {
-    const items = [];
-    const delta = 2;
-    const left = Math.max(1, page - delta);
-    const right = Math.min(totalPages, page + delta);
-
-    if (left > 1) {
-      items.push(
-        <Pagination.Item key={1} onClick={() => handlePageChange(1)}>1</Pagination.Item>
-      );
-      if (left > 2) items.push(<Pagination.Ellipsis key="left-ellipsis" disabled />);
-    }
-
-    for (let p = left; p <= right; p++) {
-      items.push(
-        <Pagination.Item key={p} active={p === page} onClick={() => handlePageChange(p)}>
-          {p}
-        </Pagination.Item>
-      );
-    }
-
-    if (right < totalPages) {
-      if (right < totalPages - 1)
-        items.push(<Pagination.Ellipsis key="right-ellipsis" disabled />);
-      items.push(
-        <Pagination.Item key={totalPages} onClick={() => handlePageChange(totalPages)}>
-          {totalPages}
-        </Pagination.Item>
-      );
-    }
-
-    return items;
   };
 
   if (isLoading && roles.length === 0) {
@@ -180,15 +146,25 @@ function ManageRoles(props) {
           )}
         </div>
 
-        {!isLoading && totalPages > 1 && (
-          <div className="d-flex justify-content-center mt-3">
-            <Pagination>
-              <Pagination.First onClick={() => handlePageChange(1)} disabled={page === 1} />
-              <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
-              {renderPaginationItems()}
-              <Pagination.Next onClick={() => handlePageChange(page + 1)} disabled={page === totalPages} />
-              <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={page === totalPages} />
-            </Pagination>
+        {!isLoading && (
+          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              {t("previous")}
+            </Button>
+            <span>{t("page")} {page} / {totalPages}</span>
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              {t("next")}
+            </Button>
           </div>
         )}
 
