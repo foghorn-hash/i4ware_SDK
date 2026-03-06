@@ -530,6 +530,15 @@ const resources = {
             removeImage: "Remove Image",
             closeOverlay: "Close",
 
+            start_realtime: "Talk With AI",
+            stop_realtime: "Stop Talking",
+            realtime_start_failed: "Failed to start realtime conversation.",
+            realtime_active: "Listening...",
+            invalid_pdf_selection: "Please select a valid PDF file",
+            error_analyzing_pdf: "Error analyzing PDF",
+            token_expired_or_invalid: "Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.",
+            error_generating_response: "Failed to generate AI response. Please try again.",
+
         }
     },
     fi: {
@@ -1053,6 +1062,16 @@ const resources = {
             upload: "Lataa",
             removeImage: "Poista kuva",
             closeOverlay: "Sulje",
+
+            start_realtime: "Puhu tekoälyn kanssa",
+            stop_realtime: "Lopeta puhuminen",
+            realtime_start_failed: "Reaaliaikaisen keskustelun aloittaminen epäonnistui.",
+            realtime_active: "Kuunnellaan...",
+            invalid_pdf_selection: "Valitse kelvollinen PDF-tiedosto",
+            error_analyzing_pdf: "Virhe PDF:n analysoinnissa",
+            token_expired_or_invalid: "Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.",
+            error_generating_response: "Tekoälyn vastauksen luominen epäonnistui. Yritä uudelleen.",
+
         }
     },
     sv: {
@@ -1570,6 +1589,16 @@ const resources = {
             upload: "Ladda upp",
             removeImage: "Ta bort bild",
             closeOverlay: "Stäng",
+
+            start_realtime: "Prata med AI",
+            stop_realtime: "Sluta prata",
+            realtime_start_failed: "Det gick inte att starta realtidskonversationen.",
+            realtime_active: "Lyssnar...",
+            invalid_pdf_selection: "Välj en giltig PDF-fil",
+            error_analyzing_pdf: "Fel vid analys av PDF",
+            token_expired_or_invalid: "Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.",
+            error_generating_response: "Det gick inte att generera AI-svar. Försök igen.",
+
         }
     }
 };

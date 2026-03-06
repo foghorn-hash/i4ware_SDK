@@ -63,6 +63,15 @@ const PusherChat = () => {
   const [expectation, setExpectation] = useState("");
   const [showPromptOverlay, setShowPromptOverlay] = useState(false);
   const [isRohtoEnabled, setIsRohtoEnabled] = useState(false); // Add this state
+  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
+  const pcRef = useRef(null);
+  const remoteAudioRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const dataChannelRef = useRef(null);
+  const realtimeTextAccumRef = useRef("");
+  const realtimeUserTextRef = useRef("");
+  const recognitionRef = useRef(null);
+  const lastUserTranscriptRef = useRef("");
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -72,6 +81,341 @@ const PusherChat = () => {
   const enableRohto = () => setIsRohtoEnabled(true);
   const disableRohto = () => setIsRohtoEnabled(false);
   const toggleRohto = () => setIsRohtoEnabled((prev) => !prev);
+
+  const startRealtimeConversation = async () => {
+    try {
+      // Fetch session token from Node.js backend
+      console.log('Fetching OpenAI session from http://localhost:3001/api/openai-session');
+      const resp = await fetch(`http://localhost:3001/api/openai-session`);
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`HTTP ${resp.status}: ${text.substring(0, 200)}`);
+      }
+      const session = await resp.json();
+      const ephemeralKey = session?.client_secret?.value || session?.client_secret;
+
+      if (!ephemeralKey) {
+        throw new Error(`No client_secret in session response: ${JSON.stringify(session)}`);
+      }
+
+      console.log('Session obtained, creating WebRTC connection...');
+      const pc = new RTCPeerConnection();
+      pcRef.current = pc;
+
+      // play remote audio
+      pc.ontrack = (event) => {
+        try {
+          const [remoteStream] = event.streams;
+          if (remoteAudioRef.current && remoteStream) {
+            remoteAudioRef.current.srcObject = remoteStream;
+            console.log('Remote audio stream received');
+          }
+        } catch (err) {
+          console.error('ontrack error', err);
+        }
+      };
+
+      // Listen for data channel opened by OpenAI
+      pc.ondatachannel = (ev) => {
+        const ch = ev.channel;
+        dataChannelRef.current = ch;
+        console.log('Data channel received from OpenAI:', ch.label, 'readyState:', ch.readyState);
+        
+        ch.onopen = () => {
+          console.log('Success: Data channel opened, readyState:', ch.readyState);
+          // Send session configuration once channel is open
+          const systemMsg = {
+            type: 'session.update',
+            session: {
+              instructions: `You are a helpful assistant. Respond in the same language the user speaks, mainly the language will be English, Finnish or Swedish. Be concise.`,
+              voice: 'alloy',
+              modalities: ['text', 'audio']
+            }
+          };
+          try {
+            ch.send(JSON.stringify(systemMsg));
+            console.log('Success: Sent session update');
+          } catch (err) {
+            console.log('Error: Could not send session update:', err);
+          }
+        };
+        
+        ch.onmessage = (m) => {
+          console.log('Raw datachannel message received:', m.data?.substring?.(0, 100));
+          try {
+            const data = JSON.parse(m.data);
+            console.log('Success: Parsed to JSON:', data.type);
+            handleOpenAIEvent(data);
+          } catch (err) {
+            console.log('Warning: Data channel message (not JSON):', m.data?.substring?.(0, 200));
+          }
+        };
+        
+        ch.onerror = (err) => {
+          console.error('Error: Data channel error:', err);
+        };
+        ch.onclose = () => {
+          console.log('Warning: Data channel closed');
+          dataChannelRef.current = null;
+        };
+      };
+
+      // Log WebRTC peer connection states
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log('ICE candidate:', event.candidate.candidate?.substring?.(0, 80));
+        } else {
+          console.log('ICE gathering complete');
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        console.log('WebRTC connection state:', pc.connectionState);
+      };
+
+      // get microphone
+      console.log('Requesting microphone access...');
+      const localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      localStreamRef.current = localStream;
+      localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+      console.log('Microphone added to peer connection');
+
+      // Start Web Speech API for local transcription (displays user text immediately)
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
+        
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = i18n.language === 'fi' ? 'fi-FI' : i18n.language === 'sv' ? 'sv-SE' : 'en-US';
+        
+        recognition.onstart = () => {
+          console.log('Web Speech API started');
+        };
+        
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' ';
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+          
+          // Display final transcript in chat
+          if (finalTranscript && finalTranscript !== lastUserTranscriptRef.current) {
+            console.log('Success: User said:', finalTranscript);
+            const userMessage = {
+              username: username,
+              message: finalTranscript.trim(),
+              generate: false,
+              created_at: new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, userMessage]);
+            saveMessageToDatabase(userMessage);
+            lastUserTranscriptRef.current = finalTranscript;
+          }
+        };
+        
+        recognition.onerror = (event) => {
+          console.log('Web Speech API error:', event.error);
+        };
+        
+        recognition.onend = () => {
+          console.log('Web Speech API stopped');
+          // Restart if realtime is still active
+          if (isRealtimeActive && recognitionRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (e) {
+              console.log('Could not restart recognition:', e);
+            }
+          }
+        };
+        
+        // Start listening
+        recognition.start();
+      } else {
+        console.warn('Warning: Web Speech API not supported in this browser');
+      }
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      console.log('SDP offer created');
+
+      // send SDP offer to OpenAI Realtime endpoint using ephemeral key
+      console.log('Sending SDP offer to OpenAI realtime...');
+      const sdpResp = await fetch('https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${ephemeralKey}`,
+          'Content-Type': 'application/sdp',
+        },
+        body: offer.sdp,
+      });
+
+      if (!sdpResp.ok) {
+        throw new Error(`OpenAI API error ${sdpResp.status}`);
+      }
+
+      const answerSdp = await sdpResp.text();
+      console.log('SDP answer received from OpenAI');
+      await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+      setIsRealtimeActive(true);
+      // indicate speaking status to others
+      sendSpeechStatus(true);
+      console.log('Realtime conversation started successfully');
+    } catch (err) {
+      console.error('Realtime start failed', err);
+      alert((t('realtime_start_failed')) + '\n\n' + err.message);
+    }
+  };
+
+  const handleOpenAIEvent = (data) => {
+    try {
+      // Log all events to see what's actually coming through
+      console.log('OpenAI Event:', data.type);
+      console.log('   Full data:', JSON.stringify(data).substring(0, 300));
+      
+      // Handle transcript from user input
+      if (data.type === 'conversation.item.input_audio_transcription.completed') {
+        const transcript = data?.transcript;
+        if (transcript) {
+          console.log('Success: User transcript:', transcript);
+          const userMessage = {
+            username: username,
+            message: transcript,
+            generate: false,
+            created_at: new Date().toISOString(),
+          };
+          setMessages((prev) => [...prev, userMessage]);
+          saveMessageToDatabase(userMessage);
+        }
+      }
+      
+      // Handle conversation items that might contain user text
+      if (data.type === 'conversation.item.created' && data.item?.role === 'user') {
+        console.log('User conversation item created:', data.item);
+        // Try to extract transcript from the item
+        const content = data.item?.content;
+        if (Array.isArray(content)) {
+          content.forEach((c) => {
+            if (c.type === 'text' && c.text) {
+              console.log('User text from item:', c.text);
+              const userMessage = {
+                username: username,
+                message: c.text,
+                generate: false,
+                created_at: new Date().toISOString(),
+              };
+              setMessages((prev) => [...prev, userMessage]);
+              saveMessageToDatabase(userMessage);
+            }
+          });
+        }
+      }
+      
+      // Handle assistant response items
+      if (data.type === 'conversation.item.created' && data.item?.role === 'assistant') {
+        console.log('Assistant conversation item created:', data.item);
+      }
+      
+      // Handle response text deltas (streaming response text)
+      if (data.type === 'response.content_block.delta') {
+        if (data.delta?.type === 'text_delta' && data.delta?.text) {
+          const textChunk = data.delta.text;
+          realtimeTextAccumRef.current += textChunk;
+          console.log('Text delta:', textChunk);
+        }
+      }
+      
+      // Handle response creation (start of response)
+      if (data.type === 'response.created') {
+        console.log('Response started');
+        realtimeTextAccumRef.current = ''; // Reset accumulator
+      }
+      
+      // Handle when response is fully done
+      if (data.type === 'response.done') {
+        const fullText = realtimeTextAccumRef.current.trim();
+        if (fullText) {
+          console.log('Response complete:', fullText);
+          const aiMessage = {
+            username: 'AI',
+            message: fullText,
+            generate: false,
+            created_at: new Date().toISOString(),
+          };
+          setMessages((prev) => [...prev, aiMessage]);
+          saveMessageToDatabase(aiMessage);
+        }
+        realtimeTextAccumRef.current = '';
+      }
+      
+      // Handle specific content block done events
+      if (data.type === 'response.content_block.done') {
+        console.log('Content block done:', data.content_block?.type);
+        if (data.content_block?.type === 'text' && realtimeTextAccumRef.current.trim()) {
+          const fullText = realtimeTextAccumRef.current.trim();
+          console.log('Response complete:', fullText);
+          const aiMessage = {
+            username: 'AI',
+            message: fullText,
+            generate: false,
+            created_at: new Date().toISOString(),
+          };
+          setMessages((prev) => [...prev, aiMessage]);
+          saveMessageToDatabase(aiMessage);
+          realtimeTextAccumRef.current = '';
+        }
+      }
+      
+      // Handle errors
+      if (data.type === 'error') {
+        console.error('OpenAI error:', data.error);
+      }
+    } catch (err) {
+      console.error('Error handling OpenAI event:', err);
+    }
+  };
+
+  const stopRealtimeConversation = async () => {
+    try {
+      // Stop Web Speech API
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+          recognitionRef.current.abort();
+        } catch (e) {
+          console.log('Could not stop Web Speech API:', e);
+        }
+        recognitionRef.current = null;
+      }
+
+      if (pcRef.current) {
+        pcRef.current.getSenders().forEach((s) => {
+          try { if (s.track) s.track.stop(); } catch (e) {}
+        });
+        pcRef.current.close();
+        pcRef.current = null;
+      }
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((t) => t.stop());
+        localStreamRef.current = null;
+      }
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+      setIsRealtimeActive(false);
+      sendSpeechStatus(false);
+    } catch (err) {
+      console.error('Realtime stop failed', err);
+    }
+  };
 
   const [loadingOlder, setLoadingOlder] = useState(false);
 
@@ -95,7 +439,7 @@ const PusherChat = () => {
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      alert("Please select a valid PDF file");
+      alert(t('invalid_pdf_selection'));
       return;
     }
 
@@ -189,7 +533,7 @@ const PusherChat = () => {
 
     } catch (err) {
       console.error(err);
-      alert("Error analyzing PDF");
+      alert(t('error_analyzing_pdf'));
       Swal.fire({
         icon: "error",
         title: t('upload_failure'),
@@ -328,7 +672,7 @@ const PusherChat = () => {
       console.error('Token type:', typeof token);
       console.error('Token length:', token ? token.length : 'null');
       localStorage.clear();
-      alert('Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.');
+      alert(t('token_expired_or_invalid'));
       window.location.href = '/';
       return false;
     }
@@ -339,7 +683,7 @@ const PusherChat = () => {
       console.error('JWT token has empty parts detected on component mount, clearing localStorage and redirecting to login');
       console.error('Token parts:', tokenParts);
       localStorage.clear();
-      alert('Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.');
+      alert(t('token_expired_or_invalid'));
       window.location.href = '/';
       return false;
     }
@@ -889,7 +1233,7 @@ const PusherChat = () => {
       setIsThinking(false);
 
       // Show user-friendly error message
-      alert(t('error_generating_response') || "Failed to generate AI response. Please try again.");
+      alert(t('error_generating_response'));
     }
   };
 
@@ -958,6 +1302,27 @@ const PusherChat = () => {
         >
           ROHTO
         </Button>
+        <div style={{ float: 'right', marginRight: 10 }}>
+          <audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
+          {isRealtimeActive && (
+            <span style={{ 
+              marginRight: 10, 
+              color: '#dc3545', 
+              fontWeight: 'bold',
+              animation: 'pulse 1.5s infinite',
+              display: 'inline-block'
+            }}>
+              🎤 {t('realtime_active')}
+            </span>
+          )}
+          <Button
+            variant={isRealtimeActive ? 'danger' : 'success'}
+            onClick={() => (isRealtimeActive ? stopRealtimeConversation() : startRealtimeConversation())}
+            style={{ marginRight: 6 }}
+          >
+            {isRealtimeActive ? t('stop_realtime'): t('start_realtime')}
+          </Button>
+        </div>
         <Form.Check
           className="rohto-checkbox"
           type="checkbox"
