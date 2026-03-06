@@ -467,7 +467,7 @@ function ManageAdmin() {
         </div>
 
         {!isLoading && (
-          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+          <div className="d-flex justify-content-left align-items-center gap-3 mt-3">
             <Button
               variant="outline-primary"
               size="sm"
