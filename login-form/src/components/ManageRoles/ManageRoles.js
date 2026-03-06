@@ -146,7 +146,7 @@ function ManageRoles(props) {
           )}
         </div>
 
-        {!isLoading && totalPages > 1 && (
+        {!isLoading && (
           <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
             <Button
               variant="outline-primary"
