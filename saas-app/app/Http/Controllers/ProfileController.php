@@ -496,29 +496,30 @@ class ProfileController extends Controller
     }
 
     public function roles(Request $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        $roles = Role::where('domain', '=', $user->domain)->get();
+    $perPage = (int) $request->input('per_page', 50);
+    $page = (int) $request->input('page', 1);
+    $query = Role::where('domain', '=', $user->domain);
+    $total = $query->count();
+    $roles = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+    $data = [];
 
-        $perPage = 50;
-        $page = $request->input('page', 1);
-        $offset = ($page - 1) * $perPage;
-
-        $roleList = $roles->slice($offset, $perPage);
-
-        $data = [];
-
-        foreach ($roleList as $role) {
-            $data[] = [
-                'id' => $role->id,
-                'name' => $role->name,
-                'domain' => $role->domain,
-            ];
-        }
-
-        return response()->json($data, 200);
+    foreach ($roles as $role) {
+        $data[] = [
+            'id' => $role->id,
+            'name' => $role->name,
+            'domain' => $role->domain,
+        ];
     }
+    return response()->json([
+        'data' => $data,
+        'total' => $total,
+        'page' => $page,
+        'per_page' => $perPage,
+    ], 200);
+}
 
     public function rolesAll()
     {
