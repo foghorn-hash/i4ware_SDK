@@ -120,14 +120,14 @@ const PusherChat = () => {
         const ch = ev.channel;
         dataChannelRef.current = ch;
         console.log('Data channel received from OpenAI:', ch.label, 'readyState:', ch.readyState);
-        
+
         ch.onopen = () => {
           console.log('Success: Data channel opened, readyState:', ch.readyState);
           // Send session configuration once channel is open
           const systemMsg = {
             type: 'session.update',
             session: {
-              instructions: `You are a helpful assistant. Respond in the same language the user speaks, mainly the language will be English, Finnish or Swedish. Be concise.`,
+              instructions: `You are a helpful assistant. Respond in the same language the user speaks, only languages will be English, Finnish or Swedish. Be concise.`,
               voice: 'alloy',
               modalities: ['text', 'audio']
             }
@@ -139,7 +139,7 @@ const PusherChat = () => {
             console.log('Error: Could not send session update:', err);
           }
         };
-        
+
         ch.onmessage = (m) => {
           console.log('Raw datachannel message received:', m.data?.substring?.(0, 100));
           try {
@@ -150,7 +150,7 @@ const PusherChat = () => {
             console.log('Warning: Data channel message (not JSON):', m.data?.substring?.(0, 200));
           }
         };
-        
+
         ch.onerror = (err) => {
           console.error('Error: Data channel error:', err);
         };
@@ -185,19 +185,19 @@ const PusherChat = () => {
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         recognitionRef.current = recognition;
-        
+
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = i18n.language === 'fi' ? 'fi-FI' : i18n.language === 'sv' ? 'sv-SE' : 'en-US';
-        
+        recognition.lang = 'en-US,fi-FI,sv-SE';
+
         recognition.onstart = () => {
           console.log('Web Speech API started');
         };
-        
+
         recognition.onresult = (event) => {
           let interimTranscript = '';
           let finalTranscript = '';
-          
+
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
@@ -206,7 +206,7 @@ const PusherChat = () => {
               interimTranscript += transcript;
             }
           }
-          
+
           // Display final transcript in chat
           if (finalTranscript && finalTranscript !== lastUserTranscriptRef.current) {
             console.log('Success: User said:', finalTranscript);
@@ -221,11 +221,11 @@ const PusherChat = () => {
             lastUserTranscriptRef.current = finalTranscript;
           }
         };
-        
+
         recognition.onerror = (event) => {
           console.log('Web Speech API error:', event.error);
         };
-        
+
         recognition.onend = () => {
           console.log('Web Speech API stopped');
           // Restart if realtime is still active
@@ -237,7 +237,7 @@ const PusherChat = () => {
             }
           }
         };
-        
+
         // Start listening
         recognition.start();
       } else {
@@ -282,7 +282,7 @@ const PusherChat = () => {
       // Log all events to see what's actually coming through
       console.log('OpenAI Event:', data.type);
       console.log('   Full data:', JSON.stringify(data).substring(0, 300));
-      
+
       // Handle transcript from user input
       if (data.type === 'conversation.item.input_audio_transcription.completed') {
         const transcript = data?.transcript;
@@ -298,7 +298,7 @@ const PusherChat = () => {
           saveMessageToDatabase(userMessage);
         }
       }
-      
+
       // Handle conversation items that might contain user text
       if (data.type === 'conversation.item.created' && data.item?.role === 'user') {
         console.log('User conversation item created:', data.item);
@@ -320,12 +320,12 @@ const PusherChat = () => {
           });
         }
       }
-      
+
       // Handle assistant response items
       if (data.type === 'conversation.item.created' && data.item?.role === 'assistant') {
         console.log('Assistant conversation item created:', data.item);
       }
-      
+
       // Handle response text deltas (streaming response text)
       if (data.type === 'response.content_block.delta') {
         if (data.delta?.type === 'text_delta' && data.delta?.text) {
@@ -334,13 +334,13 @@ const PusherChat = () => {
           console.log('Text delta:', textChunk);
         }
       }
-      
+
       // Handle response creation (start of response)
       if (data.type === 'response.created') {
         console.log('Response started');
         realtimeTextAccumRef.current = ''; // Reset accumulator
       }
-      
+
       // Handle when response is fully done
       if (data.type === 'response.done') {
         const fullText = realtimeTextAccumRef.current.trim();
@@ -357,7 +357,7 @@ const PusherChat = () => {
         }
         realtimeTextAccumRef.current = '';
       }
-      
+
       // Handle specific content block done events
       if (data.type === 'response.content_block.done') {
         console.log('Content block done:', data.content_block?.type);
@@ -375,7 +375,7 @@ const PusherChat = () => {
           realtimeTextAccumRef.current = '';
         }
       }
-      
+
       // Handle errors
       if (data.type === 'error') {
         console.error('OpenAI error:', data.error);
@@ -400,7 +400,7 @@ const PusherChat = () => {
 
       if (pcRef.current) {
         pcRef.current.getSenders().forEach((s) => {
-          try { if (s.track) s.track.stop(); } catch (e) {}
+          try { if (s.track) s.track.stop(); } catch (e) { }
         });
         pcRef.current.close();
         pcRef.current = null;
@@ -1293,21 +1293,12 @@ const PusherChat = () => {
   return (
     <>
       <div className="chat-container">
-        <Button
-          className="rohto-button"
-          variant="outline-secondary"
-          style={{ float: "right", marginBottom: 10 }}
-          onClick={() => setShowPromptOverlay(true)}
-          disabled={!isRohtoEnabled}
-        >
-          ROHTO
-        </Button>
-        <div style={{ float: 'right', marginRight: 10 }}>
+        <div style={{ float: 'right', marginRight: 10, marginLeft: 10 }}>
           <audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
           {isRealtimeActive && (
-            <span style={{ 
-              marginRight: 10, 
-              color: '#dc3545', 
+            <span style={{
+              marginRight: 10,
+              color: '#dc3545',
               fontWeight: 'bold',
               animation: 'pulse 1.5s infinite',
               display: 'inline-block'
@@ -1320,9 +1311,20 @@ const PusherChat = () => {
             onClick={() => (isRealtimeActive ? stopRealtimeConversation() : startRealtimeConversation())}
             style={{ marginRight: 6 }}
           >
-            {isRealtimeActive ? t('stop_realtime'): t('start_realtime')}
+            {isRealtimeActive ? t('stop_realtime') : t('start_realtime')}
           </Button>
+
         </div>
+        <Button
+          className="rohto-button"
+          variant="outline-secondary"
+          style={{ float: "right", marginBottom: 10 }}
+          onClick={() => setShowPromptOverlay(true)}
+          disabled={!isRohtoEnabled}
+        >
+          ROHTO
+        </Button>
+
         <Form.Check
           className="rohto-checkbox"
           type="checkbox"
