@@ -18,7 +18,7 @@ export default function TimesheetRowsTable({ rows, pagination, fetchRows }) {
           {rows.map((row) => (
             <tr key={row.id}>
               <td>{row.project}</td>
-              <td>{row.pvm}</td>
+              <td>{formatDate(row.pvm)}</td>
               <td>{row.norm}</td>
             </tr>
           ))}
@@ -45,4 +45,14 @@ export default function TimesheetRowsTable({ rows, pagination, fetchRows }) {
       </Row>
     </>
   );
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
 }
