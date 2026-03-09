@@ -49,6 +49,10 @@ const resources = {
             startTimeLabel: "Start time",
             endTimeLabel: "End time",
 
+            //hour types
+            workTypeLabel: "Type of hours worked",
+            hoursLabel: "Hours",
+
             //normal hours
             normalHoursLabel: "Normal hours",
             normalHoursPlaceholder: "Enter hours worked",
@@ -573,6 +577,10 @@ const resources = {
             //project
             projectLabel: "Kustannuspaikka ja/tai projekti",
             projectPlaceholder: "Syötä kustannuspaikka tai projekti",
+
+            //work type
+            workTypeLabel: "Tehtyjen tuntien tyyppi",
+            hoursLabel: "Tunnit",
 
             //date and time
             dateLabel: "PVM ",
@@ -1100,6 +1108,10 @@ const resources = {
             endTimeLabel: "Sluttid",
             normalHoursLabel: "Normaltimmar",
             normalHoursPlaceholder: "Ange arbetade timmar",
+
+            //work type and hours label
+            workTypeLabel: "Typ av arbetade timmar",
+            hoursLabel: "Timmar",
 
             //extras
             extrasLaLabel: "Tillägg lör",
