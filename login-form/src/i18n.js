@@ -74,7 +74,7 @@ const resources = {
             showOvertimePlaceholder: "Fill in",
 
             //compensations
-            atvLabel: "ATV (holiday hours)",
+            atvLabel: "ATV (Accrued days off)",
             travelLabel: "Travel hours",
             mealLabel: "Meal compensation",
 
@@ -608,7 +608,7 @@ const resources = {
             showOvertimePlaceholder: "Täytä",
 
             //compensations
-            atvLabel: "ATV (arkipyhätunnit)",
+            atvLabel: "ATV (Ajantasaus vapaa tunnit)",
             travelLabel: "Matkatunnit",
             mealLabel: "Ateriakorvaus",
 
@@ -1130,7 +1130,7 @@ const resources = {
             showOvertimePlaceholder: "Fyll i",
 
             //compensations
-            atvLabel: "ATV (helgtimmar)",
+            atvLabel: "ATV (Arbetstidsutjämning)",
             travelLabel: "Resetimmar",
             mealLabel: "Måltidsersättning",
 
