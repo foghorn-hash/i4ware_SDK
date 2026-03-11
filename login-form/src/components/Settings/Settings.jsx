@@ -41,7 +41,7 @@ function Settings() {
     request()
       .get("/api/settings")
       .then((res) => {
-        if (res.status === 200) {
+        if (res?.status === 200) {
           const obj = getDefaultSettings();
           for (let i = 0; i < res.data.data.length; i++) {
             const element = res.data.data[i];
@@ -54,6 +54,9 @@ function Settings() {
           }
           setSetting(obj);
         }
+      })
+      .catch((err) => {
+        console.error("Failed to load settings:", err);
       });
   }, []);
 
@@ -176,6 +179,7 @@ function Settings() {
             <VerifyNetvisorButton
               API_BASE_URL={API_BASE_URL}
               token={localStorage.getItem(ACCESS_TOKEN_NAME)}
+              enableNetvisor={setting.enable_netvisor}
             />
           </div>
         </PermissionGate>
