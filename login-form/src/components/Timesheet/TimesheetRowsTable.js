@@ -14,7 +14,8 @@ export default function TimesheetRowsTable({ rows, pagination, fetchRows }) {
     { key: "ylityoVrk50", label: t("overtimeVrk50Label") },
     { key: "ylityoVrk100", label: t("overtimeVrk100Label") },
     { key: "ylityoVko50", label: t("overtimeVko50Label") },
-    { key: "ylityoVko100", label: t("overtimeVko100Label") }
+    { key: "ylityoVko100", label: t("overtimeVko100Label") },
+    { key: "atv", label: t("atvLabel") }
   ];
 
   return (
