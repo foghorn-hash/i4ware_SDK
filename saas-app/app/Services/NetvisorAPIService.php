@@ -115,7 +115,7 @@ class NetvisorAPIService
             $options = ['headers' => $headers];
 
             if ($sendAsXml) {
-                $xmlBody = ArrayToXml::convert($data, 'root', true, 'UTF-8'); // You can change 'root' to 'customer' if needed
+                $xmlBody = ArrayToXml::convert($data, 'root', true, 'UTF-8');
                 $options['body'] = $xmlBody;
                 $options['headers']['Content-Type'] = 'text/xml';
             } else {
@@ -124,21 +124,39 @@ class NetvisorAPIService
 
             $response = $this->client->request($method, $url, $options);
 
-            $this->saveTransaction();
-        
             $body = $response->getBody()->getContents();
-    
-             // Parse the XML response
+
+            // Parse the XML response
             $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA);
             $json = json_encode($xml);
             $responseArray = json_decode($json, true);
 
+            // Detect Netvisor-level authentication / credential failures.
+            // Netvisor returns HTTP 200 even for auth errors; failure is signalled in the XML body.
+            // Netvisor sends two sibling <Status> elements, so simplexml decodes Status as an array.
+            $statusField = $responseArray['ResponseStatus']['Status'] ?? null;
+            $statusCode   = is_array($statusField) ? ($statusField[0] ?? '') : (string) $statusField;
+
+            if (trim($statusCode) === 'FAILED') {
+                $detail = is_array($statusField)
+                    ? ($statusField[1] ?? 'Authentication failed')
+                    : ($responseArray['ResponseStatus']['FreeText'] ?? 'Authentication failed');
+                Log::warning('Netvisor API returned FAILED status', ['detail' => $detail]);
+                return [
+                    'error'           => true,
+                    'netvisor_failed' => true,
+                    'message'         => $detail,
+                ];
+            }
+
+            $this->saveTransaction();
+
             return $responseArray;
-            // return json_decode($response->getBody(), true);
+
         } catch (RequestException $e) {
             Log::error('Netvisor API request failed', ['message' => $e->getMessage()]);
             return [
-                'error' => true,
+                'error'   => true,
                 'message' => $e->getMessage(),
             ];
         }

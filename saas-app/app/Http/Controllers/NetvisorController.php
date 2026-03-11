@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Services\NetvisorAPIService;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use App\Models\Settings;
 use Auth;
 
 class NetvisorController extends Controller
@@ -20,20 +21,60 @@ class NetvisorController extends Controller
         $this->netvisorAPI = $netvisorAPI;
     }
 
+    /**
+     * Check if Netvisor is enabled in settings
+     */
+    protected function isNetvisorEnabled()
+    {
+        $setting = Settings::where('setting_key', 'enable_netvisor')->first();
+        return $setting && $setting->setting_value === '1';
+    }
+
     public function getSalesInvoices()
     {
+        // Backend guard: check if Netvisor is enabled
+        if (!$this->isNetvisorEnabled()) {
+            Log::warning('Netvisor API called but feature is not enabled');
+            return response()->json([
+                'error' => 'Netvisor is not enabled',
+                'message' => 'Please enable Netvisor in settings first'
+            ], 403);
+        }
+
         try {
             $response = $this->netvisorAPI->getSalesInvoices();
+
+            // The service returns ['error' => true, ...] when a RequestException is caught
+            if (isset($response['error']) && $response['error'] === true) {
+                Log::error('Netvisor connection error in controller', ['message' => $response['message'] ?? '']);
+                return response()->json([
+                    'error' => 'Incorrect Netvisor details',
+                    'message' => 'Incorrect Netvisor details. Please check your Netvisor credentials in the server configuration.'
+                ], 422);
+            }
+
             Log::info('Sales invoices response: ' . json_encode($response));
             return response()->json($response);
         } catch (\Exception $e) {
+            // Catches NETVISOR_FAILED exceptions thrown when Netvisor returns a FAILED status in XML
             Log::error('Error retrieving sales invoices: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to retrieve sales invoices'], 500);
+            return response()->json([
+                'error' => 'Incorrect Netvisor details',
+                'message' => 'Incorrect Netvisor details. Please check your Netvisor credentials in the server configuration.'
+            ], 422);
         }
     }
 
     public function addCustomer(Request $request)
     {
+        // Backend guard: check if Netvisor is enabled
+        if (!$this->isNetvisorEnabled()) {
+            Log::warning('Netvisor API called but feature is not enabled');
+            return response()->json([
+                'error' => 'Netvisor is not enabled',
+                'message' => 'Please enable Netvisor in settings first'
+            ], 403);
+        }
 
         $customerBaseInfo = [ // Base information about the customer is aggregated in a single 'customerbaseinformation' key
             'internalidentifier' => '', // automatic (if given and customer code is left empty, the next free customer number is used automatically)
