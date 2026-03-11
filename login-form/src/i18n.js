@@ -49,6 +49,10 @@ const resources = {
             startTimeLabel: "Start time",
             endTimeLabel: "End time",
 
+            //hour types
+            workTypeLabel: "Type of hours worked",
+            hoursLabel: "Hours",
+
             //normal hours
             normalHoursLabel: "Normal hours",
             normalHoursPlaceholder: "Enter hours worked",
@@ -70,7 +74,7 @@ const resources = {
             showOvertimePlaceholder: "Fill in",
 
             //compensations
-            atvLabel: "ATV (holiday hours)",
+            atvLabel: "ATV (Accrued days off)",
             travelLabel: "Travel hours",
             mealLabel: "Meal compensation",
 
@@ -583,6 +587,10 @@ const resources = {
             projectLabel: "Kustannuspaikka ja/tai projekti",
             projectPlaceholder: "Syötä kustannuspaikka tai projekti",
 
+            //work type
+            workTypeLabel: "Tehtyjen tuntien tyyppi",
+            hoursLabel: "Tunnit",
+
             //date and time
             dateLabel: "PVM ",
             startTimeLabel: "Työajan alku",
@@ -609,7 +617,7 @@ const resources = {
             showOvertimePlaceholder: "Täytä",
 
             //compensations
-            atvLabel: "ATV (arkipyhätunnit)",
+            atvLabel: "ATV (Ajantasaus vapaa tunnit)",
             travelLabel: "Matkatunnit",
             mealLabel: "Ateriakorvaus",
 
@@ -1120,6 +1128,10 @@ const resources = {
             normalHoursLabel: "Normaltimmar",
             normalHoursPlaceholder: "Ange arbetade timmar",
 
+            //work type and hours label
+            workTypeLabel: "Typ av arbetade timmar",
+            hoursLabel: "Timmar",
+
             //extras
             extrasLaLabel: "Tillägg lör",
             extrasSuLabel: "Tillägg sön",
@@ -1137,7 +1149,7 @@ const resources = {
             showOvertimePlaceholder: "Fyll i",
 
             //compensations
-            atvLabel: "ATV (helgtimmar)",
+            atvLabel: "ATV (Arbetstidsutjämning)",
             travelLabel: "Resetimmar",
             mealLabel: "Måltidsersättning",
 

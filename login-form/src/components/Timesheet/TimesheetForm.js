@@ -159,9 +159,6 @@ export default function Timesheet({
                             onChange={e=>setMeta({...meta, norm:e.target.value})} 
                             placeholder={t('normalHoursPlaceholder')}
                         />
-                        {submitted && (meta.norm === '' || Number(meta.norm) <= 0) && (
-                            <span className="error" style={{ color: 'red' }}>{t('requiredField')}</span>
-                        )}
                         <NumberValidator value={meta.norm} min={0.1} max={999.99} />
                     </Form.Group>
                 </Col>
