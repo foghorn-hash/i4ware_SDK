@@ -115,7 +115,7 @@ class NetvisorAPIService
             $options = ['headers' => $headers];
 
             if ($sendAsXml) {
-                $xmlBody = ArrayToXml::convert($data, 'root', true, 'UTF-8');
+                $xmlBody = ArrayToXml::convert($data, 'root', true, 'UTF-8'); // You can change 'root' to 'customer' if needed
                 $options['body'] = $xmlBody;
                 $options['headers']['Content-Type'] = 'text/xml';
             } else {
