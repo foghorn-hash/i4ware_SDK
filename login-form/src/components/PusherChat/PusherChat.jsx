@@ -85,8 +85,12 @@ const PusherChat = () => {
   const startRealtimeConversation = async () => {
     try {
       // Fetch session token from Node.js backend
-      console.log('Fetching OpenAI session from http://localhost:3001/api/openai-session');
-      const resp = await fetch(`http://localhost:3001/api/openai-session`);
+      console.log('Fetching OpenAI session from /api/openai-session');
+      const resp = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/chat/openai-session`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('login_access_token')}`,
+        }
+      });
       if (!resp.ok) {
         const text = await resp.text();
         throw new Error(`HTTP ${resp.status}: ${text.substring(0, 200)}`);
