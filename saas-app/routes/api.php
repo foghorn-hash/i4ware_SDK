@@ -97,6 +97,7 @@ Route::prefix('chat')->group(function () {
 	Route::post('/speech', [ChatController::class, 'speech']);
 	Route::post('/word/send', [ChatController::class, 'generateWordFile'])->name('chatgpt.generate.word');
 	Route::post('/analyze-pdf', [ChatController::class, 'uploadPDF'])->name('pdf.upload');
+	Route::get('/openai-session', [ChatController::class, 'openAiSession']);
 });
 
 Route::prefix('netvisor')->group(function () {
