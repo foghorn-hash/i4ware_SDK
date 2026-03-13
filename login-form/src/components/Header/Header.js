@@ -121,6 +121,7 @@ function Header(props) {
         { text: "videoPhoto", link: "/video-photo" },
         { text: "chat", link: "/pusher-chat" },
         { text: "timesheet", link: "/timesheet" },
+        { text: "pdfDocumentBank", link: "/pdf-document-bank" },
 
         {
           text: "manageUsers",
@@ -282,6 +283,15 @@ function Header(props) {
                     to="/timesheet"
                   >
                     {t('timesheet')}
+                  </NavLink>
+                )}
+                {authState.isLogged && (
+                  <NavLink
+                    className="Header-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                    to="/pdf-document-bank"
+                  >
+                    {t('Document Bank')}
                   </NavLink>
                 )}
                 {authState.isLogged && (

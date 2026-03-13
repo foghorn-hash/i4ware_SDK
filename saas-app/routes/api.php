@@ -11,6 +11,7 @@ use App\Http\Controllers\NetvisorController;
 use App\Http\Controllers\AtlassianSalesController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\TimesheetRowController;
+use App\Http\Controllers\PdfDocumentBankController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,7 +70,7 @@ Route::prefix('stl')->group(function () {
 	Route::get('/stl-items', [StlController::class, 'getStlItems'])->name('stl.stl-items');
 	Route::get('/stl-item', [StlController::class, 'getStlItem'])->name('stl.stl-item');
 	Route::post('/stl-file', [StlController::class, 'getStlFile'])->name('stl.stl-file');
-	Route::delete('/delete-stl', [StlController::class, 'postStlDeleteFile'])->name('stl.delete-stl'); 
+	Route::delete('/delete-stl', [StlController::class, 'postStlDeleteFile'])->name('stl.delete-stl');
 	Route::post('/generate-spaceship', [StlController::class, 'generateSpaceship']);
 	Route::post('/generate-cyborg', [StlController::class, 'generateCyborg']);
 	Route::post('/generate-car', [StlController::class, 'generateCar']);
@@ -119,12 +120,20 @@ Route::prefix('reports')->group(function () {
 });
 
 Route::prefix('timesheet')->group(function () {
-	Route::get('timesheets', 							[TimesheetController::class, 'index']);
-	Route::post('timesheets', 							[TimesheetController::class, 'store']);
-	Route::get('timesheets/{timesheet}/rows',           [TimesheetRowController::class, 'index']);
-	Route::post('timesheets/{timesheet}/rows', 			[TimesheetRowController::class, 'store']);
-	Route::get('timesheets/{timesheet}/rows/{row}',     [TimesheetRowController::class, 'show']);
-	Route::put('timesheets/{timesheet}', 				[TimesheetController::class, 'update']);
-	Route::put('timesheets/{timesheet}/rows/{row}',     [TimesheetRowController::class, 'update']);
-	Route::delete('timesheets/{timesheet}/rows/{row}',  [TimesheetRowController::class, 'destroy']);
+	Route::get('timesheets', [TimesheetController::class, 'index']);
+	Route::post('timesheets', [TimesheetController::class, 'store']);
+	Route::get('timesheets/{timesheet}/rows', [TimesheetRowController::class, 'index']);
+	Route::post('timesheets/{timesheet}/rows', [TimesheetRowController::class, 'store']);
+	Route::get('timesheets/{timesheet}/rows/{row}', [TimesheetRowController::class, 'show']);
+	Route::put('timesheets/{timesheet}', [TimesheetController::class, 'update']);
+	Route::put('timesheets/{timesheet}/rows/{row}', [TimesheetRowController::class, 'update']);
+	Route::delete('timesheets/{timesheet}/rows/{row}', [TimesheetRowController::class, 'destroy']);
+});
+
+Route::prefix('documentbank')->group(function () {
+	Route::get('/', [PdfDocumentBankController::class, 'index']);
+	Route::post('/upload', [PdfDocumentBankController::class, 'upload']);
+	Route::get('/view/{id}', [PdfDocumentBankController::class, 'view']);
+	Route::get('/download/{id}', [PdfDocumentBankController::class, 'download']);
+	Route::delete('/{id}', [PdfDocumentBankController::class, 'destroy']);
 });
