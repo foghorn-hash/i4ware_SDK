@@ -31,25 +31,25 @@ class PdfDocumentBankController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'file'          => 'required|file|mimes:pdf|max:51200',
+            'file' => 'required|file|mimes:pdf|max:51200',
             'document_name' => 'required|string|max:255',
         ]);
 
         $domain = Auth::user()->domain;
-        $uuid   = Str::uuid();
-        $path   = "pdfs/{$domain}/{$uuid}.pdf";
+        $uuid = Str::uuid();
+        $path = "pdfs/{$domain}/{$uuid}.pdf";
 
         Storage::disk('local')->put($path, file_get_contents($request->file('file')));
 
         $doc = DocumentBank::create([
-            'document_name'      => $request->document_name,
+            'document_name' => $request->document_name,
             'document_file_path' => $path,
-            'domain'             => $domain,
-            'user_id'            => Auth::id(),
+            'domain' => $domain,
+            'user_id' => Auth::id(),
         ]);
 
         return response()->json([
-            'message'  => 'Dokumentti ladattu onnistuneesti',
+            'message' => 'Dokumentti ladattu onnistuneesti',
             'document' => $doc,
         ], 201);
     }
@@ -96,13 +96,22 @@ class PdfDocumentBankController extends Controller
         return response()->json(['message' => 'Dokumentti poistettu']);
     }
 
-    // Token query-parametrina iframea ja download-linkkiä varten
     private function authenticateViaToken(Request $request): void
     {
         if ($request->query('token') && !Auth::check()) {
-            $token = Token::find($request->query('token'));
-            if ($token && !$token->revoked) {
-                Auth::loginUsingId($token->user_id);
+            try {
+                // Dekoodaa JWT ja hae user_id
+                $tokenId = (new \Lcobucci\JWT\Encoding\JoseEncoder())
+                    ->decode($request->query('token'))['jti'] ?? null;
+
+                if ($tokenId) {
+                    $token = Token::find($tokenId);
+                    if ($token && !$token->revoked) {
+                        Auth::loginUsingId($token->user_id);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Token ei kelpaa
             }
         }
     }
