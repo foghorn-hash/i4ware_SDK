@@ -56,8 +56,6 @@ class PdfDocumentBankController extends Controller
 
     public function view(Request $request, $id)
     {
-        $this->authenticateViaToken($request);
-
         $doc = $this->getDocumentForDomain($id);
 
         if (!Storage::disk('local')->exists($doc->document_file_path)) {
@@ -74,8 +72,6 @@ class PdfDocumentBankController extends Controller
 
     public function download(Request $request, $id)
     {
-        $this->authenticateViaToken($request);
-
         $doc = $this->getDocumentForDomain($id);
 
         if (!Storage::disk('local')->exists($doc->document_file_path)) {
@@ -94,26 +90,6 @@ class PdfDocumentBankController extends Controller
         $doc->delete();
 
         return response()->json(['message' => 'Dokumentti poistettu']);
-    }
-
-    private function authenticateViaToken(Request $request): void
-    {
-        if ($request->query('token') && !Auth::check()) {
-            try {
-                // Dekoodaa JWT ja hae user_id
-                $tokenId = (new \Lcobucci\JWT\Encoding\JoseEncoder())
-                    ->decode($request->query('token'))['jti'] ?? null;
-
-                if ($tokenId) {
-                    $token = Token::find($tokenId);
-                    if ($token && !$token->revoked) {
-                        Auth::loginUsingId($token->user_id);
-                    }
-                }
-            } catch (\Exception $e) {
-                // Token ei kelpaa
-            }
-        }
     }
 
     // Tarkistaa että dokumentti kuuluu kirjautuneen käyttäjän domainille

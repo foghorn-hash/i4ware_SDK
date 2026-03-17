@@ -41,20 +41,36 @@ export default function DocumentBank() {
         }
     };
 
-    const getPdfViewUrl = (id) => {
-        const token = localStorage.getItem(ACCESS_TOKEN_NAME);
-        return `${API_BASE_URL}/api/documentbank/view/${id}?token=${token}`;
+    const handleDownload = async (id, documentName) => {
+        try {
+            const res = await request().get(`/api/documentbank/download/${id}`, {
+                responseType: "blob",
+            });
+            const blobUrl = URL.createObjectURL(res.data);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = documentName + ".pdf";
+            link.click();
+            URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error("Latausvirhe:", error);
+        }
     };
 
-    const getPdfDownloadUrl = (id) => {
-        const token = localStorage.getItem(ACCESS_TOKEN_NAME);
-        return `${API_BASE_URL}/api/documentbank/download/${id}?token=${token}`;
-    };
-
-    const handleDocumentSelect = (id) => {
-        setSelectedPdf(id);
+    const handleSelectPdf = async (id) => {
+        setSelectedPdf(null);
         setPageNumber(1);
         setNumPages(null);
+
+        try {
+            const res = await request().get(`/api/documentbank/view/${id}`, {
+                responseType: "blob",
+            });
+            const blobUrl = URL.createObjectURL(res.data);
+            setSelectedPdf(blobUrl);
+        } catch (error) {
+            console.error("PDF latausvirhe:", error);
+        }
     };
 
     const onDocumentLoadSuccess = ({ numPages }) => {
@@ -97,32 +113,32 @@ export default function DocumentBank() {
                         }}
                     >
                         <div
-                            onClick={() => handleDocumentSelect(doc.id)}
-                            style={{ fontWeight: 500, marginBottom: 6, cursor: "pointer" }}
+                            onClick={() => handleSelectPdf(doc.id)}
+                            style={{ fontWeight: 500, marginBottom: 6, cursor: "pointer", color: "#292929" }}
                         >
                             📄 {doc.document_name}
                         </div>
                         <div style={{ display: "flex", gap: 8 }}>
                             <button
-                                onClick={() => handleDocumentSelect(doc.id)}
+                                onClick={() => handleSelectPdf(doc.id)}
                                 style={{ flex: 1, padding: "4px 0", fontSize: 12, background: "#f3f4f6", border: "1px solid #d1d5db", cursor: "pointer", borderRadius: 4 }}
                             >
                                 👁 Näytä
                             </button>
-                            <a
-                                href={getPdfDownloadUrl(doc.id)}
-                                style={{ flex: 1, padding: "4px 0", fontSize: 12, background: "#f3f4f6", border: "1px solid #d1d5db", cursor: "pointer", borderRadius: 4, textAlign: "center", textDecoration: "none", color: "#111" }}
+                            <button
+                                onClick={() => handleDownload(doc.id, doc.document_name)}
+                                style={{ flex: 1, padding: "4px 0", fontSize: 12, background: "#f3f4f6", border: "1px solid #d1d5db", cursor: "pointer", borderRadius: 4 }}
                             >
-                                ⬇ Lataa
-                            </a>
+                                ⬇ Lataa 
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
-            <div style={{ flex: 1, background: "#f9fafb", overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ flex: 1, background: "#d1d1d1", overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
                 {selectedPdf ? (
                     <>
-                        <div style={{ padding: "12px 0", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, background: "#f9fafb", zIndex: 10, width: "100%", justifyContent: "center", borderBottom: "1px solid #e5e7eb" }}>
+                        <div style={{ padding: "12px 0", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, background: "#d1d1d1", zIndex: 10, width: "100%", justifyContent: "center", borderBottom: "1px solid #e5e7eb" }}>
                             <button
                                 onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
                                 disabled={pageNumber <= 1}
@@ -130,7 +146,7 @@ export default function DocumentBank() {
                             >
                                 ‹ Edellinen
                             </button>
-                            <span style={{ fontSize: 14 }}>
+                            <span style={{ fontSize: 14, color: "#3e4147" }}>
                                 Sivu {pageNumber} / {numPages ?? "..."}
                             </span>
                             <button
@@ -143,7 +159,7 @@ export default function DocumentBank() {
                         </div>
                         <div style={{ padding: 16 }}>
                             <Document
-                                file={getPdfViewUrl(selectedPdf)}
+                                file={selectedPdf}
                                 onLoadSuccess={onDocumentLoadSuccess}
                                 onLoadError={(error) => console.error("PDF load error:", error)}
                                 loading={<div style={{ padding: 32 }}>Ladataan PDF...</div>}
