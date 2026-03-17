@@ -1,0 +1,156 @@
+/* - Layout and Typography */
+.cv-editor-root {
+  min-height: 100vh;
+  padding: 2rem 0;
+  background-color: #f4f7f6;
+  color: #333;
+}
+
+.cv-editor-page-title {
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.cv-editor-page-subtitle {
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+}
+
+/* - Navigation Tabs */
+.cv-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.cv-tab-btn {
+  background: transparent;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cv-tab-btn.active {
+  background: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+/* - Section Content */
+.cv-section-heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 1.5rem 0 1rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid #0d6efd;
+}
+
+.cv-entry-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.cv-entry-number {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  background: #0d6efd;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* - Skills Styling */
+.cv-skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cv-skill-tag {
+  background: #edf2f7;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cv-skill-level-badge {
+  background: #0d6efd;
+  color: white;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  border-radius: 4px;
+}
+
+.cv-skill-remove {
+  border: none;
+  background: none;
+  color: #e53e3e;
+  cursor: pointer;
+  padding: 0;
+  font-weight: bold;
+}
+
+/* - Actions and Toasts */
+.cv-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.cv-status-strip {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.cv-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #2f855a;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* - Printing */
+@media print {
+
+  .cv-tab-nav,
+  .cv-action-bar,
+  .cv-toast,
+  .btn {
+    display: none !important;
+  }
+
+  .cv-editor-root {
+    background: white;
+    padding: 0;
+  }
+
+  .card {
+    border: none;
+    box-shadow: none;
+  }
+}
