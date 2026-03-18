@@ -543,6 +543,22 @@ const resources = {
             token_expired_or_invalid: "Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.",
             error_generating_response: "Failed to generate AI response. Please try again.",
 
+
+            // Document Bank
+            documentBank: "Document Bank",
+            addPdf: "Add PDF",
+            documentName: "Document name",
+            uploading: "Uploading...",
+            showPdf: "Show",
+            downloadPdf: "Download",
+            selectDocument: "← Select a document from the list",
+            loadingPdf: "Loading PDF...",
+            previousPage: "‹ Previous",
+            nextPage: "Next ›",
+            page: "Page",
+            uploadError: "Error: ",
+            unknownError: "Unknown error",
+            deletePdf: "Delete",
         }
     },
     fi: {
@@ -1080,6 +1096,21 @@ const resources = {
             token_expired_or_invalid: "Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.",
             error_generating_response: "Tekoälyn vastauksen luominen epäonnistui. Yritä uudelleen.",
 
+            // Document Bank
+            documentBank: "Dokumenttipankki",
+            addPdf: "Lisää PDF",
+            documentName: "Dokumentin nimi",
+            uploading: "Ladataan...",
+            showPdf: "Näytä",
+            downloadPdf: "Lataa",
+            selectDocument: "← Valitse dokumentti listalta",
+            loadingPdf: "Ladataan PDF...",
+            previousPage: "‹ Edellinen",
+            nextPage: "Seuraava ›",
+            page: "Sivu",
+            uploadError: "Virhe: ",
+            unknownError: "Tuntematon virhe",
+            deletePdf: "Poista",
         }
     },
     sv: {
@@ -1611,6 +1642,21 @@ const resources = {
             token_expired_or_invalid: "Token on vanhentunut tai viallinen. Sinut ohjataan kirjautumissivulle.",
             error_generating_response: "Det gick inte att generera AI-svar. Försök igen.",
 
+            // Document Bank
+            documentBank: "Dokumentbank",
+            addPdf: "Lägg till PDF",
+            documentName: "Dokumentnamn",
+            uploading: "Laddar upp...",
+            showPdf: "Visa",
+            downloadPdf: "Ladda ner",
+            selectDocument: "← Välj ett dokument från listan",
+            loadingPdf: "Laddar PDF...",
+            previousPage: "‹ Föregående",
+            nextPage: "Nästa ›",
+            page: "Sida",
+            uploadError: "Fel: ",
+            unknownError: "Okänt fel",
+            deletePdf: "Radera",
         }
     }
 };
