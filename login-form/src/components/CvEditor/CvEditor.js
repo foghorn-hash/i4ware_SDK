@@ -24,24 +24,26 @@ function SummaryTab({ data, onChange }) {
     return (
         <div>
             <div className="cv-section-heading">{t('cvBasicInfo')}</div>
-            <div className="row g-4 mb-4">
-                <div className="col-md-6">
+            <div className="row mb-3">
+                <div className="col-12 col-md-6 mb-3 mb-md-0">
                     <label className="form-label">{t('cvName')}</label>
                     <input className="form-control" placeholder={t('cvNamePlaceholder')} value={data.name} onChange={e => handleField('name', e.target.value)} />
                 </div>
-                <div className="col-md-6">
+                <div className="col-12 col-md-6">
                     <label className="form-label">{t('cvTitle')}</label>
                     <input className="form-control" placeholder={t('cvTitlePlaceholder')} value={data.title} onChange={e => handleField('title', e.target.value)} />
                 </div>
-                <div className="col-md-4">
+            </div>
+            <div className="row mb-4">
+                <div className="col-12 col-md-4 mb-3 mb-md-0">
                     <label className="form-label">{t('email')}</label>
                     <input type="email" className="form-control" placeholder={t('cvEmailPlaceholder')} value={data.email} onChange={e => handleField('email', e.target.value)} />
                 </div>
-                <div className="col-md-4">
+                <div className="col-12 col-md-4 mb-3 mb-md-0">
                     <label className="form-label">{t('cvPhone')}</label>
                     <input className="form-control" placeholder={t('cvPhonePlaceholder')} value={data.phone} onChange={e => handleField('phone', e.target.value)} />
                 </div>
-                <div className="col-md-4">
+                <div className="col-12 col-md-4">
                     <label className="form-label">{t('cvLocation')}</label>
                     <input className="form-control" placeholder={t('cvLocationPlaceholder')} value={data.location} onChange={e => handleField('location', e.target.value)} />
                 </div>

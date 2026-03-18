@@ -1,4 +1,13 @@
 /* - Layout and Typography */
+.cv-editor-root * {
+  box-sizing: border-box !important;
+}
+
+.cv-editor-root .form-control {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 .cv-editor-root {
   min-height: 100vh;
   padding: 2rem 0;
