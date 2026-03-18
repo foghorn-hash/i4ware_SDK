@@ -603,7 +603,9 @@ const resources = {
             cvResumeTitle: "Resume",
             cvPresent: "Present",
             cvConfirmReset: "Are you sure you want to clear all data?",
-            cvClearAll: "Clear All"
+            cvClearAll: "Clear All",
+            cvPhonePlaceholder: "040 123 4567",
+            cvDescription: "Description",
         }
     },
     fi: {
@@ -1201,7 +1203,9 @@ const resources = {
             cvResumeTitle: "Ansioluettelo",
             cvPresent: "Nykyinen",
             cvConfirmReset: "Oletko varma, että haluat tyhjentää kaikki tiedot?",
-            cvClearAll: "Tyhjennä kaikki"
+            cvClearAll: "Tyhjennä kaikki",
+            cvPhonePlaceholder: "040 123 4567",
+            cvDescription: "Kuvaus",
         }
     },
     sv: {
@@ -1791,7 +1795,9 @@ const resources = {
             cvResumeTitle: "Meritförteckning",
             cvPresent: "Nuvarande",
             cvConfirmReset: "Är du säker på att du vill rensa all data?",
-            cvClearAll: "Rensa allt"
+            cvClearAll: "Rensa allt",
+            cvPhonePlaceholder: "040 123 4567",
+            cvDescription: "Beskrivning",
         }
     }
 };
