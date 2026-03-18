@@ -1,0 +1,21 @@
+@media (max-width: 900px) {
+    .documentbank-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .documentbank-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .documentbank-viewer {
+        min-height: 80vh;
+    }
+
+    .documentbank-pagination {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}
