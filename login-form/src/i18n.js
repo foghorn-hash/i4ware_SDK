@@ -606,6 +606,22 @@ const resources = {
             cvClearAll: "Clear All",
             cvPhonePlaceholder: "040 123 4567",
             cvDescription: "Description",
+
+            // Document Bank
+            documentBank: "Document Bank",
+            addPdf: "Add PDF",
+            documentName: "Document name",
+            uploading: "Uploading...",
+            showPdf: "Show",
+            downloadPdf: "Download",
+            selectDocument: "← Select a document from the list",
+            loadingPdf: "Loading PDF...",
+            previousPage: "‹ Previous",
+            nextPage: "Next ›",
+            page: "Page",
+            uploadError: "Error: ",
+            unknownError: "Unknown error",
+            deletePdf: "Delete",
         }
     },
     fi: {
@@ -1206,6 +1222,22 @@ const resources = {
             cvClearAll: "Tyhjennä kaikki",
             cvPhonePlaceholder: "040 123 4567",
             cvDescription: "Kuvaus",
+            
+            // Document Bank
+            documentBank: "Dokumenttipankki",
+            addPdf: "Lisää PDF",
+            documentName: "Dokumentin nimi",
+            uploading: "Ladataan...",
+            showPdf: "Näytä",
+            downloadPdf: "Lataa",
+            selectDocument: "← Valitse dokumentti listalta",
+            loadingPdf: "Ladataan PDF...",
+            previousPage: "‹ Edellinen",
+            nextPage: "Seuraava ›",
+            page: "Sivu",
+            uploadError: "Virhe: ",
+            unknownError: "Tuntematon virhe",
+            deletePdf: "Poista",
         }
     },
     sv: {
@@ -1798,6 +1830,22 @@ const resources = {
             cvClearAll: "Rensa allt",
             cvPhonePlaceholder: "040 123 4567",
             cvDescription: "Beskrivning",
+
+            // Document Bank
+            documentBank: "Dokumentbank",
+            addPdf: "Lägg till PDF",
+            documentName: "Dokumentnamn",
+            uploading: "Laddar upp...",
+            showPdf: "Visa",
+            downloadPdf: "Ladda ner",
+            selectDocument: "← Välj ett dokument från listan",
+            loadingPdf: "Laddar PDF...",
+            previousPage: "‹ Föregående",
+            nextPage: "Nästa ›",
+            page: "Sida",
+            uploadError: "Fel: ",
+            unknownError: "Okänt fel",
+            deletePdf: "Radera",
         }
     }
 };
