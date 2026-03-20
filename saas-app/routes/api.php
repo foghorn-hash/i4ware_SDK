@@ -12,6 +12,8 @@ use App\Http\Controllers\AtlassianSalesController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\TimesheetRowController;
 use App\Http\Controllers\PdfDocumentBankController;
+use App\Http\Controllers\WordBankController;
+use App\Http\Controllers\ExcelBankController;
 
 /*
 |--------------------------------------------------------------------------
@@ -137,4 +139,20 @@ Route::prefix('documentbank')->group(function () {
 	Route::get('/view/{id}', [PdfDocumentBankController::class, 'view']);
 	Route::get('/download/{id}', [PdfDocumentBankController::class, 'download']);
 	Route::delete('/{id}', [PdfDocumentBankController::class, 'destroy']);
+});
+
+Route::prefix('wordbank')->group(function () {
+    Route::get('/',              [WordBankController::class, 'index']);
+    Route::post('/upload',       [WordBankController::class, 'upload']);
+    Route::get('/view/{id}',     [WordBankController::class, 'view']);
+    Route::get('/download/{id}', [WordBankController::class, 'download']);
+    Route::delete('/{id}',       [WordBankController::class, 'destroy']);
+});
+ 
+Route::prefix('excelbank')->group(function () {
+    Route::get('/',              [ExcelBankController::class, 'index']);
+    Route::post('/upload',       [ExcelBankController::class, 'upload']);
+    Route::get('/view/{id}',     [ExcelBankController::class, 'view']);
+    Route::get('/download/{id}', [ExcelBankController::class, 'download']);
+    Route::delete('/{id}',       [ExcelBankController::class, 'destroy']);
 });
