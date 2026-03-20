@@ -74,4 +74,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Messages::class, 'id', 'user_id');
     }
 
+    /**
+     * Get the CV profile for the user.
+     */
+    public function cvProfile()
+    {
+        return $this->hasOne(CvProfile::class);
+    }
+
 }

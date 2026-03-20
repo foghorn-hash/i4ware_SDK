@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Container } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { ACCESS_TOKEN_NAME, API_BASE_URL } from '../../constants/apiConstants';
 import './CvEditor.css';
-
-const STORAGE_KEY = 'cv_editor_data';
 
 const emptyState = () => ({
     summary: { text: '', githubUrl: '', name: '', title: '', email: '', phone: '', location: '' },
@@ -13,6 +12,137 @@ const emptyState = () => ({
     additionalTraining: [],
     references: []
 });
+
+// Helper functions to convert between frontend and backend formats
+const levelKeyToLevel = (levelKey) => {
+    const map = {
+        'cvLevel1': 'beginner',
+        'cvLevel2': 'intermediate',
+        'cvLevel3': 'intermediate',
+        'cvLevel4': 'advanced',
+        'cvLevel5': 'expert'
+    };
+    return map[levelKey] || 'intermediate';
+};
+
+const levelToLevelKey = (level) => {
+    const map = {
+        'beginner': 'cvLevel1',
+        'intermediate': 'cvLevel3',
+        'advanced': 'cvLevel4',
+        'expert': 'cvLevel5'
+    };
+    return map[level] || 'cvLevel3';
+};
+
+const convertToApiFormat = (cvData) => {
+    return {
+        name: cvData.summary.name || null,
+        title: cvData.summary.title || null,
+        email: cvData.summary.email || null,
+        phone: cvData.summary.phone || null,
+        location: cvData.summary.location || null,
+        summary: cvData.summary.text || null,
+        github_url: cvData.summary.githubUrl || null,
+        skills: cvData.skills.map((s, idx) => ({
+            id: typeof s.id === 'number' ? s.id : undefined,
+            name: s.name,
+            level: levelKeyToLevel(s.levelKey),
+            order: idx
+        })),
+        workExperience: cvData.workExperience.map((w, idx) => ({
+            id: typeof w.id === 'number' ? w.id : undefined,
+            company: w.company,
+            role: w.role,
+            start_date: w.startDate || null,
+            end_date: w.endDate || null,
+            currently_employed: w.current || false,
+            description: w.description || null,
+            order: idx
+        })),
+        education: cvData.education.map((e, idx) => ({
+            id: typeof e.id === 'number' ? e.id : undefined,
+            institution: e.institution,
+            degree: e.degree || null,
+            field_of_study: e.field || null,
+            start_date: e.startDate || null,
+            end_date: e.endDate || null,
+            order: idx
+        })),
+        additionalTraining: cvData.additionalTraining.map((t, idx) => ({
+            id: typeof t.id === 'number' ? t.id : undefined,
+            name: t.course,
+            provider: t.provider || null,
+            start_date: t.startDate || null,
+            end_date: t.endDate || null,
+            order: idx
+        })),
+        references: cvData.references.map((r, idx) => ({
+            id: typeof r.id === 'number' ? r.id : undefined,
+            name: r.name,
+            title: r.title || null,
+            company: r.company || null,
+            email: r.email || null,
+            phone: r.phone || null,
+            order: idx
+        }))
+    };
+};
+
+const extractDate = (isoString) => isoString ? isoString.split('T')[0] : '';
+
+const convertFromApiFormat = (apiData) => {
+    if (!apiData) return emptyState();
+
+    return {
+        summary: {
+            text: apiData.summary || '',
+            githubUrl: apiData.github_url || '',
+            name: apiData.name || '',
+            title: apiData.title || '',
+            email: apiData.email || '',
+            phone: apiData.phone || '',
+            location: apiData.location || ''
+        },
+        skills: (apiData.skills || []).map(s => ({
+            id: s.id || `_${Math.random().toString(36).slice(2, 9)}`,
+            name: s.name,
+            levelKey: levelToLevelKey(s.level)
+        })),
+        workExperience: (apiData.experiences || []).map(w => ({
+            id: w.id || `_${Math.random().toString(36).slice(2, 9)}`,
+            company: w.company,
+            role: w.role,
+            startDate: extractDate(w.start_date),
+            endDate: extractDate(w.end_date),
+            current: w.currently_employed || false,
+            description: w.description || ''
+        })),
+        education: (apiData.educations || []).map(e => ({
+            id: e.id || `_${Math.random().toString(36).slice(2, 9)}`,
+            institution: e.institution,
+            degree: e.degree || '',
+            field: e.field_of_study || '',
+            startDate: extractDate(e.start_date),
+            endDate: extractDate(e.end_date)
+        })),
+        additionalTraining: (apiData.trainings || []).map(t => ({
+            id: t.id || `_${Math.random().toString(36).slice(2, 9)}`,
+            course: t.name,
+            provider: t.provider || '',
+            startDate: extractDate(t.start_date),
+            endDate: extractDate(t.end_date)
+        })),
+        references: (apiData.references || []).map(r => ({
+            id: r.id || `_${Math.random().toString(36).slice(2, 9)}`,
+            name: r.name,
+            title: r.title || '',
+            company: r.company || '',
+            email: r.email || '',
+            phone: r.phone || ''
+        }))
+    };
+};
 
 const genId = () => `_${Math.random().toString(36).slice(2, 9)}`;
 
@@ -63,7 +193,7 @@ function SkillsTab({ skills, onChange }) {
 
     const add = () => {
         if (!newSkill.trim()) return;
-        onChange([...skills, { id: genId(), name: newSkill.trim(), levelKey: newLevelKey }]);
+        onChange([...skills, { id: `_${Math.random().toString(36).slice(2, 9)}`, name: newSkill.trim(), levelKey: newLevelKey }]);
         setNewSkill('');
     };
 
@@ -96,7 +226,7 @@ function SkillsTab({ skills, onChange }) {
 
 function WorkExperienceTab({ items, onChange }) {
     const { t } = useTranslation();
-    const add = () => onChange([...items, { id: genId(), company: '', role: '', startDate: '', endDate: '', current: false, description: '' }]);
+    const add = () => onChange([...items, { id: `_${Math.random().toString(36).slice(2, 9)}`, company: '', role: '', startDate: '', endDate: '', current: false, description: '' }]);
     const update = (id, f, v) => onChange(items.map(i => i.id === id ? { ...i, [f]: v } : i));
     return (
         <div>
@@ -122,7 +252,7 @@ function WorkExperienceTab({ items, onChange }) {
 
 function EducationTab({ items, onChange }) {
     const { t } = useTranslation();
-    const add = () => onChange([...items, { id: genId(), institution: '', degree: '', field: '', startDate: '', endDate: '' }]);
+    const add = () => onChange([...items, { id: `_${Math.random().toString(36).slice(2, 9)}`, institution: '', degree: '', field: '', startDate: '', endDate: '' }]);
     const update = (id, f, v) => onChange(items.map(i => i.id === id ? { ...i, [f]: v } : i));
     return (
         <div>
@@ -147,7 +277,7 @@ function EducationTab({ items, onChange }) {
 
 function AdditionalTrainingTab({ items, onChange }) {
     const { t } = useTranslation();
-    const add = () => onChange([...items, { id: genId(), course: '', provider: '', year: '' }]);
+    const add = () => onChange([...items, { id: `_${Math.random().toString(36).slice(2, 9)}`, course: '', provider: '', startDate: '', endDate: '' }]);
     const update = (id, f, v) => onChange(items.map(i => i.id === id ? { ...i, [f]: v } : i));
     return (
         <div>
@@ -158,8 +288,9 @@ function AdditionalTrainingTab({ items, onChange }) {
                     <button className="btn btn-sm btn-outline-danger float-end" onClick={() => onChange(items.filter(x => x.id !== it.id))}>{t('cvDelete')}</button>
                     <div className="row g-4 mt-1">
                         <div className="col-md-12"><label className="form-label">{t('cvTrainingCourse')}</label><input className="form-control" value={it.course} onChange={e => update(it.id, 'course', e.target.value)} /></div>
-                        <div className="col-md-8"><label className="form-label">{t('cvTrainingProvider')}</label><input className="form-control" value={it.provider} onChange={e => update(it.id, 'provider', e.target.value)} /></div>
-                        <div className="col-md-4"><label className="form-label">{t('cvYear')}</label><input type="number" className="form-control" value={it.year} onChange={e => update(it.id, 'year', e.target.value)} /></div>
+                        <div className="col-md-12"><label className="form-label">{t('cvTrainingProvider')}</label><input className="form-control" value={it.provider} onChange={e => update(it.id, 'provider', e.target.value)} /></div>
+                        <div className="col-md-6"><label className="form-label">{t('cvStartDate')}</label><input type="date" className="form-control" value={it.startDate} onChange={e => update(it.id, 'startDate', e.target.value)} /></div>
+                        <div className="col-md-6"><label className="form-label">{t('cvEndDate')}</label><input type="date" className="form-control" value={it.endDate} onChange={e => update(it.id, 'endDate', e.target.value)} /></div>
                     </div>
                 </div>
             ))}
@@ -170,7 +301,7 @@ function AdditionalTrainingTab({ items, onChange }) {
 
 function ReferencesTab({ items, onChange }) {
     const { t } = useTranslation();
-    const add = () => onChange([...items, { id: genId(), name: '', title: '', company: '', email: '', phone: '' }]);
+    const add = () => onChange([...items, { id: `_${Math.random().toString(36).slice(2, 9)}`, name: '', title: '', company: '', email: '', phone: '' }]);
     const update = (id, f, v) => onChange(items.map(i => i.id === id ? { ...i, [f]: v } : i));
     return (
         <div>
@@ -198,13 +329,12 @@ function ReferencesTab({ items, onChange }) {
 export default function CvEditor() {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('summary');
-    const [cvData, setCvData] = useState(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? { ...emptyState(), ...JSON.parse(saved) } : emptyState();
-        } catch { return emptyState(); }
-    });
+    const [cvData, setCvData] = useState(emptyState());
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const saveTimeoutRef = useRef(null);
 
     const TABS = [
         { key: 'summary', label: t('cvTabSummary') },
@@ -214,6 +344,40 @@ export default function CvEditor() {
         { key: 'additionalTraining', label: t('cvTabAdditionalTraining') },
         { key: 'references', label: t('cvTabReferences') },
     ];
+
+    // Fetch CV data from API on component mount
+    useEffect(() => {
+        const fetchCv = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+                const response = await fetch(`${API_BASE_URL}/api/cv`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.status === 404) {
+                    // No CV found yet, use empty state
+                    setCvData(emptyState());
+                } else if (!response.ok) {
+                    throw new Error('Failed to fetch CV data');
+                } else {
+                    const data = await response.json();
+                    setCvData(convertFromApiFormat(data));
+                }
+            } catch (err) {
+                setError(err.message);
+                setCvData(emptyState());
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCv();
+    }, []);
 
     const updateSection = useCallback((section, value) => {
         setCvData(prev => ({ ...prev, [section]: value }));
@@ -225,17 +389,68 @@ export default function CvEditor() {
         return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
     };
 
-    const handleSave = () => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cvData));
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
+    const handleSave = async () => {
+        try {
+            const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+            const apiFormat = convertToApiFormat(cvData);
+
+            const response = await fetch(`${API_BASE_URL}/api/cv`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(apiFormat)
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || 'Failed to save CV');
+            }
+
+            const responseData = await response.json();
+            setCvData(convertFromApiFormat(responseData.data));
+            setError(null);
+            setToastMessage(t('cvChangesSaved') || 'Changes saved successfully');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 2000);
+        } catch (err) {
+            setError(err.message);
+            setToastMessage(err.message);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        }
     };
 
-    const handleReset = () => {
+    const handleReset = async () => {
         if (window.confirm(t('cvConfirmReset') || 'Are you sure you want to clear all data?')) {
-            localStorage.removeItem(STORAGE_KEY);
-            setCvData(emptyState());
-            setActiveTab('summary');
+            try {
+                const token = localStorage.getItem(ACCESS_TOKEN_NAME);
+                const response = await fetch(`${API_BASE_URL}/api/cv`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete CV');
+                }
+
+                setCvData(emptyState());
+                setActiveTab('summary');
+                setError(null);
+                setToastMessage(t('cvDataCleared') || 'CV data cleared');
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 2000);
+            } catch (err) {
+                setError(err.message);
+                setToastMessage(err.message);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+            }
         }
     };
 
@@ -284,7 +499,8 @@ export default function CvEditor() {
         if (cvData.additionalTraining.length) {
             html += `<h2>${t('cvTabAdditionalTraining')}</h2>`;
             cvData.additionalTraining.forEach(i => {
-                html += `<div class="entry"><div><strong>${i.course}</strong> - ${i.provider} (${i.year})</div></div>`;
+                html += `<div class="entry"><div><strong>${i.course}</strong> - ${i.provider}</div>
+                <div class="date">${formatDate(i.startDate)} - ${formatDate(i.endDate)}</div></div>`;
             });
         }
 
@@ -302,9 +518,16 @@ export default function CvEditor() {
         setTimeout(() => w.print(), 500);
     };
 
+    // Auto-save with debouncing
     useEffect(() => {
-        const t = setTimeout(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(cvData)), 1500);
-        return () => clearTimeout(t);
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = setTimeout(() => {
+            handleSave();
+        }, 60000);
+
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        };
     }, [cvData]);
 
     return (
@@ -346,7 +569,7 @@ export default function CvEditor() {
                     <span><strong>{cvData.education.length}</strong> {t('cvEduCount')}</span>
                 </div>
             </Container>
-            {showToast && <div className="cv-toast">{t('cvChangesSaved')}</div>}
+            {showToast && <div className={`cv-toast ${error ? 'error bg-danger border-danger text-white' : ''}`} style={error ? { borderColor: "red", backgroundColor: "#dc3545" } : {}}>{toastMessage}</div>}
         </div>
     );
 }

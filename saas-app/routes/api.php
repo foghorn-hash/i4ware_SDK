@@ -11,6 +11,7 @@ use App\Http\Controllers\NetvisorController;
 use App\Http\Controllers\AtlassianSalesController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\TimesheetRowController;
+use App\Http\Controllers\CvController;
 
 /*
 |--------------------------------------------------------------------------
@@ -128,4 +129,10 @@ Route::prefix('timesheet')->group(function () {
 	Route::put('timesheets/{timesheet}', 				[TimesheetController::class, 'update']);
 	Route::put('timesheets/{timesheet}/rows/{row}',     [TimesheetRowController::class, 'update']);
 	Route::delete('timesheets/{timesheet}/rows/{row}',  [TimesheetRowController::class, 'destroy']);
+});
+
+Route::middleware('auth:api')->prefix('cv')->group(function () {
+	Route::get('/', [CvController::class, 'show']);
+	Route::post('/', [CvController::class, 'store']);
+	Route::delete('/', [CvController::class, 'destroy']);
 });
