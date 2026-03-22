@@ -11,7 +11,7 @@ use App\Http\Controllers\NetvisorController;
 use App\Http\Controllers\AtlassianSalesController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\TimesheetRowController;
-use App\Http\Controllers\PdfDocumentBankController;
+use App\Http\Controllers\CvController;
 
 /*
 |--------------------------------------------------------------------------
@@ -137,4 +137,10 @@ Route::prefix('documentbank')->group(function () {
 	Route::get('/view/{id}', [PdfDocumentBankController::class, 'view']);
 	Route::get('/download/{id}', [PdfDocumentBankController::class, 'download']);
 	Route::delete('/{id}', [PdfDocumentBankController::class, 'destroy']);
+});
+
+Route::middleware('auth:api')->prefix('cv')->group(function () {
+	Route::get('/', [CvController::class, 'show']);
+	Route::post('/', [CvController::class, 'store']);
+	Route::delete('/', [CvController::class, 'destroy']);
 });
