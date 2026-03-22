@@ -30,6 +30,7 @@ import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import request from "./utils/Request";
 import Timesheet from "./components/Timesheet/Timesheet";
+import PdfDocumentBank from "./components/PdfDocumentBank/PdfDocumentBank";
 import CvEditor from "./components/CvEditor/CvEditor";
 import { useTranslation } from 'react-i18next';
 
@@ -132,6 +133,7 @@ function App() {
                 <PrivateRoute path="/video-photo" component={VideoPhoto} />
                 <PrivateRoute path="/pusher-chat" component={PusherChat} />
                 <PrivateRoute path="/timesheet" component={Timesheet} />
+                <PrivateRoute path="/pdf-document-bank" component={PdfDocumentBank} />
                 <PrivateRoute path="/cv-editor" component={CvEditor} />
               </Switch>
             </Container>
