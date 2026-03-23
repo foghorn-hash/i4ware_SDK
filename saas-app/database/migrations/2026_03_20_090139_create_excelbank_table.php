@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('wordbank', function (Blueprint $table) {
+        Schema::create('excelbank', function (Blueprint $table) {
             $table->id();
             $table->string('document_name');
             $table->string('document_file_path');
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::table('wordbank', function (Blueprint $table) {
+        Schema::table('excelbank', function (Blueprint $table) {
             $table->foreign('domain')->references('domain')->on('domains')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('wordbank');
+        Schema::dropIfExists('excelbank');
     }
 };

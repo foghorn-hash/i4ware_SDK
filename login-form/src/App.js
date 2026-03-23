@@ -133,7 +133,7 @@ function App() {
                 <PrivateRoute path="/video-photo" component={VideoPhoto} />
                 <PrivateRoute path="/pusher-chat" component={PusherChat} />
                 <PrivateRoute path="/timesheet" component={Timesheet} />
-                <PrivateRoute path="/pdf-document-bank" component={PdfDocumentBank} />
+                <PrivateRoute path="/document-bank" component={PdfDocumentBank} />
                 <PrivateRoute path="/cv-editor" component={CvEditor} />
               </Switch>
             </Container>

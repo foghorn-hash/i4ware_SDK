@@ -609,7 +609,7 @@ const resources = {
 
             // Document Bank
             documentBank: "Document Bank",
-            addPdf: "Add PDF",
+            addDocument: "Add Document",
             documentName: "Document name",
             uploading: "Uploading...",
             showPdf: "Show",
@@ -1225,7 +1225,7 @@ const resources = {
             
             // Document Bank
             documentBank: "Dokumenttipankki",
-            addPdf: "Lisää PDF",
+            addDocument: "Lisää dokumentti",
             documentName: "Dokumentin nimi",
             uploading: "Ladataan...",
             showPdf: "Näytä",
@@ -1833,7 +1833,7 @@ const resources = {
 
             // Document Bank
             documentBank: "Dokumentbank",
-            addPdf: "Lägg till PDF",
+            addDocument: "Lägg till dokument",
             documentName: "Dokumentnamn",
             uploading: "Laddar upp...",
             showPdf: "Visa",

@@ -299,7 +299,7 @@ function Header(props) {
                   <NavLink
                     className="Header-nav-link"
                     onClick={() => setMobileMenuOpen(false)}
-                    to="/pdf-document-bank"
+                    to="/document-bank"
                   >
                     {t('Document Bank')}
                   </NavLink>
