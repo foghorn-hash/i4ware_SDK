@@ -622,6 +622,10 @@ const resources = {
             uploadError: "Error: ",
             unknownError: "Unknown error",
             deletePdf: "Delete",
+
+            // Issue Tracker
+            issueTracker: "Issue Tracker",
+
         }
     },
     fi: {
@@ -1238,6 +1242,9 @@ const resources = {
             uploadError: "Virhe: ",
             unknownError: "Tuntematon virhe",
             deletePdf: "Poista",
+
+            // Issue Tracker
+            issueTracker: "Ongelmanseuranta",
         }
     },
     sv: {
@@ -1846,6 +1853,9 @@ const resources = {
             uploadError: "Fel: ",
             unknownError: "Okänt fel",
             deletePdf: "Radera",
+
+            // Issue Tracker
+            issueTracker: "Problemspårare",
         }
     }
 };

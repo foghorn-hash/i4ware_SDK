@@ -301,7 +301,16 @@ function Header(props) {
                     onClick={() => setMobileMenuOpen(false)}
                     to="/document-bank"
                   >
-                    {t('Document Bank')}
+                    {t('documentBank')}
+                  </NavLink>
+                )}
+                {authState.isLogged && (
+                  <NavLink
+                    className="Header-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                    to="/issue-tracker"
+                  >
+                    {t('issueTracker')}
                   </NavLink>
                 )}
                 {authState.isLogged && (
