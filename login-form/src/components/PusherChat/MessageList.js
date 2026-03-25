@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   API_BASE_URL,
   ACCESS_TOKEN_NAME,
+  API_STORAGE_BASE_URL,
 } from "../../constants/apiConstants";
 import Axios from "axios";
 import HighlightedResponse from "./HighlightedResponse";
@@ -71,6 +72,27 @@ const MessageList = ({
     setModalContent(content);
     setIsVideo(isVideoContent);
     setIsModalOpen(true);
+  };
+
+  const getDownloadUrl = (msg) => {
+    const raw = msg?.download_link;
+    if (raw && typeof raw === "string" && raw.startsWith("http")) return raw;
+
+    // Prefer backend file_path because it's always relative to backend storage
+    const filePath = msg?.file_path;
+    if (filePath && typeof filePath === "string") {
+      const cleaned = filePath.replace(/^\/+/, "");
+      // file_path typically looks like "storage/<filename>"
+      const withoutStoragePrefix = cleaned.replace(/^storage\/?/, "");
+      return `${API_STORAGE_BASE_URL.replace(/\/+$/, "")}/${withoutStoragePrefix}`;
+    }
+
+    // Fallback
+    if (raw && typeof raw === "string" && raw.startsWith("/")) {
+      return `${API_BASE_URL}${raw}`;
+    }
+
+    return null;
   };
 
   const renderMessageImageOrVideo = (msg) => {
@@ -346,24 +368,27 @@ const MessageList = ({
                     </svg>
                   )}
                 </div>
-                {msg.download_link && (
-                  <a
-                    href={msg.download_link}
-                    className="message-download-btn"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ marginLeft: "10px" }}
-                  >
-                    <Download />
-                  </a>
-                )}
               </div>
               <div className="massage-container">
-                <img
-                  src={msg.profilePicUrl || msg.defaultImg}
-                  className="message-avatar"
-                  alt={`Profile of ${msg.username}`}
-                />
+                <div className="message-left">
+                  <img
+                    src={msg.profilePicUrl || msg.defaultImg}
+                    className="message-avatar"
+                    alt={`Profile of ${msg.username}`}
+                  />
+                  {getDownloadUrl(msg) && (
+                    <a
+                      href={getDownloadUrl(msg)}
+                      className="message-download-under-avatar"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      title="Download"
+                    >
+                      <Download />
+                    </a>
+                  )}
+                </div>
                 <span>
                   <HighlightedResponse markdown={msg.message} />
                 </span>

@@ -176,6 +176,34 @@
   padding-top: 20px;
 }
 
+.message-left {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin-right: 10px;
+  gap: 6px;
+}
+
+.message-download-under-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(13, 110, 253, 0.18);
+  border: 1px solid rgba(13, 110, 253, 0.5);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.message-download-under-avatar:hover {
+  background: rgba(13, 110, 253, 0.28);
+  border-color: rgba(13, 110, 253, 0.8);
+  color: #ffffff;
+}
+
 .typing-indicator {
   font-style: italic;
   color: #f2f2f2;

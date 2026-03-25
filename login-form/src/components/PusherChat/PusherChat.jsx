@@ -34,6 +34,8 @@ const PusherChat = () => {
   const [aiTypingIndicator, setAiTypingIndicator] = useState("");
   const [isAiEnabled, setIsAiEnabled] = useState(false); // State to track AI checkbox
   const [isGenerateEnabled, setIsGenerateEnabled] = useState(false); // State to track AI checkbox
+  const [generateFileEnabled, setGenerateFileEnabled] = useState(false);
+  const [generateFileType, setGenerateFileType] = useState("docx"); // docx | xlsx | pdf
   const typingTimeoutRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [showCaptureModal, setCaptureShowModal] = useState(false);
@@ -1184,36 +1186,22 @@ const PusherChat = () => {
           timeout: 120000, // 120 seconds (2 minutes)
         }
       );
-      // 1. Generate the Word file in backend (if no code detected)
-      const resp = await Axios.post(
-        `${API_BASE_URL}/api/chat/word/send`,
-        { prompt: fullPrompt, generate: false },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
-          },
-          timeout: 120000, // 120 seconds (2 minutes)
-        }
-      );
-
-      // Check if backend detected code and skipped Word generation
-      const highHTML = resp.data.message;
-      const codeDetected = resp.data.code_detected || false;
-      const filename = codeDetected ? null : (resp.data.filename || "generated.docx");
 
       const aiResponseMessage = {
         username: "AI",
         generate: false,
-        message: highHTML,
+        message: response.data.response,
         created_at: new Date().toISOString(),
-        filename: filename,
-        type: codeDetected ? "text" : "docx", // Save as text if code detected
-        download_link: filename ? `${API_BASE_URL}/storage/${filename}` : null,
       };
 
-      await saveMessageToDatabase(aiResponseMessage, codeDetected ? "text" : "docx");
-      // Pusher will automatically add the message with all backend fields (formatted_created_at, etc.)
+      const saved = await saveMessageToDatabase(aiResponseMessage);
+      if (saved) {
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id).filter(Boolean));
+          if (saved.id && existingIds.has(saved.id)) return prev;
+          return [...prev, saved];
+        });
+      }
 
       setIsThinking(false);
       await Axios.post(
@@ -1226,7 +1214,6 @@ const PusherChat = () => {
           },
         }
       );
-      // fetchMessages(); // No longer needed - message already added to state
     } catch (error) {
       console.error("Error generating AI response:", error);
       console.error("Error details:", {
@@ -1238,6 +1225,135 @@ const PusherChat = () => {
 
       // Show user-friendly error message
       alert(t('error_generating_response'));
+    }
+  };
+
+  const generateFile = async () => {
+    let fullPrompt;
+    if (isRohtoEnabled) {
+      fullPrompt = `
+      ${t('rohto_role_label')}: ${role}
+      ${t('rohto_problem_label')}: ${problem}
+      ${t('rohto_history_label')}: ${history}
+      ${t('rohto_goal_label')}: ${goal}
+      ${t('rohto_expectation_label')}: ${expectation}
+      ${t('rohto_for_prompt')}: ${message}
+    `.trim();
+    } else {
+      fullPrompt = message;
+    }
+
+    try {
+      // 1) Save the user's prompt as a normal chat message so it appears in history
+      await Axios.post(
+        `${API_BASE_URL}/api/chat/messages`,
+        { username, message, type: "generate_file" },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+          },
+        }
+      );
+
+      const fileEndpointMap = {
+        docx: "/api/chat/word/send",
+        xlsx: "/api/chat/excel/send",
+        pdf: "/api/chat/pdf/send",
+      };
+      const targetEndpoint =
+        fileEndpointMap[generateFileType] || fileEndpointMap.docx;
+
+      setIsThinking(true);
+      await Axios.post(
+        `${API_BASE_URL}/api/chat/thinking`,
+        { username: "AI", isThinking: true },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+          },
+        }
+      );
+
+      const resp = await Axios.post(
+        `${API_BASE_URL}${targetEndpoint}`,
+        { prompt: fullPrompt, generate: false },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+          },
+          timeout: 120000,
+        }
+      );
+
+      const codeDetected = resp.data.code_detected || false;
+      const fallbackNameByType = {
+        docx: "generated.docx",
+        xlsx: "generated.xlsx",
+        pdf: "generated.pdf",
+      };
+      const filename = codeDetected
+        ? null
+        : resp.data.filename || fallbackNameByType[generateFileType];
+
+      const fileReadyMessageByType = {
+        docx: "Word file generated. Click download.",
+        xlsx: "Excel file generated. Click download.",
+        pdf: "PDF file generated. Click download.",
+      };
+
+      const aiResponseMessage = {
+        username: "AI",
+        generate: false,
+        // Don't dump the full document/CSV into chat; keep it as a downloadable file
+        message: codeDetected
+          ? resp.data.message
+          : fileReadyMessageByType[generateFileType] ||
+            "File generated. Click download.",
+        created_at: new Date().toISOString(),
+        filename: filename,
+        type: codeDetected ? "text" : generateFileType,
+        download_link: filename ? `${API_BASE_URL}/storage/${filename}` : null,
+      };
+
+      const saved = await saveMessageToDatabase(aiResponseMessage);
+      if (saved) {
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id).filter(Boolean));
+          if (saved.id && existingIds.has(saved.id)) return prev;
+          return [...prev, saved];
+        });
+      }
+
+      setIsThinking(false);
+      await Axios.post(
+        `${API_BASE_URL}/api/chat/thinking`,
+        { username: "AI", isThinking: false },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error generating file:", error);
+      setIsThinking(false);
+      alert(t("error_generating_response"));
+      try {
+        await Axios.post(
+          `${API_BASE_URL}/api/chat/thinking`,
+          { username: "AI", isThinking: false },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+            },
+          }
+        );
+      } catch (e) {}
     }
   };
 
@@ -1283,14 +1399,16 @@ const PusherChat = () => {
 
   const saveMessageToDatabase = async (message) => {
     try {
-      await Axios.post(`${API_BASE_URL}/api/chat/save-message`, message, {
+      const res = await Axios.post(`${API_BASE_URL}/api/chat/save-message`, message, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
         },
       });
+      return res.data?.message || null;
     } catch (error) {
       console.error("Error saving message to database:", error);
+      return null;
     }
   };
 
@@ -1411,6 +1529,38 @@ const PusherChat = () => {
               onChange={handleGenerateCheckboxChange}
               value="generate-image"
             />
+            <Form.Check
+              type="checkbox"
+              style={{ marginTop: "10px" }}
+              label="Generate file"
+              checked={generateFileEnabled}
+              onChange={(e) => setGenerateFileEnabled(e.target.checked)}
+            />
+            {generateFileEnabled && (
+              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                <Button
+                  size="sm"
+                  variant={generateFileType === "docx" ? "primary" : "outline-primary"}
+                  onClick={() => setGenerateFileType("docx")}
+                >
+                  Word
+                </Button>
+                <Button
+                  size="sm"
+                  variant={generateFileType === "xlsx" ? "primary" : "outline-primary"}
+                  onClick={() => setGenerateFileType("xlsx")}
+                >
+                  Excel
+                </Button>
+                <Button
+                  size="sm"
+                  variant={generateFileType === "pdf" ? "primary" : "outline-primary"}
+                  onClick={() => setGenerateFileType("pdf")}
+                >
+                  PDF
+                </Button>
+              </div>
+            )}
           </Form.Group>
           <Form.Group style={{ position: "relative" }}>
             <Form.Control
@@ -1436,8 +1586,14 @@ const PusherChat = () => {
               }}
             />
           </Form.Group>
-          <Button variant="primary" onClick={submitMessage}>
-            {t('send')}
+          <Button
+            variant="primary"
+            onClick={(e) => {
+              if (generateFileEnabled) return generateFile();
+              return submitMessage(e);
+            }}
+          >
+            {generateFileEnabled ? "Generate file" : t("send")}
           </Button>
           {/* Upload PDF Button */}
           <Button
