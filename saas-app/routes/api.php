@@ -141,13 +141,6 @@ Route::prefix('documentbank')->group(function () {
 	Route::delete('/{id}', [PdfDocumentBankController::class, 'destroy']);
 });
 
-<<<<<<< HEAD
-Route::middleware('auth:api')->prefix('cv')->group(function () {
-	Route::get('/', [CvController::class, 'show']);
-	Route::post('/', [CvController::class, 'store']);
-	Route::delete('/', [CvController::class, 'destroy']);
-});
-=======
 Route::prefix('wordbank')->group(function () {
     Route::get('/',              [WordBankController::class, 'index']);
     Route::post('/upload',       [WordBankController::class, 'upload']);
@@ -163,4 +156,3 @@ Route::prefix('excelbank')->group(function () {
     Route::get('/download/{id}', [ExcelBankController::class, 'download']);
     Route::delete('/{id}',       [ExcelBankController::class, 'destroy']);
 });
->>>>>>> pdf_document_bank
