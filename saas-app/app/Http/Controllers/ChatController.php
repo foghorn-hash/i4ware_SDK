@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\Log;
 use App\Exports\PdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Smalot\PdfParser\Parser;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ChatController extends Controller
 {
@@ -320,8 +324,15 @@ class ChatController extends Controller
             $message->domain = $user->domain;
             $message->message = $prompt;
             $message->gender = "male";
-            $message->file_path = 'storage/' . $filename;
-            $message->download_link = env('APP_NGROK_URL', env('APP_URL')) . '/storage/' . $filename;
+            $message->file_path = $filename ? ('storage/' . $filename) : null;
+            $assetBase = rtrim(
+                env(
+                    'APP_ASSET_URL',
+                    rtrim(env('APP_NGROK_URL', env('APP_URL')), '/') . '/storage'
+                ),
+                '/'
+            );
+            $message->download_link = $filename ? ($assetBase . '/' . $filename) : null;
             $message->type = $type;
         }
         $message->save();
@@ -329,7 +340,24 @@ class ChatController extends Controller
         // FIXED: Pass the full model to the event
         event(new Message($message));
 
-        return response()->json(['success' => 'Message saved successfully'], 200);
+        // Return a frontend-ready payload so UI can update immediately (even if Pusher fails)
+        $message->load('users');
+
+        return response()->json([
+            'success' => true,
+            'message' => [
+                'id' => $message->id,
+                'username' => $message->username,
+                'message' => $message->message,
+                'formatted_created_at' => optional($message->created_at)->format('Y-m-d H:i:s'),
+                'profile_picture_path' => optional($message->users)->profile_picture_path,
+                'gender' => optional($message->users)->gender ?? 'male',
+                'image_path' => $message->image_path,
+                'type' => $message->type,
+                'file_path' => $message->file_path,
+                'download_link' => $message->download_link,
+            ],
+        ], 200);
 }
     public function thinking(Request $request)
     {
@@ -592,6 +620,114 @@ class ChatController extends Controller
             'success' => true,
             'filename' => $filename,
             'message' => $aiResponse
+        ]);
+    }
+
+    public function generateExcelFile(Request $request)
+    {
+        $prompt = $request->input('prompt');
+        $aiResponse = $this->openAiService->askChatGPTForCsv($prompt);
+
+        $filename = 'chatgpt_output_' . uniqid() . '.xlsx';
+        $path = storage_path("app/public/$filename");
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('AI Data');
+
+        $csv = trim((string) $aiResponse);
+        $csv = preg_replace('/^```[a-zA-Z]*\s*/', '', $csv);
+        $csv = preg_replace('/```$/', '', $csv);
+        $csv = trim((string) $csv);
+
+        $lines = preg_split('/\r\n|\r|\n/', $csv) ?: [];
+        $rows = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $rows[] = str_getcsv($line);
+        }
+
+        if (count($rows) === 0) {
+            $rows = [
+                ['Content'],
+                [$aiResponse],
+            ];
+        }
+
+        // Normalize column counts
+        $maxCols = 0;
+        foreach ($rows as $r) {
+            $maxCols = max($maxCols, count($r));
+        }
+        foreach ($rows as $ri => $r) {
+            if (count($r) < $maxCols) {
+                $rows[$ri] = array_pad($r, $maxCols, '');
+            }
+        }
+
+        foreach ($rows as $rIndex => $r) {
+            foreach ($r as $cIndex => $cell) {
+                $sheet->setCellValueByColumnAndRow($cIndex + 1, $rIndex + 1, $cell);
+            }
+        }
+
+        // Header styling
+        $sheet->getStyleByColumnAndRow(1, 1, $maxCols, 1)->getFont()->setBold(true);
+        // Simple autosize-ish defaults
+        for ($c = 1; $c <= $maxCols; $c++) {
+            $sheet->getColumnDimensionByColumn($c)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($path);
+
+        return response()->json([
+            'success' => true,
+            'filename' => $filename,
+            'message' => $aiResponse,
+        ]);
+    }
+
+    public function generatePdfFile(Request $request)
+    {
+        $prompt = $request->input('prompt');
+        $aiResponse = $this->openAiService->askChatGPT($prompt);
+
+        $filename = 'chatgpt_output_' . uniqid() . '.pdf';
+        $path = storage_path("app/public/$filename");
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+
+        $safeText = nl2br(e($aiResponse));
+        $html = '
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: DejaVu Sans, sans-serif; font-size: 12px; line-height: 1.5; margin: 24px; }
+                </style>
+            </head>
+            <body>
+                <div>' . $safeText . '</div>
+            </body>
+            </html>
+        ';
+
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        file_put_contents($path, $dompdf->output());
+
+        return response()->json([
+            'success' => true,
+            'filename' => $filename,
+            'message' => $aiResponse,
         ]);
     }
 

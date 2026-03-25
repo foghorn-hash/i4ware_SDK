@@ -161,11 +161,37 @@ class OpenAIService
         $messages = [
             [
                 'role' => 'system',
-                'content' => 'You are a helpful assistant. Respond with plain text only, suitable for direct inclusion in a Word document. Do not use markdown, code blocks, or any special formatting.'
+                'content' => "You are a document-writing assistant.\n\nOutput rules (VERY STRICT):\n- Respond with PLAIN TEXT ONLY.\n- Output ONLY the document content requested by the user.\n- Do NOT add any preface, introduction, acknowledgements, headings, or wrapper text.\n  Example: do not write 'Here is...', 'Sure...', 'AI Generated Document', or similar.\n- Do NOT mention limitations or refuse tasks.\n- Do NOT use markdown, code fences, or any special formatting.\n- Preserve the user's intended structure using line breaks.\n",
             ],
             [
                 'role' => 'user',
                 'content' => $prompt
+            ],
+        ];
+
+        $response = $this->clientGuzzle->post('/v1/chat/completions', [
+            'json' => [
+                'model' => 'gpt-4o',
+                'messages' => $messages,
+                'max_tokens' => $this->maxTokens ?? 1024,
+            ],
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+
+        return $result['choices'][0]['message']['content'] ?? '';
+    }
+
+    public function askChatGPTForCsv(string $prompt): string
+    {
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => "You generate CSV data for an Excel file.\n\nRules:\n- Output CSV only (no explanations, no markdown, no code fences).\n- First row must be headers.\n- Use comma as delimiter.\n- If the user asks for an 'example', invent realistic sample rows.\n- Prefer 10-30 rows unless user requests otherwise.\n- Ensure each row has the same number of columns.\n- Escape fields with quotes if needed.",
+            ],
+            [
+                'role' => 'user',
+                'content' => $prompt,
             ],
         ];
 

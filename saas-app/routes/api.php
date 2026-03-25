@@ -97,6 +97,8 @@ Route::prefix('chat')->group(function () {
 	Route::post('/generate-image', [ChatController::class, 'generateImage']);
 	Route::post('/speech', [ChatController::class, 'speech']);
 	Route::post('/word/send', [ChatController::class, 'generateWordFile'])->name('chatgpt.generate.word');
+	Route::post('/excel/send', [ChatController::class, 'generateExcelFile'])->name('chatgpt.generate.excel');
+	Route::post('/pdf/send', [ChatController::class, 'generatePdfFile'])->name('chatgpt.generate.pdf');
 	Route::post('/analyze-pdf', [ChatController::class, 'uploadPDF'])->name('pdf.upload');
 	Route::get('/openai-session', [ChatController::class, 'openAiSession']);
 });
