@@ -1,0 +1,67 @@
+.status-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
+  }
+  .status-todo {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+  }
+  .status-in_progress {
+    background-color: #cff4fc;
+    color: #055160;
+    border: 1px solid #9eeaf9;
+  }
+  .status-done {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+  }
+  .issue-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #0d6efd;
+  }
+  .issue-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  }
+  .navbar-custom {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  }
+  .btn-outline-custom {
+    border-radius: 30px;
+    padding: 0.375rem 1.25rem;
+  }
+  .filter-btn-active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+  .assign-select {
+    min-width: 140px;
+  }
+  .description-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .modal-backdrop-custom {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .issue-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #495057;
+  }
