@@ -159,9 +159,10 @@ Route::prefix('excelbank')->group(function () {
 });
 
 Route::prefix('issue-tracker')->group(function () {
+	Route::get('/users', [IssueTrackerController::class, 'users']);
 	Route::get('/', [IssueTrackerController::class, 'index']);
 	Route::post('/', [IssueTrackerController::class, 'store']);
 	Route::put('/{id}/status', [IssueTrackerController::class, 'updateStatus']);
     Route::put('/{id}/assign', [IssueTrackerController::class, 'assign']);
-    Route::get('/users', [IssueTrackerController::class, 'users']);
+    
 });
