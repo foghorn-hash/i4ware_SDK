@@ -1,15 +1,11 @@
 <?php
 namespace App\Models;
 
-use App\Enums\IssueStatus;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo; // wrong namespace in your version
-use Illuminate\Database\Eloquent\SoftDeletes;         // missing — your migration uses softDeletes()
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IssueTracker extends Model
 {
-    use SoftDeletes;
-
     protected $table = 'issue';
 
     protected $fillable = [
@@ -18,10 +14,6 @@ class IssueTracker extends Model
         'status',
         'created_by',
         'assigned_to',
-    ];
-
-    protected $casts = [
-        'status' => IssueStatus::class, // casts the raw string to your enum
     ];
 
     public function creator(): BelongsTo

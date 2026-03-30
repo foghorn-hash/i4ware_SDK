@@ -625,6 +625,30 @@ const resources = {
 
             // Issue Tracker
             issueTracker: "Issue Tracker",
+            addIssue: "Add Issue",
+            issueName: "Issue Name",
+            issueNamePlaceholder: "Short, descriptive title…",
+            descriptionPlaceholder: "Optional details…",
+            assignTo: "Assign To",
+            unassigned: "Unassigned",
+            adding: "Adding…",
+            issueDetail: "Issue Detail",
+            noDescriptionProvided: "No description provided.",
+            changeStatusTo: "Change status to",
+            reassignIssue: "Reassign Issue",
+            searchByIssueName: "Search by issue name…",
+            noIssuesFound: "No issues found.",
+            viewDetails: "View Details",
+            markAs: "Mark as",
+            reassign: "Reassign",
+            columnId: "ID",
+            columnIssueName: "Issue Name",
+            columnAssignedTo: "Assigned To",
+            columnCreatedBy: "Created By",
+            columnCreatedAt: "Created At",
+            statusTodo: "Todo",
+            statusInProgress: "In Progress",
+            statusDone: "Done",
 
         }
     },
@@ -1226,7 +1250,7 @@ const resources = {
             cvClearAll: "Tyhjennä kaikki",
             cvPhonePlaceholder: "040 123 4567",
             cvDescription: "Kuvaus",
-            
+
             // Document Bank
             documentBank: "Dokumenttipankki",
             addDocument: "Lisää dokumentti",
@@ -1245,6 +1269,30 @@ const resources = {
 
             // Issue Tracker
             issueTracker: "Ongelmanseuranta",
+            addIssue: "Lisää ongelma",
+            issueName: "Ongelman nimi",
+            issueNamePlaceholder: "Lyhyt, kuvaava otsikko…",
+            descriptionPlaceholder: "Valinnaisia lisätietoja…",
+            assignTo: "Määritä henkilölle",
+            unassigned: "Ei määritetty",
+            adding: "Lisätään…",
+            issueDetail: "Ongelman tiedot",
+            noDescriptionProvided: "Ei kuvausta.",
+            changeStatusTo: "Muuta tilaksi",
+            reassignIssue: "Muuta vastuuhenkilö",
+            searchByIssueName: "Hae ongelman nimellä…",
+            noIssuesFound: "Ongelmia ei löytynyt.",
+            viewDetails: "Näytä tiedot",
+            markAs: "Merkitse tilaksi",
+            reassign: "Vaihda vastuuhenkilö",
+            columnId: "ID",
+            columnIssueName: "Ongelman nimi",
+            columnAssignedTo: "Vastuuhenkilö",
+            columnCreatedBy: "Luonut",
+            columnCreatedAt: "Luotu",
+            statusTodo: "Tehtävä",
+            statusInProgress: "Käynnissä",
+            statusDone: "Valmis",
         }
     },
     sv: {
@@ -1856,6 +1904,30 @@ const resources = {
 
             // Issue Tracker
             issueTracker: "Problemspårare",
+            addIssue: "Lägg till problem",
+            issueName: "Problemnamn",
+            issueNamePlaceholder: "Kort, beskrivande titel…",
+            descriptionPlaceholder: "Valfria detaljer…",
+            assignTo: "Tilldela till",
+            unassigned: "Ej tilldelad",
+            adding: "Lägger till…",
+            issueDetail: "Problemdetaljer",
+            noDescriptionProvided: "Ingen beskrivning angiven.",
+            changeStatusTo: "Ändra status till",
+            reassignIssue: "Ändra tilldelning",
+            searchByIssueName: "Sök efter problemnamn…",
+            noIssuesFound: "Inga problem hittades.",
+            viewDetails: "Visa detaljer",
+            markAs: "Markera som",
+            reassign: "Tilldela om",
+            columnId: "ID",
+            columnIssueName: "Problemnamn",
+            columnAssignedTo: "Tilldelad till",
+            columnCreatedBy: "Skapad av",
+            columnCreatedAt: "Skapad",
+            statusTodo: "Att göra",
+            statusInProgress: "Pågående",
+            statusDone: "Klar",
         }
     }
 };
