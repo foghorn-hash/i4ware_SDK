@@ -1,9 +1,8 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-
-use App\Enums\IssueStatus;
 use App\Models\IssueTracker;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -33,8 +32,10 @@ class IssueTrackerController extends Controller
         ]);
 
         $issue = IssueTracker::create([
-            ...$validated,
-            'status'     => IssueStatus::Todo,
+            'issue_name' => $validated['issue_name'],
+            'description' => $validated['description'] ?? null,
+            'assigned_to' => $validated['assigned_to'] ?? null,
+            'status' => 'todo',          // plain string, no enum needed
             'created_by' => auth()->id(),
         ]);
 
@@ -50,7 +51,7 @@ class IssueTrackerController extends Controller
         $issue = IssueTracker::findOrFail($id);
         $issue->update(['status' => $validated['status']]);
 
-        return response()->json($issue);
+        return response()->json($issue->load(['creator', 'assignee']));
     }
 
     public function assign(Request $request, $id)
@@ -68,8 +69,19 @@ class IssueTrackerController extends Controller
     public function users()
     {
         $users = User::select('id', 'name', 'email')->get();
+
         return response()->json($users);
     }
-}
 
-?>
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'description' => 'nullable|string',
+        ]);
+
+        $issue = IssueTracker::findOrFail($id);
+        $issue->update($validated);
+
+        return response()->json($issue->load(['creator', 'assignee']));
+    }
+}

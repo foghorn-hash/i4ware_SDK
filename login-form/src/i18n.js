@@ -1290,7 +1290,7 @@ const resources = {
             columnAssignedTo: "Vastuuhenkilö",
             columnCreatedBy: "Luonut",
             columnCreatedAt: "Luotu",
-            statusTodo: "Tehtävä",
+            statusTodo: "Tehtävälista",
             statusInProgress: "Käynnissä",
             statusDone: "Valmis",
         }

@@ -164,5 +164,5 @@ Route::prefix('issue-tracker')->group(function () {
 	Route::post('/', [IssueTrackerController::class, 'store']);
 	Route::put('/{id}/status', [IssueTrackerController::class, 'updateStatus']);
     Route::put('/{id}/assign', [IssueTrackerController::class, 'assign']);
-    
+	Route::patch('/{id}', [IssueTrackerController::class, 'update']);
 });
