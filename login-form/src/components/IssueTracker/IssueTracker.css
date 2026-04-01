@@ -172,7 +172,7 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #6c757d;
+  color: #dadddf;
   padding-top: 10px;
   padding-bottom: 10px;
 }
@@ -190,7 +190,7 @@
 }
 
 .table-row-issues:last-child { border-bottom: none; }
-.table-row-issues:hover { background: #f8f9fa; }
+.table-row-issues:hover { background: #0b2742; }
 
 .table-row-issues .column-issues {
   font-size: 0.875rem;
@@ -200,12 +200,12 @@
 .issue-id-cell {
   font-family: monospace;
   font-size: 0.72rem;
-  color: #adb5bd;
+  color: #dadddf;
 }
 
 .issue-name-cell {
   font-weight: 500;
-  color: #adb5bd;
+  color: #dadddf;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

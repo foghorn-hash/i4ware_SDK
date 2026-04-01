@@ -488,7 +488,7 @@ function IssueTracker() {
                       ) : <span className="text-muted">—</span>}
                     </div>
                     <div className="column-issues">
-                      <span style={{ fontSize: "0.82rem", color: "#6c757d" }}>{fmtDate(item.created_at)}</span>
+                      <span style={{ fontSize: "0.82rem", color: "#dadddf" }}>{fmtDate(item.created_at)}</span>
                     </div>
                     <div className="column-issues" onClick={(e) => e.stopPropagation()}>
                       <Dropdown show={menuOpen[index]} onToggle={() => handleToggle(index)}>
