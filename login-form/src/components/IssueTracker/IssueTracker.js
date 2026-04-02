@@ -13,7 +13,7 @@ import Modal from "./../Modal/Modal.js";
 import ModalApproval from "./../ModalApproval/ModalApproval.js";
 import "./IssueTracker.css";
 
-const ISSUES_PER_PAGE = 50;
+const ISSUES_PER_PAGE = 5;
 const SEARCH_DEBOUNCE_MS = 350;
 
 const STATUS_BADGE_CLASS = {

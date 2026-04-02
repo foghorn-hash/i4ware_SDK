@@ -14,32 +14,61 @@ class IssueTrackerController extends Controller
         $this->middleware('auth:api');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $issues = IssueTracker::with(['creator', 'assignee'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = IssueTracker::with(['creator', 'assignee'])
+            ->orderBy('created_at', 'desc');
 
-        return response()->json($issues);
+        // Search by issue name
+        $searchName = trim($request->input('name', ''));
+        if ($searchName !== '') {
+            $query->where('issue_name', 'LIKE', '%' . $searchName . '%');
+        }
+
+        // Pagination
+        $perPage = (int) $request->input('per_page', 50);
+        $page    = (int) $request->input('page', 1);
+
+        $total  = $query->count();
+        $issues = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+
+        return response()->json([
+            'data'     => $issues,
+            'total'    => $total,
+            'page'     => $page,
+            'per_page' => $perPage,
+        ], 200);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'issue_name' => 'required|string|max:255',
+            'issue_name'  => 'required|string|max:255',
             'description' => 'nullable|string',
             'assigned_to' => 'nullable|exists:users,id',
         ]);
 
         $issue = IssueTracker::create([
-            'issue_name' => $validated['issue_name'],
+            'issue_name'  => $validated['issue_name'],
             'description' => $validated['description'] ?? null,
             'assigned_to' => $validated['assigned_to'] ?? null,
-            'status' => 'todo',          // plain string, no enum needed
-            'created_by' => auth()->id(),
+            'status'      => 'todo',
+            'created_by'  => auth()->id(),
         ]);
 
         return response()->json($issue->load(['creator', 'assignee']), 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'description' => 'nullable|string',
+        ]);
+
+        $issue = IssueTracker::findOrFail($id);
+        $issue->update($validated);
+
+        return response()->json($issue->load(['creator', 'assignee']));
     }
 
     public function updateStatus(Request $request, $id)
@@ -71,17 +100,5 @@ class IssueTrackerController extends Controller
         $users = User::select('id', 'name', 'email')->get();
 
         return response()->json($users);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'description' => 'nullable|string',
-        ]);
-
-        $issue = IssueTracker::findOrFail($id);
-        $issue->update($validated);
-
-        return response()->json($issue->load(['creator', 'assignee']));
     }
 }
