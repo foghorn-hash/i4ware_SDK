@@ -239,7 +239,12 @@
 .loading-screen-issues {
   display: flex;
   justify-content: center;
-  padding: 3rem 1rem;
+  padding: 1.5rem 1rem;
+}
+
+.loading-screen-issues img {
+  width: 40px;
+  height: 40px;
 }
 
 .mobile-table-header-issues { display: none; }
