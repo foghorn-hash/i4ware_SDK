@@ -6,6 +6,11 @@ import ShowResetPasswordPage from "../pages/ShowResetPasswordPage.vue";
 import EmailVerificationPage from "../pages/EmailVerificationPage.vue";
 import PublicHomePage from "../pages/PublicHomePage.vue";
 import PlaceholderPage from "../pages/PlaceholderPage.vue";
+import ManageUsersPage from "../pages/ManageUsersPage.vue";
+import ManageDomainPage from "../pages/ManageDomainPage.vue";
+import ManageDomainFormPage from "../pages/ManageDomainFormPage.vue";
+import ManageRolesPage from "../pages/ManageRolesPage.vue";
+import RoleFormPage from "../pages/RoleFormPage.vue";
 import { ACCESS_TOKEN_NAME } from "../constants/apiConstants";
 
 const routes = [
@@ -15,19 +20,19 @@ const routes = [
   { path: "/login", component: LoginPage, meta: { title: "Login" } },
   { path: "/reset-password", component: ResetPasswordPage, meta: { title: "Reset Password" } },
   { path: "/submitresetpassword", component: ShowResetPasswordPage, meta: { title: "Set New Password" } },
-  { path: "/verifyemail", component: EmailVerificationPage, meta: { Ftitle: "Email Verification" } },
+  { path: "/verifyemail", component: EmailVerificationPage, meta: { title: "Email Verification" } },
 
   // Private routes
   { path: "/home", component: PlaceholderPage, meta: { title: "Home", requiresAuth: true } },
   { path: "/my-profile", component: PlaceholderPage, meta: { title: "My Profile", requiresAuth: true } },
   { path: "/revenue-report", component: PlaceholderPage, meta: { title: "Revenue Report", requiresAuth: true } },
-  { path: "/manage-users", component: PlaceholderPage, meta: { title: "Manage Users", requiresAuth: true } },
-  { path: "/manage-domains/add", component: PlaceholderPage, meta: { title: "Add Domain", requiresAuth: true } },
-  { path: "/manage-domains/edit", component: PlaceholderPage, meta: { title: "Edit Domain", requiresAuth: true } },
-  { path: "/manage-domains", component: PlaceholderPage, meta: { title: "Manage Domains", requiresAuth: true } },
-  { path: "/manage-roles/edit", component: PlaceholderPage, meta: { title: "Edit Role", requiresAuth: true } },
-  { path: "/manage-roles/add", component: PlaceholderPage, meta: { title: "Add Role", requiresAuth: true } },
-  { path: "/manage-roles", component: PlaceholderPage, meta: { title: "Manage Roles", requiresAuth: true } },
+  { path: "/manage-users", component: ManageUsersPage, meta: { title: "Manage Users", requiresAuth: true } },
+  { path: "/manage-domains", component: ManageDomainPage, meta: { title: "Manage Domains", requiresAuth: true } },
+  { path: "/manage-domains/add", component: ManageDomainFormPage, meta: { title: "Add Domain", requiresAuth: true } },
+  { path: "/manage-domains/edit", component: ManageDomainFormPage, meta: { title: "Edit Domain", requiresAuth: true } },
+  { path: "/manage-roles", component: ManageRolesPage, meta: { title: "Manage Roles", requiresAuth: true } },
+  { path: "/manage-roles/add", component: RoleFormPage, meta: { title: "Add Role", requiresAuth: true } },
+  { path: "/manage-roles/edit", component: RoleFormPage, meta: { title: "Edit Role", requiresAuth: true } },
   { path: "/settings", component: PlaceholderPage, meta: { title: "Settings", requiresAuth: true } },
   { path: "/stl-viewer", component: PlaceholderPage, meta: { title: "STL Viewer", requiresAuth: true } },
   { path: "/video-photo", component: PlaceholderPage, meta: { title: "Video Photo", requiresAuth: true } },
