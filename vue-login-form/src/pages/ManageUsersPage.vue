@@ -6,8 +6,8 @@
         <form class="row" @submit.prevent="submitAddUser">
           <div class="col-12">
             <label>{{ t('fullName') }}</label>
-            <input v-model="addForm.name" type="text" class="form-control"
-              :class="{ 'is-invalid': addErrors.name }" :placeholder="t('fullName')" />
+            <input v-model="addForm.name" type="text" class="form-control" :class="{ 'is-invalid': addErrors.name }"
+              :placeholder="t('fullName')" />
             <div class="invalid-feedback">{{ addErrors.name }}</div>
           </div>
           <div class="col-12 mt-2">
@@ -19,8 +19,8 @@
           </div>
           <div class="col-12 mt-2">
             <label>{{ t('email') }}</label>
-            <input v-model="addForm.email" type="email" class="form-control"
-              :class="{ 'is-invalid': addErrors.email }" placeholder="Email" />
+            <input v-model="addForm.email" type="email" class="form-control" :class="{ 'is-invalid': addErrors.email }"
+              placeholder="Email" />
             <div class="invalid-feedback">{{ addErrors.email }}</div>
           </div>
           <div class="col-12 mt-2">
@@ -81,11 +81,7 @@
   <div v-if="modalPasswordId !== null" class="modal d-block" tabindex="-1" style="background:rgba(0,0,0,0.5)">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-3">
-        <ChangePassword
-          :user-id="modalPasswordId"
-          @close="modalPasswordId = null"
-          @submit="userPasswordHandler"
-        />
+        <ChangePassword :user-id="modalPasswordId" @close="modalPasswordId = null" @submit="userPasswordHandler" />
       </div>
     </div>
   </div>
@@ -118,10 +114,10 @@
   </div>
 
   <div class="d-flex align-items-center gap-2 mt-3 mb-2 flex-wrap">
-    <input type="text" class="form-control" style="max-width:240px"
-      :placeholder="t('searchByName')" v-model="searchName" />
-    <input type="text" class="form-control" style="max-width:280px"
-      :placeholder="t('searchByEmail')" v-model="searchEmail" />
+    <input type="text" class="form-control" style="max-width:240px" :placeholder="t('searchByName')"
+      v-model="searchName" />
+    <input type="text" class="form-control" style="max-width:280px" :placeholder="t('searchByEmail')"
+      v-model="searchEmail" />
     <button v-if="hasActiveSearch" class="btn btn-outline-secondary btn-sm" @click="clearSearch">
       {{ t('clearSearch') }}
     </button>
@@ -166,8 +162,8 @@
             <div class="column">{{ (page - 1) * USERS_PER_PAGE + index + 1 }}</div>
             <div class="column">{{ item.id }}</div>
             <div class="column">
-              <img class="max-height-profile-pic-manage-users"
-                :src="getProfilePic(item)" :alt="`Profile of ${item.name}`" />
+              <img class="max-height-profile-pic-manage-users" :src="getProfilePic(item)"
+                :alt="`Profile of ${item.name}`" />
             </div>
             <div class="column">{{ item.name }}</div>
             <div class="column">{{ item.email_verified_at != null ? 'true' : 'false' }}</div>
@@ -181,8 +177,7 @@
             </div>
             <div class="column">
               <div class="dropdown">
-                <button class="btn btn-success btn-sm dropdown-toggle"
-                  @click="toggleMenu(index)">
+                <button class="btn btn-success btn-sm dropdown-toggle" @click="toggleMenu(index)">
                   {{ t('actions') }}
                 </button>
                 <ul class="dropdown-menu" :class="{ show: menuOpen[index] }">
@@ -219,7 +214,8 @@
         {{ t('previous') }}
       </button>
       <span>{{ t('page') }} {{ page }} / {{ totalPages }}</span>
-      <button class="btn btn-outline-primary btn-sm" :disabled="page === totalPages" @click="handlePageChange(page + 1)">
+      <button class="btn btn-outline-primary btn-sm" :disabled="page === totalPages"
+        @click="handlePageChange(page + 1)">
         {{ t('next') }}
       </button>
     </div>
@@ -337,12 +333,12 @@ const closeAllMenus = () => { menuOpen.value = []; };
 // Add user
 const getAddSchema = () =>
   Yup.object().shape({
-    name:            Yup.string().required(t('nameRequired')),
-    email:           Yup.string().email(t('invalidEmail')).required(t('emailRequired')),
-    password:        Yup.string().min(8, t('passwordMin')).required(t('passwordRequired')),
+    name: Yup.string().required(t('nameRequired')),
+    email: Yup.string().email(t('invalidEmail')).required(t('emailRequired')),
+    password: Yup.string().min(8, t('passwordMin')).required(t('passwordRequired')),
     confirmPassword: Yup.string()
-                       .oneOf([Yup.ref('password'), null], t('passwordsMustMatch'))
-                       .required(t('confirmPasswordRequired')),
+      .oneOf([Yup.ref('password'), null], t('passwordsMustMatch'))
+      .required(t('confirmPasswordRequired')),
   });
 
 const submitAddUser = async () => {
