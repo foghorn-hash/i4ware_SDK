@@ -1,4 +1,5 @@
 <script setup>
+import { useRouter, useRoute } from 'vue-router';
 import { computed, ref, onMounted, onErrorCaptured } from "vue";
 import { RouterView } from "vue-router";
 import AppHeader from "./components/AppHeader.vue";
@@ -14,10 +15,13 @@ const setting = ref({ disable_license_details: false });
 onMounted(async () => {
   try {
     const res = await axios.get(`${API_BASE_URL}/api/settings`, { withCredentials: true });
+    console.log('Settings response:', res.data);
     if (res.status === 200) {
       const obj = {};
-      for (const element of res.data.data) {
-        obj[element.setting_key] = element.setting_value === "1";
+      if (res.data?.data && Array.isArray(res.data.data)) {
+        for (const element of res.data.data) {
+          setting[element.setting_key] = element.setting_value === '1';
+        }
       }
       setting.value = obj;
     }

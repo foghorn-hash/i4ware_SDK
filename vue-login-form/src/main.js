@@ -8,13 +8,6 @@ import './style.css';
 
 import i18n from './i18n';
 
-const i18n = createI18n({
-  legacy: false,
-  locale: 'fi',
-  fallbackLocale: 'en',
-  messages: { en, fi, sv },
-});
-
 createApp(App)
   .use(router)
   .use(createPinia())

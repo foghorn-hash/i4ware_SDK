@@ -79,7 +79,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import * as Yup from 'yup';
-import { VueRecaptcha } from 'vue-recaptcha';
+import VueRecaptcha from 'vue3-recaptcha2';
 import { API_BASE_URL, APP_RECAPTCHA_SITE_KEY } from '../constants/apiConstants';
 
 const router = useRouter();

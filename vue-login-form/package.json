@@ -9,15 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@unhead/vue": "^3.0.4",
     "axios": "^1.15.0",
     "bootstrap": "^5.3.3",
     "cropperjs": "^2.1.1",
     "pinia": "^3.0.4",
+    "video.js": "^8.23.7",
     "vue": "^3.4.38",
     "vue-cropperjs": "^5.0.0",
     "vue-i18n": "^11.3.2",
-    "vue-recaptcha": "^3.0.0-alpha.6",
     "vue-router": "^4.4.5",
+    "vue3-recaptcha2": "^1.8.0",
     "yup": "^1.7.1"
   },
   "devDependencies": {

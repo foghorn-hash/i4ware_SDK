@@ -1,0 +1,71 @@
+  /* Styles for the table header */
+.table-header-domains, .table-row-domains {
+  display: grid;
+  grid-template-columns: 50px 150px 150px 100px 150px 150px 120px 130px; /* adjust as needed */
+  padding: 10px 0;
+}
+
+.column_domains {
+  display: flex;
+  align-items: center;;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+}
+  
+.table-header-domains{
+    padding-top: 60px;
+}
+    
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+    
+.spacer {
+  padding-bottom: 40px;
+}
+    
+.mobile-table-header-domains {	
+	display: none;
+  }
+
+@media (max-width: 900px) {
+  .mobile-table-body-domains {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      padding: 0;
+      margin-bottom: 50px;
+  }
+
+  .column_domains {
+    min-height: 60px !important;
+	  padding-bottom: 0;
+  }
+      
+  .mobile-table-header-domains, .table-row-domains {
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: center;
+      padding: 0;
+  }
+    
+  .mobile-table-header-domains div, .table-row-domains div {
+      line-height: 30px;
+      display: flex;
+      align-items: center;
+  }
+
+  .table-header-domains {
+    display: none;
+  }
+    
+  .mobile-dropdown {
+      display: none !important;
+  }
+    
+  .mobile-dropdown.visible {
+      display: block !important; 
+  }
+      
+}
