@@ -62,6 +62,7 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { API_BASE_URL, ACCESS_TOKEN_NAME, ACCESS_USER_DATA } from '../constants/apiConstants';
 import { useAuthStore } from '../stores/auth';
+import '../assets/css/LoginForm.css';
 
 const router = useRouter();
 const { t, locale } = useI18n();

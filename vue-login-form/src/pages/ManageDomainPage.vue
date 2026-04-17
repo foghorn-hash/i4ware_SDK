@@ -109,6 +109,7 @@ import axios from 'axios';
 import { API_BASE_URL, ACCESS_TOKEN_NAME } from '../constants/apiConstants';
 import { usePermission } from '../composables/usePermission';
 import loadingSpinner from '../assets/tube-spinner.svg';
+import '../assets/css/ManageDomain.css';
 
 const router = useRouter();
 const { t } = useI18n();

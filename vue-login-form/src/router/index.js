@@ -12,6 +12,7 @@ import ManageDomainFormPage from "../pages/ManageDomainFormPage.vue";
 import ManageRolesPage from "../pages/ManageRolesPage.vue";
 import RoleFormPage from "../pages/RoleFormPage.vue";
 import { ACCESS_TOKEN_NAME } from "../constants/apiConstants";
+import VideoPhotoPage from "../pages/VideoPhotoPage.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -35,7 +36,7 @@ const routes = [
   { path: "/manage-roles/edit", component: RoleFormPage, meta: { title: "Edit Role", requiresAuth: true } },
   { path: "/settings", component: PlaceholderPage, meta: { title: "Settings", requiresAuth: true } },
   { path: "/stl-viewer", component: PlaceholderPage, meta: { title: "STL Viewer", requiresAuth: true } },
-  { path: "/video-photo", component: PlaceholderPage, meta: { title: "Video Photo", requiresAuth: true } },
+  { path: "/video-photo", component: VideoPhotoPage, meta: { title: "Video Photo", requiresAuth: true } },
   { path: "/pusher-chat", component: PlaceholderPage, meta: { title: "Pusher Chat", requiresAuth: true } },
   { path: "/timesheet", component: PlaceholderPage, meta: { title: "Timesheet", requiresAuth: true } },
   { path: "/document-bank", component: PlaceholderPage, meta: { title: "Document Bank", requiresAuth: true } },

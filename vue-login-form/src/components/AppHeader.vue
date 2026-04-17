@@ -113,6 +113,7 @@ import { useAuthStore } from '../stores/auth';
 import { usePermission } from '../composables/usePermission';
 import iconMenu from '../assets/icon_menu.png';
 import { persistLanguage } from '../i18n';
+import '../assets/css/Header.css';
 
 const router = useRouter();
 const { t, locale } = useI18n();
