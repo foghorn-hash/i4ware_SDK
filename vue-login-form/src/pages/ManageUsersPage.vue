@@ -236,6 +236,7 @@ import ChangePassword from '../components/ChangePassword.vue';
 import loadingSpinner from '../assets/tube-spinner.svg';
 import DefaultMaleImage from '../assets/male-default-profile-picture.png';
 import DefaultFemaleImage from '../assets/female-default-profile-picture.png';
+import '../assets/css/ManageUsers.css';
 
 const { t } = useI18n();
 const authStore = useAuthStore();

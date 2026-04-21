@@ -13,7 +13,7 @@
     <div class="mt-3">
       <div class="table-header-roles">
         <div class="column-actions-roles">#</div>
-        <div class="column-actions-roles">{{ t('name') }}</div>
+        <div class="column-actions-roles">{{ t('rolename') }}</div>
         <div class="column-actions-roles">{{ t('domain') }}</div>
         <div class="column-actions-roles"></div>
       </div>
@@ -29,7 +29,7 @@
           <div v-for="(role, index) in roles" :key="role.id" class="mobile-table-body-roles">
             <div class="mobile-table-header-roles">
               <div class="column-actions-roles">#</div>
-              <div class="column-actions-roles">{{ t('name') }}</div>
+              <div class="column-actions-roles">{{ t('rolename') }}</div>
               <div class="column-actions-roles">{{ t('domain') }}</div>
               <div class="column-actions-roles"></div>
             </div>

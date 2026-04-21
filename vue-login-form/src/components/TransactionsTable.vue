@@ -16,7 +16,7 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { Bar as BarChart } from 'vue-chartjs';
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, CartesianScale } from 'chart.js';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
 import { API_BASE_URL, ACCESS_TOKEN_NAME } from '../constants/apiConstants';
 import loadingSpinner from '../assets/tube-spinner.svg';
 

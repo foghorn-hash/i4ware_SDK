@@ -29,6 +29,7 @@ import { useI18n } from 'vue-i18n';
 import VueCropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
 import getCroppedImg, { getCroppedImgFile } from '../utils/cropImage';
+import '../assets/css/ImageCropper.css';
 
 const props = defineProps({
   imageSrc:    { type: String,  required: true },

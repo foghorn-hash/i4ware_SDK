@@ -16,6 +16,8 @@ import VideoPhotoPage from "../pages/VideoPhotoPage.vue";
 import HomePage from "../pages/HomePage.vue";
 import SettingsPage from "../pages/SettingsPage.vue";
 import RevenueReportPage from "../pages/RevenueReportPage.vue";
+import DocumentBankPage from "../pages/DocumentBankPage.vue";
+import MyProfilePage from "../pages/MyProfilePage.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -28,7 +30,7 @@ const routes = [
 
   // Private routes
   { path: "/home", component: HomePage, meta: { title: "Home", requiresAuth: true } },
-  { path: "/my-profile", component: PlaceholderPage, meta: { title: "My Profile", requiresAuth: true } },
+  { path: "/my-profile", component: MyProfilePage, meta: { title: "My Profile", requiresAuth: true } },
   { path: "/revenue-report", component: RevenueReportPage, meta: { title: "Revenue Report", requiresAuth: true } },
   { path: "/manage-users", component: ManageUsersPage, meta: { title: "Manage Users", requiresAuth: true } },
   { path: "/manage-domains", component: ManageDomainPage, meta: { title: "Manage Domains", requiresAuth: true } },
@@ -42,7 +44,7 @@ const routes = [
   { path: "/video-photo", component: VideoPhotoPage, meta: { title: "Video Photo", requiresAuth: true } },
   { path: "/pusher-chat", component: PlaceholderPage, meta: { title: "Pusher Chat", requiresAuth: true } },
   { path: "/timesheet", component: PlaceholderPage, meta: { title: "Timesheet", requiresAuth: true } },
-  { path: "/document-bank", component: PlaceholderPage, meta: { title: "Document Bank", requiresAuth: true } },
+  { path: "/document-bank", component: DocumentBankPage, meta: { title: "Document Bank", requiresAuth: true } },
   { path: "/cv-editor", component: PlaceholderPage, meta: { title: "CV Editor", requiresAuth: true } },
   { path: "/issue-tracker", component: PlaceholderPage, meta: { title: "Issue Tracker", requiresAuth: true } },
 ];

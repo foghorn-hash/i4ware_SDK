@@ -53,6 +53,7 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import * as Yup from 'yup';
 import { API_BASE_URL, ACCESS_TOKEN_NAME } from '../constants/apiConstants';
+import '../assets/css/ManageRoles.css';
 
 const router = useRouter();
 const { t } = useI18n();

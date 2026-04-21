@@ -100,6 +100,7 @@ import DefaultMaleImage from '../assets/male-default-profile-picture.png';
 import DefaultFemaleImage from '../assets/female-default-profile-picture.png';
 import ImageCropper from '../components/ImageCropper.vue';
 import WebcamCapture from '../components/WebcamCapture.vue';
+import '../assets/css/MyProfile.css';
 
 const { t } = useI18n();
 

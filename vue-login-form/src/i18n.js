@@ -257,7 +257,7 @@ const messages = {
         //Manage roles
         add: "Add",
         numberSign: "#",
-        name: "Name",
+        rolename: "Name",
         noData: "No data",
         edit: "Edit",
         remove: "Remove",
@@ -906,7 +906,7 @@ const messages = {
         //manage roles
         add: "Lisää",
         numberSign: "#",
-        name: "Nimi",
+        rolename: "Nimi",
         noData: "Ei tietoja",
         edit: "Muokkaa",
         remove: "Poista",
@@ -1542,7 +1542,7 @@ const messages = {
         //manage roles
         add: "Lägg till",
         numberSign: "#",
-        name: "Namn",
+        rolename: "Namn",
         noData: "Inga data",
         edit: "Redigera",
         remove: "Ta bort",
