@@ -1,11 +1,16 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { computed, ref, onMounted, onErrorCaptured } from "vue";
+import { useI18n } from "vue-i18n";
 import { RouterView } from "vue-router";
 import AppHeader from "./components/AppHeader.vue";
 import logoUrl from "./assets/52311-logo-transparent.png";
 import axios from "axios";
 import { API_BASE_URL } from "./constants/apiConstants";
+import { usePermission } from "./composables/usePermission";
+
+const { t, locale } = useI18n()
+const { hasPermission } = usePermission();
 
 const showLicense = ref(false);
 const route = useRoute();
@@ -15,12 +20,11 @@ const setting = ref({ disable_license_details: false });
 onMounted(async () => {
   try {
     const res = await axios.get(`${API_BASE_URL}/api/settings`, { withCredentials: true });
-    console.log('Settings response:', res.data);
     if (res.status === 200) {
       const obj = {};
       if (res.data?.data && Array.isArray(res.data.data)) {
         for (const element of res.data.data) {
-          setting[element.setting_key] = element.setting_value === '1';
+          setting.value[element.setting_key] = element.setting_value === '1';
         }
       }
       setting.value = obj;
@@ -32,8 +36,11 @@ onMounted(async () => {
 
 
 const appError = ref(null);
-onErrorCaptured((err) => {
+onErrorCaptured((err, instance, info) => {
   appError.value = err.message;
+  console.error('Full error:', err);
+  console.error('Component:', instance);
+  console.error('Info:', info);
   return false;
 });
 </script>

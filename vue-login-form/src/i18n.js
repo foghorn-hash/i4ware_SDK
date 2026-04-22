@@ -556,7 +556,7 @@ const messages = {
         cvNamePlaceholder: "Firstname Lastname",
         cvTitle: "Job Title",
         cvTitlePlaceholder: "E.g. Full Stack Developer",
-        cvEmailPlaceholder: "you@example.com",
+        cvEmailPlaceholder: "you{'@'}example.com",
         cvPhone: "Phone",
         cvLocation: "Location",
         cvLocationPlaceholder: "Helsinki",
@@ -1199,7 +1199,7 @@ const messages = {
         cvNamePlaceholder: "Etunimi Sukunimi",
         cvTitle: "Ammattinimike",
         cvTitlePlaceholder: "Esim. Full Stack Developer",
-        cvEmailPlaceholder: "sina@esimerkki.fi",
+        cvEmailPlaceholder: "sina{'@'}esimerkki.fi",
         cvPhone: "Puhelinnumero",
         cvLocation: "Sijainti",
         cvLocationPlaceholder: "Helsinki",
@@ -1835,7 +1835,7 @@ const messages = {
         cvNamePlaceholder: "Förnamn Efternamn",
         cvTitle: "Yrkestitel",
         cvTitlePlaceholder: "T.ex. Full Stack-utvecklare",
-        cvEmailPlaceholder: "du@exempel.se",
+        cvEmailPlaceholder: "du{'@'}exempel.se",
         cvPhone: "Telefon",
         cvLocation: "Ort",
         cvLocationPlaceholder: "Stockholm",
@@ -1948,7 +1948,6 @@ const i18n = createI18n({
     messages,
 });
 
-i18n.global.watchEffect = null; 
 export function persistLanguage(locale) {
     localStorage.setItem('appLang', locale);
 }

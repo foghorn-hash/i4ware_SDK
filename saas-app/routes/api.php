@@ -15,6 +15,7 @@ use App\Http\Controllers\PdfDocumentBankController;
 use App\Http\Controllers\WordBankController;
 use App\Http\Controllers\ExcelBankController;
 use App\Http\Controllers\IssueTrackerController;
+use App\Http\Controllers\CvController;
 
 /*
 |--------------------------------------------------------------------------
@@ -167,4 +168,10 @@ Route::prefix('issue-tracker')->group(function () {
 	Route::put('/{id}/status', [IssueTrackerController::class, 'updateStatus']);
     Route::put('/{id}/assign', [IssueTrackerController::class, 'assign']);
 	Route::patch('/{id}', [IssueTrackerController::class, 'update']);
+});
+
+Route::prefix('cv')->group(function () {
+    Route::get('/',    [CvController::class, 'show']);
+    Route::post('/',   [CvController::class, 'store']);
+    Route::delete('/', [CvController::class, 'destroy']);
 });
