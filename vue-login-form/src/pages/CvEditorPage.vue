@@ -129,7 +129,11 @@ onMounted(async () => {
 });
 
 const updateSection = (section, value) => {
+  if (Array.isArray(cvData[section])) {
+    cvData[section].splice(0, cvData[section].length, ...value);
+  } else {
     cvData[section] = value;
+  }
 };
 
 const formatDate = (d) => {
@@ -139,6 +143,8 @@ const formatDate = (d) => {
 };
 
 const handleSave = async () => {
+    const apiFormat = convertToApiFormat(cvData);
+
     try {
         const res = await fetch(`${API_BASE_URL}/api/cv`, {
             method: 'POST',
@@ -147,7 +153,7 @@ const handleSave = async () => {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
             },
-            body: JSON.stringify(convertToApiFormat(cvData)),
+            body: JSON.stringify(apiFormat),
         });
         if (!res.ok) {
             const errData = await res.json();

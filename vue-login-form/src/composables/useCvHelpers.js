@@ -46,14 +46,16 @@ export const convertToApiFormat = (cvData) => ({
     })),
 
   education: cvData.education
-    .filter(e => e.institution?.trim())
+    .filter(e => e.institution?.trim() || e.degree?.trim())
     .map((e, idx) => ({
       id: typeof e.id === 'number' ? e.id : undefined,
-      institution: e.institution, degree: e.degree || null,
+      institution: e.institution || e.course || '',
+      degree: e.degree || null,
       field_of_study: e.field || null,
-      start_date: e.startDate || null, end_date: e.endDate || null, order: idx
+      start_date: e.startDate || null,
+      end_date: e.endDate || null,
+      order: idx
     })),
-
   additionalTraining: cvData.additionalTraining
     .filter(t => t.course?.trim())
     .map((t, idx) => ({

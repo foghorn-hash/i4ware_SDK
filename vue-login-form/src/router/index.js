@@ -19,6 +19,7 @@ import RevenueReportPage from "../pages/RevenueReportPage.vue";
 import DocumentBankPage from "../pages/DocumentBankPage.vue";
 import MyProfilePage from "../pages/MyProfilePage.vue";
 import CvEditorPage from "../pages/CvEditorPage.vue";
+import IssueTrackerPage from '../pages/IssueTrackerPage.vue';
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -47,7 +48,7 @@ const routes = [
   { path: "/timesheet", component: PlaceholderPage, meta: { title: "Timesheet", requiresAuth: true } },
   { path: "/document-bank", component: DocumentBankPage, meta: { title: "Document Bank", requiresAuth: true } },
   { path: "/cv-editor", component: CvEditorPage, meta: { title: "CV Editor", requiresAuth: true } },
-  { path: "/issue-tracker", component: PlaceholderPage, meta: { title: "Issue Tracker", requiresAuth: true } },
+  { path: "/issue-tracker", component: IssueTrackerPage, meta: { title: "Issue Tracker", requiresAuth: true } },
 ];
 
 const router = createRouter({
