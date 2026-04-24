@@ -20,6 +20,9 @@ import DocumentBankPage from "../pages/DocumentBankPage.vue";
 import MyProfilePage from "../pages/MyProfilePage.vue";
 import CvEditorPage from "../pages/CvEditorPage.vue";
 import IssueTrackerPage from '../pages/IssueTrackerPage.vue';
+import STLViewerPage from "../pages/STLViewerPage.vue";
+import TimesheetPage from "../pages/TimesheetPage.vue";
+import PusherChatPage from "../pages/PusherChatPage.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -42,10 +45,10 @@ const routes = [
   { path: "/manage-roles/add", component: RoleFormPage, meta: { title: "Add Role", requiresAuth: true } },
   { path: "/manage-roles/edit", component: RoleFormPage, meta: { title: "Edit Role", requiresAuth: true } },
   { path: "/settings", component: SettingsPage, meta: { title: "Settings", requiresAuth: true } },
-  { path: "/stl-viewer", component: PlaceholderPage, meta: { title: "STL Viewer", requiresAuth: true } },
+  { path: "/stl-viewer", component: STLViewerPage, meta: { title: "STL Viewer", requiresAuth: true } },
   { path: "/video-photo", component: VideoPhotoPage, meta: { title: "Video Photo", requiresAuth: true } },
-  { path: "/pusher-chat", component: PlaceholderPage, meta: { title: "Pusher Chat", requiresAuth: true } },
-  { path: "/timesheet", component: PlaceholderPage, meta: { title: "Timesheet", requiresAuth: true } },
+  { path: "/pusher-chat", component: PusherChatPage, meta: { title: "Pusher Chat", requiresAuth: true } },
+  { path: "/timesheet", component: TimesheetPage, meta: { title: "Timesheet", requiresAuth: true } },
   { path: "/document-bank", component: DocumentBankPage, meta: { title: "Document Bank", requiresAuth: true } },
   { path: "/cv-editor", component: CvEditorPage, meta: { title: "CV Editor", requiresAuth: true } },
   { path: "/issue-tracker", component: IssueTrackerPage, meta: { title: "Issue Tracker", requiresAuth: true } },

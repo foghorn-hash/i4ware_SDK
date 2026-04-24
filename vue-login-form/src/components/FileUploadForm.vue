@@ -2,26 +2,21 @@
   <div>
     <strong class="FileFormUpload-title">{{ t('uploadStlFile') }}</strong>
     <br /><br />
-
     <div class="file-input-container">
       <input
-        ref="fileInputEl"
         type="file"
-        id="file-input"
+        ref="fileInputRef"
         class="FileFormUplaod-file-selector"
         accept=".stl"
-        style="display:none"
+        style="display: none"
         @change="handleFileChange"
       />
       <button
         type="button"
-        class="browse-btn"
-        @click="fileInputEl.click()"
+        :style="browseButtonStyle"
+        @click="fileInputRef.click()"
         @mouseenter="browseBg = 'red'"
         @mouseleave="browseBg = 'transparent'"
-        :style="{ backgroundColor: browseBg, color: '#fff', padding: '10px 15px',
-          marginRight: '10px', marginLeft: '10px', border: '1px red solid',
-          borderRadius: '20px', cursor: 'pointer' }"
       >
         {{ t('browse') }}
       </button>
@@ -38,24 +33,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { API_BASE_URL, ACCESS_TOKEN_NAME } from '../constants/apiConstants';
 import { captureScreenshot } from '../utils/screenshotCapture';
-
-const props = defineProps({
-  newItemIsUploaded: { type: Function, required: true },
-});
+import '../assets/css/FileUploadForm.css';
 
 const { t } = useI18n();
 
+const emit = defineEmits(['uploaded']);
+
 const selectedFile = ref(null);
-const fileInputEl  = ref(null);
+const fileInputRef = ref(null);
 const browseBg     = ref('transparent');
 
-const handleFileChange = (e) => {
-  const file = e.target.files?.[0];
+const browseButtonStyle = computed(() => ({
+  backgroundColor: browseBg.value,
+  color: '#fff',
+  padding: '10px 15px',
+  marginRight: '10px',
+  marginLeft: '10px',
+  border: '1px red solid',
+  borderRadius: '20px',
+  cursor: 'pointer',
+}));
+
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
   if (file) selectedFile.value = file;
 };
 
@@ -71,20 +76,17 @@ const handleFileUpload = async () => {
     const screenshotDataUrl = await captureScreenshot(selectedFile.value);
     formData.append('screenshot', screenshotDataUrl);
 
-    const response = await axios.post(
-      `${API_BASE_URL}/api/stl/upload-stl`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
-        },
-      }
-    );
+    const response = await axios.post(`${API_BASE_URL}/api/stl/upload-stl`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_NAME)}`,
+      },
+    });
 
     if (response.data?.fileName) {
-      props.newItemIsUploaded(response.data.fileName);
+      emit('uploaded', response.data.fileName);
       selectedFile.value = null;
+      fileInputRef.value.value = '';
     }
   } catch (error) {
     console.error('Error uploading file:', error);

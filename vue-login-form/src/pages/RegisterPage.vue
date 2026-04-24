@@ -138,7 +138,7 @@
             <a href="https://www.i4ware.fi/privacy-policy/" target="_blank">{{ t('privacyPolicy') }}</a>
             {{ t('and') }}
             <a href="https://www.i4ware.fi/data-processing-agreement/" target="_blank">{{ t('dataProcessingAgreement')
-              }}</a>
+            }}</a>
           </label>
         </div>
 
@@ -291,9 +291,17 @@ const handleSubmit = async () => {
       setTimeout(() => router.push('/login'), 5000);
     } else {
       const errs = [];
-      for (const value of Object.values(json.data)) {
-        errs.push(...value);
+      console.log('API response:', json);
+      if (json.data && typeof json.data === 'object') {
+        for (const value of Object.values(json.data)) {
+          errs.push(...value);
+        }
+      } else if (json.message) {
+        errs.push(json.message);
+      } else {
+        errs.push('Unknown error');
       }
+
       errorMessages.value = errs;
       modalIsOpen.value = true;
     }
