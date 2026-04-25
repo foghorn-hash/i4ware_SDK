@@ -1,0 +1,73 @@
+/* CSS for the screenshot image with the 'screenshot-image' id */
+#screenshot-image {
+    max-width: 100%;
+}
+
+.scrollable-container {
+    max-height: 400px; /* Adjust the max-height as needed */
+    overflow-y: auto;
+  }
+
+.STLViewerComponent-Viewer-3D {
+    height: 520px;
+    width: 520px;
+}
+
+.STL-controls {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.STLViewerComponent-clear {
+    clear: both;
+}
+
+.STL-file-uploader {
+    margin-top: 20px;
+}
+
+.STL-generate-button {
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    float: right;
+}
+
+.STLViewerComponent-large-modal .modal-dialog {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    max-height: calc(100vh - 3.5rem) !important;
+    width: 90% !important;
+    max-width: 1400px !important;
+    min-width: 800px !important;
+}
+
+.STLViewerComponent-card-title {
+    color: black;
+}
+
+.STLViewerComponent-col {
+    margin-bottom: 20px;
+}
+
+.STLViewerComponent-modal-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+}
+
+.STlViewerComponent-modal-window {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    max-height: 65vh
+}
+
+.stl-model {
+    object-fit: contain; /* or cover based on your needs */
+}

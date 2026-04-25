@@ -14,6 +14,8 @@ use App\Http\Controllers\TimesheetRowController;
 use App\Http\Controllers\PdfDocumentBankController;
 use App\Http\Controllers\WordBankController;
 use App\Http\Controllers\ExcelBankController;
+use App\Http\Controllers\IssueTrackerController;
+use App\Http\Controllers\CvController;
 
 /*
 |--------------------------------------------------------------------------
@@ -144,17 +146,32 @@ Route::prefix('documentbank')->group(function () {
 });
 
 Route::prefix('wordbank')->group(function () {
-    Route::get('/',              [WordBankController::class, 'index']);
-    Route::post('/upload',       [WordBankController::class, 'upload']);
-    Route::get('/view/{id}',     [WordBankController::class, 'view']);
-    Route::get('/download/{id}', [WordBankController::class, 'download']);
-    Route::delete('/{id}',       [WordBankController::class, 'destroy']);
+	Route::get('/', [WordBankController::class, 'index']);
+	Route::post('/upload', [WordBankController::class, 'upload']);
+	Route::get('/view/{id}', [WordBankController::class, 'view']);
+	Route::get('/download/{id}', [WordBankController::class, 'download']);
+	Route::delete('/{id}', [WordBankController::class, 'destroy']);
 });
- 
+
 Route::prefix('excelbank')->group(function () {
-    Route::get('/',              [ExcelBankController::class, 'index']);
-    Route::post('/upload',       [ExcelBankController::class, 'upload']);
-    Route::get('/view/{id}',     [ExcelBankController::class, 'view']);
-    Route::get('/download/{id}', [ExcelBankController::class, 'download']);
-    Route::delete('/{id}',       [ExcelBankController::class, 'destroy']);
+	Route::get('/', [ExcelBankController::class, 'index']);
+	Route::post('/upload', [ExcelBankController::class, 'upload']);
+	Route::get('/view/{id}', [ExcelBankController::class, 'view']);
+	Route::get('/download/{id}', [ExcelBankController::class, 'download']);
+	Route::delete('/{id}', [ExcelBankController::class, 'destroy']);
+});
+
+Route::prefix('issue-tracker')->group(function () {
+	Route::get('/users', [IssueTrackerController::class, 'users']);
+	Route::get('/', [IssueTrackerController::class, 'index']);
+	Route::post('/', [IssueTrackerController::class, 'store']);
+	Route::put('/{id}/status', [IssueTrackerController::class, 'updateStatus']);
+    Route::put('/{id}/assign', [IssueTrackerController::class, 'assign']);
+	Route::patch('/{id}', [IssueTrackerController::class, 'update']);
+});
+
+Route::prefix('cv')->group(function () {
+    Route::get('/',    [CvController::class, 'show']);
+    Route::post('/',   [CvController::class, 'store']);
+    Route::delete('/', [CvController::class, 'destroy']);
 });

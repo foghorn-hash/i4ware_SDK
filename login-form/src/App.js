@@ -32,6 +32,7 @@ import request from "./utils/Request";
 import Timesheet from "./components/Timesheet/Timesheet";
 import PdfDocumentBank from "./components/PdfDocumentBank/PdfDocumentBank";
 import CvEditor from "./components/CvEditor/CvEditor";
+import IssueTracker from "./components/IssueTracker/IssueTracker";
 import { useTranslation } from 'react-i18next';
 
 function App() {
@@ -135,6 +136,7 @@ function App() {
                 <PrivateRoute path="/timesheet" component={Timesheet} />
                 <PrivateRoute path="/document-bank" component={PdfDocumentBank} />
                 <PrivateRoute path="/cv-editor" component={CvEditor} />
+                <PrivateRoute path="/issue-tracker" component={IssueTracker} />
               </Switch>
             </Container>
           </AuthProvider>

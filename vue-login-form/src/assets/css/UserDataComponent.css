@@ -1,0 +1,15 @@
+.user-card {
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.userText {
+    color: #007bff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.userMessage {
+    color: white;
+    font-weight: bold;
+}

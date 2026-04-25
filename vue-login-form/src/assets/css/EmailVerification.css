@@ -1,0 +1,20 @@
+.verification-card {
+    position: relative;
+    z-index: 2;
+    height: 100px;
+    width: 60vh;
+    margin: auto;
+    display: flex;
+	flex-direction: column;
+}
+
+.verificationText {
+    color: #007bff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.successMessage {
+    color: green;
+    font-weight: bold;
+}

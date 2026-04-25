@@ -18,7 +18,7 @@ class CvController extends Controller
      */
     public function show()
     {
-        $user = Auth::user();
+        $user = Auth::guard('api')->user();
         $cv = $user->cvProfile()->with([
             'skills',
             'experiences',
@@ -39,7 +39,7 @@ class CvController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::guard('api')->user();
 
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
@@ -323,7 +323,7 @@ class CvController extends Controller
      */
     public function destroy()
     {
-        $user = Auth::user();
+        $user = Auth::guard('api')->user();
         $user->cvProfile()->delete();
 
         return response()->json(['message' => 'CV profile deleted successfully']);
