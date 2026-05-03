@@ -1,3 +1,110 @@
+# i4ware SDK – Tech Stack (SaaS Application)
+
+## Overview
+i4ware SDK is a low-code SaaS development platform that combines a modern frontend, a PHP/Laravel backend, and a scalable database architecture.
+
+The platform is designed especially for:
+- Multi-tenant SaaS applications  
+- Real-time systems  
+- AI-powered integrations  
+
+---
+
+## Core Tech Stack
+
+### Frontend
+- React 18  
+- JavaScript and TypeScript  
+- HTML5 and CSS3  
+
+Modern Single Page Application architecture with component-based UI development.
+
+---
+
+### Backend
+- PHP 8.2  
+- Laravel 12 and above  
+
+Laravel provides REST API architecture, ORM (Eloquent), authentication and authorization, and job queues with event-driven systems.
+
+---
+
+### Database
+- MySQL  
+- PostgreSQL  
+- SQLite for development environments  
+
+Built-in support for multiple database systems.
+
+---
+
+### API and Integrations
+- REST APIs  
+- JSON-based communication  
+- External API integrations such as OpenAI
+- Visma Netvisor API integrations
+
+---
+
+### DevOps and Infrastructure
+- XAMPP for development  
+- Apache 2  
+- Git for version control  
+- Docker for containerization  
+- AWS for cloud infrastructure
+- Jenkins CI/CD pipelines  
+
+---
+
+### AI and Advanced Features
+- OpenAI integrations including ChatGPT and GPT-4o  
+- AI and machine learning capabilities  
+- Real-time chat using WebSocket or event-driven architecture  
+
+---
+
+### Low-Code SDK Layer
+i4ware SDK provides prebuilt components, reusable UI and logic, automation tools, and rapid application development capabilities.
+
+This approach significantly accelerates development compared to traditional full-stack solutions.
+
+---
+
+## CI/CD and Documentation Automation
+
+This project includes a plugin that generates an extended Javadoc report enriched with UML diagrams. The UML is automatically generated from the head revision of the source code in the project's main GitHub repository.
+
+This setup also serves as a practical example of how to build, automate, and document a Jenkins-based CI/CD pipeline, including:
+- Automated documentation generation  
+- Source code analysis  
+- Continuous integration workflows  
+- Visual architecture representation via UML  
+
+---
+
+## Architecture
+
+- Multi-tenant SaaS architecture  
+- Multi-user real-time collaboration  
+- API-first design  
+- Modular structure  
+
+---
+
+## Languages (Repository Analysis)
+- JavaScript approximately 50 percent  
+- PHP approximately 39 percent  
+- HTML and CSS  
+- Python in a minor role  
+
+---
+
+## Summary
+
+i4ware SDK combines a React-based frontend, a Laravel-powered backend, support for multiple databases, cloud-ready infrastructure, AI integrations, and a low-code development layer.
+
+The result is faster development, scalable SaaS architecture, and enterprise-level capabilities.
+
 ## Login forms using react.js hooks
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
