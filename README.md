@@ -51,7 +51,8 @@ Built-in support for multiple database systems.
 - Apache 2  
 - Git for version control  
 - Docker for containerization  
-- AWS for cloud infrastructure  
+- AWS for cloud infrastructure
+- Jenkins CI/CD pipelines  
 
 ---
 
@@ -66,6 +67,18 @@ Built-in support for multiple database systems.
 i4ware SDK provides prebuilt components, reusable UI and logic, automation tools, and rapid application development capabilities.
 
 This approach significantly accelerates development compared to traditional full-stack solutions.
+
+---
+
+## CI/CD and Documentation Automation
+
+This project includes a plugin that generates an extended Javadoc report enriched with UML diagrams. The UML is automatically generated from the head revision of the source code in the project's main GitHub repository.
+
+This setup also serves as a practical example of how to build, automate, and document a Jenkins-based CI/CD pipeline, including:
+- Automated documentation generation  
+- Source code analysis  
+- Continuous integration workflows  
+- Visual architecture representation via UML  
 
 ---
 
