@@ -41,7 +41,8 @@ Built-in support for multiple database systems.
 ### API and Integrations
 - REST APIs  
 - JSON-based communication  
-- External API integrations such as OpenAI  
+- External API integrations such as OpenAI
+- Visma Netvisor API integrations
 
 ---
 
