@@ -23,7 +23,7 @@ Modern Single Page Application architecture with component-based UI development.
 
 ### Backend
 - PHP 8.2  
-- Laravel 9 and above  
+- Laravel 12 and above  
 
 Laravel provides REST API architecture, ORM (Eloquent), authentication and authorization, and job queues with event-driven systems.
 
