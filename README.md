@@ -26,6 +26,189 @@ The platform is designed especially for:
 
 ---
 
+# Educational & Development Partners
+
+A unique aspect of i4ware's development model is its collaboration with Finnish educational institutions. Students contribute to the source code, software architecture, AI solutions, and development workflows of i4ware products as part of their studies, internships, and practical software engineering projects.
+
+These collaborations support:
+
+- Real-world software development experience
+- AI/ML engineering education
+- Full-Stack web development training
+- Open-source collaboration
+- Modern DevOps and cloud-native workflows
+- Research and innovation in artificial intelligence
+
+---
+
+## Educational Collaboration Goals
+
+i4ware collaborates with educational institutions to:
+
+- Provide students with practical software engineering experience
+- Support AI/ML and Full-Stack learning programs
+- Develop real production-grade applications
+- Introduce students to enterprise software architecture
+- Create opportunities for internship and career development
+- Promote modern software development methodologies
+
+Students may participate in:
+
+- Front-end development
+- Back-end Laravel development
+- React application development
+- AI Assistant integrations
+- Python CAD and 3D generator tooling
+- DevOps and CI/CD workflows
+- API integrations
+- Database design
+- Open-source contributions
+
+---
+
+# Educational Partners
+
+## TREDU — Tampere Vocational College
+
+TREDU collaborates with i4ware on:
+
+- i4ware SDK development
+- AI Assistant projects
+- Web application development
+- Practical Full-Stack engineering exercises
+- Software testing and QA workflows
+
+Students gain practical experience in:
+
+- Laravel
+- React
+- JavaScript
+- PHP
+- Git workflows
+- CI/CD pipelines
+- AI-assisted development
+
+Website:
+
+https://www.tredu.fi/
+
+---
+
+## Business College Helsinki
+
+Business College Helsinki collaborates with i4ware in:
+
+- Full-Stack application development
+- AI-driven software solutions
+- Modern JavaScript and React development
+- Software engineering practices
+- Agile development methodologies
+
+Areas of collaboration include:
+
+- React front-end systems
+- Laravel back-end APIs
+- AI integration workflows
+- Cloud-based application development
+- DevOps tooling
+
+Website:
+
+https://en.bc.fi/
+
+---
+
+## Oulu University of Applied Sciences (OAMK)
+
+OAMK contributes expertise to:
+
+- AI/ML orientation programs
+- Artificial intelligence development
+- Machine learning projects
+- Python engineering
+- Research-oriented software development
+
+Collaboration areas include:
+
+- AI/ML engineering
+- OpenAI integrations
+- Python automation
+- CAD and 3D generation tooling
+- Research and development support
+
+Website:
+
+https://www.oamk.fi/
+
+---
+
+# Development Philosophy
+
+i4ware combines:
+
+- Education
+- Open-source collaboration
+- Enterprise software development
+- AI-assisted engineering
+- Real production environments
+
+This model helps students transition from academic studies to real-world software engineering by working on production-grade systems and modern technology stacks.
+
+---
+
+# Technologies Used in Educational Projects
+
+Students and contributors may work with:
+
+- Laravel 12
+- React
+- PHP 8.2+
+- JavaScript / TypeScript
+- Python 3.10+
+- OpenAI APIs
+- Pusher
+- MySQL / MariaDB
+- Apache / Nginx
+- Docker
+- Jenkins CI/CD
+- GitHub Actions
+- Miniconda
+- OpenCascade CAD libraries
+- Node.js
+- Linux server environments
+
+---
+
+# Industry-Oriented Learning
+
+The collaboration model focuses on:
+
+- Hands-on software engineering
+- Real deployment environments
+- Cloud infrastructure
+- AI-assisted development workflows
+- Agile teamwork
+- Source control and Git workflows
+- Secure production architecture
+- Continuous Integration / Continuous Deployment (CI/CD)
+
+Students gain experience working with production-like workflows commonly used in professional software companies.
+
+---
+
+# Summary
+
+i4ware collaborates with Finnish educational institutions to combine:
+
+- Software engineering education
+- AI/ML research and development
+- Full-Stack web application development
+- Open-source contribution models
+- Enterprise software workflows
+- Modern DevOps methodologies
+
+These partnerships help students gain practical real-world development experience while contributing to active software projects and AI-driven technologies.
+
 ## Core Tech Stack
 
 ### Frontend
