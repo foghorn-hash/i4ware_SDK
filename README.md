@@ -195,6 +195,7 @@ Students and contributors may work with:
 - Node.js
 - Linux server environments
 - XAMPP (Windows, Linux, and/or macOS)
+- Atlassian Jira/Confluence/Bitbucket/Rovo AI
 
 ---
 
