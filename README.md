@@ -14,9 +14,31 @@ i4ware SDK low-code-platform customer care portal:
 
 Raise Ticket: https://i4ware-sdk.atlassian.net/servicedesk/customer/portal/1
 
-Our Team: https://i4ware-sdk.atlassian.net/wiki/spaces/IS/overview?atl_f=HOMEFEED
+Our Team: 
 
-Tool for Time-tracking on Jira Cloud: https://www.i4ware.fi/en/products/timesheet-for-jira/
+https://i4ware-sdk.atlassian.net/wiki/spaces/IS/overview?atl_f=HOMEFEED
+
+Tool for Time-tracking on Jira Cloud: 
+
+https://www.i4ware.fi/en/products/timesheet-for-jira/
+
+i4ware founder and owner resume/portfolio:
+
+https://mattikiviharju.i4ware.fi/
+
+Careers:
+
+https://www.i4ware.fi/en/company/career/
+
+Investors:
+
+https://www.i4ware.fi/en/company/investors/
+
+Legal:
+
+https://www.i4ware.fi/en/delivery-terms-and-conditions/
+
+https://www.i4ware.fi/en/privacy-policy/
 
 ## Overview
 i4ware SDK is a low-code SaaS development platform that combines a modern frontend, a PHP/Laravel backend, and a scalable database architecture.
