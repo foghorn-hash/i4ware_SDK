@@ -94,7 +94,9 @@ Website:
 
 https://www.tredu.fi/
 
-Sample product made with i4ware SDK: https://www.i4ware.fi/en/products/multi-user-and-multi-organization-real-time-ai-chat/
+Sample product made with i4ware SDK: 
+
+https://www.i4ware.fi/en/products/multi-user-and-multi-organization-real-time-ai-chat/
 
 ---
 
@@ -120,7 +122,9 @@ Website:
 
 https://en.bc.fi/
 
-Sample product made with i4ware SDK: https://www.i4ware.fi/en/products/multi-user-and-multi-organization-real-time-ai-chat/
+Sample product made with i4ware SDK: 
+
+https://www.i4ware.fi/en/products/multi-user-and-multi-organization-real-time-ai-chat/
 
 ---
 
@@ -146,7 +150,9 @@ Website:
 
 https://www.oamk.fi/
 
-Sample product made with i4ware SDK: https://www.i4ware.fi/en/products/i4ware-invoice-cloud-ms-excel-invoice-template-pdf/
+Sample product made with i4ware SDK: 
+
+https://www.i4ware.fi/en/products/i4ware-invoice-cloud-ms-excel-invoice-template-pdf/
 
 ---
 
