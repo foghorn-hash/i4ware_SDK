@@ -180,6 +180,7 @@ Students and contributors may work with:
 - OpenCascade CAD libraries
 - Node.js
 - Linux server environments
+- XAMPP (Windows, Linux, and/or macOS)
 
 ---
 
