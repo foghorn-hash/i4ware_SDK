@@ -10,6 +10,12 @@ https://github.com/foghorn-hash/i4ware_SDK/wiki
 
 Look at our Partners: https://www.i4ware.fi/en/company/partnerships/
 
+i4ware SDK low-code-platform customer care portal: 
+
+Raise Ticket: https://i4ware-sdk.atlassian.net/servicedesk/customer/portal/1
+
+Our Team: https://i4ware-sdk.atlassian.net/wiki/spaces/IS/overview?atl_f=HOMEFEED
+
 ## Overview
 i4ware SDK is a low-code SaaS development platform that combines a modern frontend, a PHP/Laravel backend, and a scalable database architecture.
 
