@@ -1,5 +1,12 @@
 # i4ware SDK – Tech Stack (SaaS Application)
 
+Installation on:
+- Windows
+- macOS
+- Ubuntu Linux
+- Red Hat Enterprise Linux / Rocky Linux / AlmaLinux
+https://github.com/foghorn-hash/i4ware_SDK/wiki
+
 ## Overview
 i4ware SDK is a low-code SaaS development platform that combines a modern frontend, a PHP/Laravel backend, and a scalable database architecture.
 
