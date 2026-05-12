@@ -50,6 +50,213 @@ The platform is designed especially for:
 
 ---
 
+# Key Aspects of the i4ware & Red Hat Partnership
+
+The partnership between i4ware and Red Hat is based on enterprise-grade open-source technologies, infrastructure compatibility, and modern software engineering practices.
+
+As a Red Hat Technology Partner, i4ware develops and maintains software solutions that align with Red Hat enterprise platforms and open-source ecosystem standards.
+
+---
+
+# Software Certification & Platform Compatibility
+
+i4ware develops products and enterprise solutions designed to be compatible with Red Hat technologies and enterprise Linux environments.
+
+This includes platforms such as:
+
+- Red Hat Enterprise Linux (RHEL)
+- Red Hat OpenShift
+- Red Hat-compatible Linux distributions
+- Containerized Linux environments
+- Enterprise cloud infrastructure
+
+Examples of compatible solutions include:
+
+- i4ware SDK
+- Timesheet for Jira
+- AI Assistant integrations
+- Laravel enterprise applications
+- React-based front-end systems
+- Python CAD and automation environments
+
+The partnership helps ensure that i4ware applications can operate reliably in enterprise Linux infrastructures commonly used by large organizations and public sector environments.
+
+---
+
+# Open Source Alignment
+
+Both i4ware and Red Hat strongly support open-source software development and collaborative engineering models.
+
+The partnership reflects shared values such as:
+
+- Open-source innovation
+- Community-driven development
+- Linux ecosystem support
+- Enterprise-grade open-source tooling
+- Transparent development practices
+- Cross-platform compatibility
+
+i4ware frequently utilizes Red Hat-compatible environments to:
+
+- Develop applications
+- Test enterprise software
+- Validate production deployments
+- Build cloud-native solutions
+- Support containerized workflows
+
+Technologies commonly used include:
+
+- Linux
+- Apache
+- PHP
+- Python
+- Node.js
+- Docker
+- Git
+- Jenkins
+- OpenShift-compatible deployment models
+
+---
+
+# Technical Collaboration & Enterprise Support
+
+As a Technology Partner, i4ware may utilize Red Hat technical resources and enterprise platform documentation to ensure long-term compatibility with evolving enterprise technologies.
+
+Benefits of this collaboration may include:
+
+- Early-access platform testing
+- Compatibility validation
+- Enterprise Linux optimization
+- Improved deployment stability
+- Infrastructure interoperability
+- Access to partner-oriented technical guidance
+
+This helps ensure that i4ware solutions remain compatible with modern enterprise Linux environments and cloud-native infrastructures.
+
+---
+
+# Infrastructure Synergy
+
+i4ware leverages Red Hat technologies for enterprise-grade infrastructure solutions requiring:
+
+- High security
+- Scalability
+- Reliability
+- Long-term maintainability
+- Cloud-native architecture
+- Container orchestration
+- Production automation
+
+These environments are especially important for:
+
+- SaaS applications
+- AI-driven systems
+- ERP integrations
+- Enterprise APIs
+- DevOps workflows
+- CI/CD pipelines
+- High-availability Linux deployments
+
+Red Hat technologies provide a stable foundation for enterprise deployments where security, uptime, and scalability are critical requirements.
+
+---
+
+# Enterprise Linux Focus
+
+Many i4ware deployment environments are designed around Linux-first infrastructure strategies.
+
+Supported enterprise deployment targets may include:
+
+- RHEL
+- Rocky Linux
+- AlmaLinux
+- Ubuntu Server LTS
+- OpenShift environments
+- Docker-based infrastructures
+- Kubernetes-ready systems
+
+This approach enables:
+
+- Cross-platform deployment
+- Enterprise scalability
+- Secure production environments
+- Modern DevOps automation
+- Cloud compatibility
+
+---
+
+# DevOps & Cloud-Native Technologies
+
+The partnership aligns well with i4ware’s focus on modern DevOps and cloud-native development methodologies.
+
+Examples include:
+
+- Jenkins CI/CD
+- GitHub workflows
+- Apache and Nginx environments
+- Docker containerization
+- Kubernetes-oriented deployment workflows
+- OpenShift-compatible architectures
+- Infrastructure automation
+- Secure Linux server management
+
+These technologies support enterprise-grade software lifecycle management and scalable cloud deployments.
+
+---
+
+# AI & Enterprise Infrastructure
+
+i4ware’s AI-oriented systems and automation platforms also benefit from enterprise Linux environments provided by Red Hat-compatible infrastructures.
+
+Areas include:
+
+- OpenAI integrations
+- AI assistants
+- Python AI tooling
+- Machine learning workflows
+- CAD and 3D generation pipelines
+- Queue worker systems
+- Enterprise API integrations
+
+Linux-based infrastructure provides stable environments for high-performance backend processing and scalable AI workloads.
+
+---
+
+# Security & Stability
+
+Red Hat enterprise technologies are widely recognized for:
+
+- Enterprise security standards
+- Long-term support (LTS)
+- Stability
+- Predictable release cycles
+- Secure infrastructure management
+
+These characteristics align with i4ware’s enterprise deployment goals, especially for:
+
+- SaaS applications
+- ERP systems
+- Customer portals
+- API platforms
+- Enterprise integrations
+
+---
+
+# Summary
+
+The i4ware & Red Hat partnership is centered around:
+
+- Enterprise Linux compatibility
+- Open-source collaboration
+- Cloud-native development
+- Scalable infrastructure
+- Secure enterprise deployments
+- Modern DevOps workflows
+- AI and automation platforms
+- Enterprise-grade software engineering
+
+By leveraging Red Hat-compatible technologies and open-source development methodologies, i4ware can deliver scalable and production-ready enterprise solutions for modern Linux-based infrastructures.
+
 # Educational & Development Partners
 
 A unique aspect of i4ware's development model is its collaboration with Finnish educational institutions. Students contribute to the source code, software architecture, AI solutions, and development workflows of i4ware products as part of their studies, internships, and practical software engineering projects.
