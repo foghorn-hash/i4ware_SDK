@@ -169,6 +169,10 @@ Students and contributors may work with:
 - Pusher
 - MySQL / MariaDB
 - Apache / Nginx
+- Tomcat
+- Java EE
+- JSP
+- Spring Boot
 - Docker
 - Jenkins CI/CD
 - GitHub Actions
