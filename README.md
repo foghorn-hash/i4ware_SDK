@@ -8,6 +8,8 @@ Installation on:
 
 https://github.com/foghorn-hash/i4ware_SDK/wiki
 
+Look at our Partners: https://www.i4ware.fi/en/company/partnerships/
+
 ## Overview
 i4ware SDK is a low-code SaaS development platform that combines a modern frontend, a PHP/Laravel backend, and a scalable database architecture.
 
