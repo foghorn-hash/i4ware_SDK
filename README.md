@@ -8,11 +8,15 @@ Installation on:
 
 https://github.com/foghorn-hash/i4ware_SDK/wiki
 
-Look at our Partners: https://www.i4ware.fi/en/company/partnerships/
+Look at our Partners: 
+
+https://www.i4ware.fi/en/company/partnerships/
 
 i4ware SDK low-code-platform customer care portal: 
 
-Raise Ticket: https://i4ware-sdk.atlassian.net/servicedesk/customer/portal/1
+Raise Ticket: 
+
+https://i4ware-sdk.atlassian.net/servicedesk/customer/portal/1
 
 Our Team: 
 
